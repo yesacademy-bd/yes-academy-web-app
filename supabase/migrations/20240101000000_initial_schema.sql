@@ -191,8 +191,10 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Helper Function to get current user role
 CREATE OR REPLACE FUNCTION get_auth_role() RETURNS user_role AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1;
-$$ LANGUAGE sql SECURITY DEFINER;
+BEGIN
+  RETURN (SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 1. PROFILES RLS
 -- HR can read all. Admin can do all. Faculty can read all, update own.
