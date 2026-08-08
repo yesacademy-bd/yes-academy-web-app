@@ -134,10 +134,10 @@ export default async function DashboardPage() {
                 <div key={b.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
                   <div>
                     <h3 className="font-bold text-gray-900">{b.batch_name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{b.courses?.family} • {b.profiles?.display_name}</p>
+                    <p className="text-sm text-gray-500 mt-1">{(b.courses as any)?.family} • {(b.profiles as any)?.display_name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-gray-900">{b.rooms?.name}</p>
+                    <p className="font-medium text-gray-900">{(b.rooms as any)?.name}</p>
                     <p className="text-sm text-gray-500 mt-1">{b.start_time.substring(0,5)} - {b.end_time.substring(0,5)}</p>
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
                     <div className="h-10 w-px bg-gray-200 hidden sm:block"></div>
                     <div>
                       <h3 className="font-bold text-gray-900">{b.batch_name}</h3>
-                      <p className="text-sm text-gray-500">{b.rooms?.name} • Teacher: {b.profiles?.display_name}</p>
+                      <p className="text-sm text-gray-500">{(b.rooms as any)?.name} • Teacher: {(b.profiles as any)?.display_name}</p>
                     </div>
                   </div>
                   <Link 
