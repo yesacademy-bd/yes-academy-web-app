@@ -5,8 +5,9 @@ import { login } from './actions'
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error: string }
+  searchParams: Promise<{ error: string }>
 }) {
+  const params = await searchParams
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.getUser()
@@ -22,9 +23,9 @@ export default async function LoginPage({
           <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
         </div>
         
-        {searchParams?.error && (
+        {params?.error && (
           <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-            {searchParams.error}
+            {params.error}
           </div>
         )}
 

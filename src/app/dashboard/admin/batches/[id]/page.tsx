@@ -4,9 +4,9 @@ import BatchForm from '@/components/batches/BatchForm'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-export default async function EditBatchPage({ params }: { params: { id: string } }) {
+export default async function EditBatchPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  const { id } = params
+  const { id } = await params
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -24,8 +24,15 @@ export default async function EditBatchPage({ params }: { params: { id: string }
     supabase.from('batches').select('*').eq('id', id).single()
   ])
 
-  if (!batchRes.data) {
-    return <div className="text-gray-500">Batch not found</div>
+  if (batchRes.error || !batchRes.data) {
+    return (
+      <div className="text-red-500 p-8">
+        <h2 className="font-bold text-xl">Batch not found or error occurred</h2>
+        <pre className="mt-4 bg-gray-100 p-4 rounded text-sm overflow-auto">
+          {JSON.stringify(batchRes.error || 'No batch data returned', null, 2)}
+        </pre>
+      </div>
+    )
   }
 
   return (

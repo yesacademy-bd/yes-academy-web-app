@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { ArrowLeft, Users, Calendar, TrendingUp } from 'lucide-react'
 import AttendanceGrid from '@/components/attendance/AttendanceGrid'
 
-export default async function AttendanceRegisterPage({ params }: { params: { id: string } }) {
+export default async function AttendanceRegisterPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  const { id } = params
+  const { id } = await params
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -18,7 +18,16 @@ export default async function AttendanceRegisterPage({ params }: { params: { id:
     .eq('id', id)
     .single()
 
-  if (batchError || !batch) return <div className="text-gray-500">Batch not found</div>
+  if (batchError || !batch) {
+    return (
+      <div className="text-red-500 p-8">
+        <h2 className="font-bold text-xl">Batch not found or error occurred</h2>
+        <pre className="mt-4 bg-gray-100 p-4 rounded text-sm overflow-auto">
+          {JSON.stringify(batchError || 'No batch data returned', null, 2)}
+        </pre>
+      </div>
+    )
+  }
 
   // Verify Faculty access (must be teacher or monitor, or be Admin)
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
