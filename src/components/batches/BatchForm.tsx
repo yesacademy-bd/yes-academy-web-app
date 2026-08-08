@@ -110,13 +110,13 @@ export default function BatchForm({
           
           <div>
             <label className="block text-sm font-medium text-gray-700">Batch Name</label>
-            <input type="text" {...register('batch_name')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <input type="text" {...register('batch_name')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             {errors.batch_name && <p className="mt-1 text-xs text-red-500">{errors.batch_name.message}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Course</label>
-            <select {...register('course_id')} onChange={handleCourseChange} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <select {...register('course_id')} onChange={handleCourseChange} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="">Select a course...</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.family} - {c.name}</option>)}
             </select>
@@ -126,7 +126,7 @@ export default function BatchForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Status</label>
-              <select {...register('status')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select {...register('status')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="Upcoming">Upcoming</option>
                 <option value="Active">Active</option>
                 <option value="Paused">Paused</option>
@@ -135,7 +135,7 @@ export default function BatchForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Room</label>
-              <select {...register('room_id')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select {...register('room_id')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="">Select room...</option>
                 {rooms.map(r => <option key={r.id} value={r.id}>{r.name} (Cap: {r.capacity})</option>)}
               </select>
@@ -151,7 +151,7 @@ export default function BatchForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Teacher</label>
-              <select {...register('teacher_id')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select {...register('teacher_id')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="">Select teacher...</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.display_name}</option>)}
               </select>
@@ -159,7 +159,7 @@ export default function BatchForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Monitor Teacher</label>
-              <select {...register('monitor_teacher_id')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select {...register('monitor_teacher_id')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="">None</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.display_name}</option>)}
               </select>
@@ -169,12 +169,12 @@ export default function BatchForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Start Date</label>
-              <input type="date" {...register('start_date')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input type="date" {...register('start_date')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               {errors.start_date && <p className="mt-1 text-xs text-red-500">{errors.start_date.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Expected End Date</label>
-              <input type="date" {...register('expected_end_date')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input type="date" {...register('expected_end_date')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               {errors.expected_end_date && <p className="mt-1 text-xs text-red-500">{errors.expected_end_date.message}</p>}
             </div>
           </div>
@@ -201,12 +201,12 @@ export default function BatchForm({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                <input type="time" {...register('start_time')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input type="time" {...register('start_time')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 {errors.start_time && <p className="mt-1 text-xs text-red-500">{errors.start_time.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">End Time</label>
-                <input type="time" {...register('end_time')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input type="time" {...register('end_time')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 {errors.end_time && <p className="mt-1 text-xs text-red-500">{errors.end_time.message}</p>}
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function BatchForm({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Max Students</label>
-                <input type="number" {...register('max_students')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input type="number" {...register('max_students')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>

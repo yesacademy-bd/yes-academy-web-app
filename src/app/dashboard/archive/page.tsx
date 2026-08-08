@@ -44,7 +44,7 @@ export default async function PermanentDatabasePage() {
             <input 
               type="text" 
               placeholder="Search historical batches..." 
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-white text-gray-900 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div className="flex gap-2">
