@@ -1,7 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { login } from './actions'
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: { error: string }
+}) {
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.getUser()
@@ -16,8 +21,14 @@ export default async function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-900">YES Academy</h1>
           <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
         </div>
-        <form className="mt-8 space-y-6" action="/auth/login" method="POST">
-          {/* We will implement the actual auth action next */}
+        
+        {searchParams?.error && (
+          <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+            {searchParams.error}
+          </div>
+        )}
+
+        <form className="mt-8 space-y-6" action={login}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email address
