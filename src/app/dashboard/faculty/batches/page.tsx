@@ -11,8 +11,9 @@ export default async function FacultyBatchesPage() {
     redirect('/login')
   }
 
-  // Fetch batches where the user is the teacher or monitor teacher
-  const { data: batches } = await supabase
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+
+  let query = supabase
     .from('batches')
     .select(`
       id,
@@ -24,9 +25,14 @@ export default async function FacultyBatchesPage() {
       courses ( name, family ),
       rooms ( name )
     `)
-    .or(`teacher_id.eq.${user.id},monitor_teacher_id.eq.${user.id}`)
     .in('status', ['Active', 'Upcoming'])
     .order('start_date', { ascending: false })
+
+  if (profile?.role === 'Faculty') {
+    query = query.or(`teacher_id.eq.${user.id},monitor_teacher_id.eq.${user.id}`)
+  }
+
+  const { data: batches } = await query
 
   return (
     <div className="space-y-6">

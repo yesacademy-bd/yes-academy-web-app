@@ -100,6 +100,9 @@ export default async function BatchManagerPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right">
+                    <Link href={`/dashboard/faculty/batches/${batch.id}`} className="text-gray-600 hover:text-gray-900 text-sm font-medium mr-4">
+                      Attendance
+                    </Link>
                     <Link href={`/dashboard/admin/batches/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                       Manage
                     </Link>
