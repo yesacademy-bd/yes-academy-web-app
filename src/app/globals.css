@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: linear-gradient(135deg, #7f1d1d, #4c1d95, #1e3a8a);
+  --foreground: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+@layer utilities {
+  /* Glassmorphism for containers */
+  .bg-white, .bg-gray-50, .bg-gray-100 {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Make sidebar and main backgrounds transparent so the global gradient shows */
+  aside, main, .bg-gray-100 {
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Text Colors */
+  .text-gray-900, .text-gray-800, .text-gray-700, .text-gray-600 {
+    color: #ffffff !important;
+  }
+  .text-gray-500, .text-gray-400 {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Borders */
+  .border-gray-200, .border-gray-300 {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Gradient Text Theme for headings and primary colored text */
+  h1, h2, h3, .text-blue-600 {
+    background: linear-gradient(to right, #fca5a5, #93c5fd) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+  }
+
+  /* Buttons */
+  .bg-blue-600 {
+    background: linear-gradient(to right, #ef4444, #3b82f6) !important;
+    border: none !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+  .hover\:bg-blue-700:hover {
+    background: linear-gradient(to right, #dc2626, #2563eb) !important;
+  }
+  
+  /* Tables specific fixes for glassmorphism */
+  table th {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: #ffffff !important;
+  }
+  table td {
+    background-color: transparent !important;
+  }
+  tr.hover\:bg-gray-50:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
 }
