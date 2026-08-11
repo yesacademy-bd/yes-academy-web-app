@@ -106,8 +106,6 @@ export async function createClassSession(batchId: string, classNumber: number, s
   }
 }
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
 export async function unlockClassSession(batchId: string, classNum: number, durationMinutes: number = 60) {
   const supabase = await createClient()
 
@@ -131,13 +129,7 @@ export async function unlockClassSession(batchId: string, classNum: number, dura
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
 
-    // Bypass RLS for admin action
-    const adminSupabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-
-    const { error } = await adminSupabase
+    const { error } = await supabase
       .from('class_sessions')
       .upsert({
         batch_id: batchId,
@@ -184,13 +176,7 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
       override_unlock_until: unlockUntil.toISOString()
     }))
 
-    // Bypass RLS for admin action
-    const adminSupabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-
-    const { error } = await adminSupabase
+    const { error } = await supabase
       .from('class_sessions')
       .upsert(sessionsToUpsert, { onConflict: 'batch_id,class_number' })
 
