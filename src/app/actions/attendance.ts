@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { computeClassSchedule } from '@/utils/schedule'
 
 export async function markAttendance(
   batchId: string, 
@@ -14,6 +15,30 @@ export async function markAttendance(
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Unauthorized')
+
+    // Fetch session and batch to validate time window
+    const { data: session } = await supabase.from('class_sessions').select('*').eq('id', classSessionId).single()
+    if (!session) throw new Error('Session not found')
+
+    const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
+    if (!batch) throw new Error('Batch not found')
+
+    const totalClasses = batch.total_classes + batch.additional_classes
+    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+    
+    const classWindow = schedule.find(s => s.class_number === session.class_number)
+    if (!classWindow) throw new Error('Class window could not be computed')
+
+    const now = new Date()
+    const isOverrideActive = session.override_unlock_until && new Date(session.override_unlock_until) > now
+
+    // Check if within window (with 15 minute grace period before/after)
+    // Actually strictly sticking to exact window based on requirements
+    const isWithinWindow = now >= classWindow.start_datetime && now <= classWindow.end_datetime
+
+    if (!isWithinWindow && !isOverrideActive) {
+      throw new Error(`Cannot modify attendance. This class is locked. Scheduled window was ${classWindow.start_datetime.toLocaleString()} to ${classWindow.end_datetime.toLocaleString()}`)
+    }
 
     // Upsert the attendance record
     const { error } = await supabase
@@ -78,5 +103,35 @@ export async function createClassSession(batchId: string, classNumber: number, s
     return { success: true, data }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to create session' }
+  }
+}
+
+export async function unlockClassSession(batchId: string, classSessionId: string, durationMinutes: number = 60) {
+  const supabase = await createClient()
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // Verify HR/Admin
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!['HR', 'Admin'].includes(profile?.role || '')) {
+      throw new Error('Only HR or Admin can unlock sessions')
+    }
+
+    const unlockUntil = new Date()
+    unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
+
+    const { error } = await supabase
+      .from('class_sessions')
+      .update({ override_unlock_until: unlockUntil.toISOString() })
+      .eq('id', classSessionId)
+
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/dashboard/faculty/batches/${batchId}`)
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to unlock session' }
   }
 }

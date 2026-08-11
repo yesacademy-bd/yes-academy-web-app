@@ -1,31 +1,33 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { markAttendance, createClassSession } from '@/app/actions/attendance'
-import { Check, X, Minus, Plus, Loader2 } from 'lucide-react'
+import { markAttendance, createClassSession, unlockClassSession } from '@/app/actions/attendance'
+import { computeClassSchedule } from '@/utils/schedule'
+import { Check, X, Minus, Plus, Loader2, Lock, Unlock } from 'lucide-react'
 
 export default function AttendanceGrid({
-  batchId,
-  totalClasses,
+  batch,
   students,
   initialSessions,
-  initialRecords
+  initialRecords,
+  userRole
 }: {
-  batchId: string
-  totalClasses: number
+  batch: any
   students: any[]
   initialSessions: any[]
   initialRecords: any[]
+  userRole: string
 }) {
   const [sessions, setSessions] = useState(initialSessions)
   const [records, setRecords] = useState(initialRecords)
   const [isPending, startTransition] = useTransition()
-  const [activeClassNum, setActiveClassNum] = useState<number | null>(
-    sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : null
-  )
-
-  // Auto-generate array of class numbers [1, 2, ..., totalClasses]
+  
+  const totalClasses = batch.total_classes + batch.additional_classes
   const classNumbers = Array.from({ length: totalClasses }, (_, i) => i + 1)
+  
+  const [activeClassNum, setActiveClassNum] = useState<number | null>(
+    sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 1
+  )
 
   const handleMarkAttendance = async (studentId: string, classNum: number, status: 'Present' | 'Absent' | 'Leave') => {
     // 1. Ensure class session exists
@@ -33,10 +35,10 @@ export default function AttendanceGrid({
     if (!session) {
       // Optimistically create session
       const tempId = `temp-${Date.now()}`
-      session = { id: tempId, batch_id: batchId, class_number: classNum, session_date: new Date().toISOString().split('T')[0] }
+      session = { id: tempId, batch_id: batch.id, class_number: classNum, session_date: new Date().toISOString().split('T')[0] }
       setSessions([...sessions, session])
       
-      const res = await createClassSession(batchId, classNum, session.session_date)
+      const res = await createClassSession(batch.id, classNum, session.session_date)
       if (res.success && res.data) {
         session = res.data
         setSessions(prev => prev.map(s => s.class_number === classNum ? session! : s))
@@ -65,7 +67,12 @@ export default function AttendanceGrid({
 
     // 3. Server action
     startTransition(async () => {
-      await markAttendance(batchId, session!.id, studentId, status)
+      const result = await markAttendance(batch.id, session!.id, studentId, status)
+      if (!result.success) {
+        alert(result.message)
+        // Rollback optimistic update
+        setRecords(records) 
+      }
     })
   }
 
@@ -80,6 +87,42 @@ export default function AttendanceGrid({
       percentage: total > 0 ? Math.round((present / total) * 100) : 0
     }
   }
+
+  const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+
+  const getClassState = (classNum: number) => {
+    const classWindow = schedule.find(s => s.class_number === classNum)
+    if (!classWindow) return { locked: true, reason: 'No schedule' }
+    
+    const session = sessions.find(s => s.class_number === classNum)
+    const now = new Date()
+    const isOverrideActive = session?.override_unlock_until && new Date(session.override_unlock_until) > now
+    
+    if (now < classWindow.start_datetime) return { locked: true, reason: 'Upcoming' }
+    if (now >= classWindow.start_datetime && now <= classWindow.end_datetime) return { locked: false, reason: 'In Progress' }
+    if (isOverrideActive) return { locked: false, reason: 'Unlocked by HR' }
+    return { locked: true, reason: 'Completed & Locked' }
+  }
+
+  const handleUnlock = async () => {
+    if (!activeClassNum) return
+    const session = sessions.find(s => s.class_number === activeClassNum)
+    if (!session) {
+      alert('Cannot unlock a session that has not started yet!')
+      return
+    }
+    startTransition(async () => {
+      const res = await unlockClassSession(batch.id, session.id, 60)
+      if (res.success) {
+        // Optimistic refresh
+        setSessions(sessions.map(s => s.id === session.id ? { ...s, override_unlock_until: new Date(Date.now() + 60*60*1000).toISOString() } : s))
+      } else {
+        alert(res.message)
+      }
+    })
+  }
+
+  const activeClassState = activeClassNum ? getClassState(activeClassNum) : { locked: true, reason: 'Unknown' }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -104,7 +147,28 @@ export default function AttendanceGrid({
         </div>
       </div>
 
-      {/* Roster & Attendance List for the active class */}
+        {activeClassNum && (
+          <div className="p-4 bg-white border-b border-gray-200 flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-gray-900">Class {activeClassNum} Attendance</h3>
+              <p className="text-sm text-gray-500 flex items-center gap-2">
+                {activeClassState.locked ? <Lock className="w-4 h-4 text-red-500" /> : <Unlock className="w-4 h-4 text-green-500" />}
+                {activeClassState.reason} 
+                {schedule.find(s => s.class_number === activeClassNum)?.date}
+              </p>
+            </div>
+            {activeClassState.locked && ['HR', 'Admin'].includes(userRole) && (
+              <button 
+                onClick={handleUnlock}
+                disabled={isPending}
+                className="px-3 py-1.5 bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
+              >
+                <Unlock className="w-4 h-4" /> Unlock (1hr)
+              </button>
+            )}
+          </div>
+        )}
+
       <div className="divide-y divide-gray-100">
         {activeClassNum === null ? (
           <div className="p-12 text-center text-gray-500">
@@ -130,9 +194,10 @@ export default function AttendanceGrid({
                   </p>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 ${activeClassState.locked ? 'opacity-50 pointer-events-none' : ''}`}>
                   <button 
                     onClick={() => handleMarkAttendance(student.id, activeClassNum, 'Present')}
+                    disabled={activeClassState.locked}
                     className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                       ${currentStatus === 'Present' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                   >
@@ -140,6 +205,7 @@ export default function AttendanceGrid({
                   </button>
                   <button 
                     onClick={() => handleMarkAttendance(student.id, activeClassNum, 'Absent')}
+                    disabled={activeClassState.locked}
                     className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                       ${currentStatus === 'Absent' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
                   >
@@ -147,6 +213,7 @@ export default function AttendanceGrid({
                   </button>
                   <button 
                     onClick={() => handleMarkAttendance(student.id, activeClassNum, 'Leave')}
+                    disabled={activeClassState.locked}
                     className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                       ${currentStatus === 'Leave' ? 'bg-yellow-500 text-white' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}
                   >

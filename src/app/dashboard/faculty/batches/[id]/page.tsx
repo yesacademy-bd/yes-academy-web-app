@@ -123,11 +123,11 @@ export default async function AttendanceRegisterPage({ params }: { params: Promi
       <div className="mt-8">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Attendance Register</h2>
         <AttendanceGrid 
-          batchId={batch.id}
-          totalClasses={totalClasses}
+          batch={batch}
           students={students}
           initialSessions={sessions}
           initialRecords={attendanceRecords}
+          userRole={profile?.role || 'Faculty'}
         />
       </div>
     </div>
