@@ -106,7 +106,7 @@ export async function createClassSession(batchId: string, classNumber: number, s
   }
 }
 
-export async function unlockClassSession(batchId: string, classSessionId: string, durationMinutes: number = 60) {
+export async function unlockClassSession(batchId: string, classNum: number, durationMinutes: number = 60) {
   const supabase = await createClient()
 
   try {
@@ -119,13 +119,24 @@ export async function unlockClassSession(batchId: string, classSessionId: string
       throw new Error('Only HR or Admin can unlock sessions')
     }
 
+    const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
+    if (!batch) throw new Error('Batch not found')
+
+    const totalClasses = batch.total_classes + batch.additional_classes
+    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+    const sessionDate = schedule.find(s => s.class_number === classNum)?.date || new Date().toISOString().split('T')[0]
+
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
 
     const { error } = await supabase
       .from('class_sessions')
-      .update({ override_unlock_until: unlockUntil.toISOString() })
-      .eq('id', classSessionId)
+      .upsert({
+        batch_id: batchId,
+        class_number: classNum,
+        session_date: sessionDate,
+        override_unlock_until: unlockUntil.toISOString()
+      }, { onConflict: 'batch_id, class_number' })
 
     if (error) throw new Error(error.message)
 
@@ -149,13 +160,25 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
       throw new Error('Only HR or Admin can unlock sessions')
     }
 
+    const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
+    if (!batch) throw new Error('Batch not found')
+
+    const totalClasses = batch.total_classes + batch.additional_classes
+    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
 
+    const sessionsToUpsert = schedule.map(s => ({
+      batch_id: batchId,
+      class_number: s.class_number,
+      session_date: s.date,
+      override_unlock_until: unlockUntil.toISOString()
+    }))
+
     const { error } = await supabase
       .from('class_sessions')
-      .update({ override_unlock_until: unlockUntil.toISOString() })
-      .eq('batch_id', batchId)
+      .upsert(sessionsToUpsert, { onConflict: 'batch_id, class_number' })
 
     if (error) throw new Error(error.message)
 

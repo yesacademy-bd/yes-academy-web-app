@@ -25,17 +25,8 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
       if (selectedClassNum === 'ALL') {
         res = await unlockEntireBatch(selectedBatchId, durationNum)
       } else {
-        // Need to find the specific class session ID or create it if missing?
-        // Actually, if the class session doesn't exist, it hasn't been taken yet, so unlocking is moot if it's in the future.
-        // But if they missed it, they might need to unlock a missed one. Wait, if it was never created, they can't mark attendance.
-        // Actually, AttendanceGrid dynamically creates the session on the fly when taking attendance.
-        // So we just need to unlock the existing session. If it doesn't exist, we can't unlock it here unless we create it.
-        const session = selectedBatch?.class_sessions.find((s: any) => s.class_number === parseInt(selectedClassNum))
-        if (!session) {
-          alert('Cannot unlock a specific class that has no attendance records yet. Try unlocking the entire batch if needed, or wait for the teacher to initiate the class.')
-          return
-        }
-        res = await unlockClassSession(selectedBatchId, session.id, durationNum)
+        const classNum = parseInt(selectedClassNum)
+        res = await unlockClassSession(selectedBatchId, classNum, durationNum)
       }
 
       if (res?.success) {

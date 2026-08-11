@@ -8,10 +8,19 @@ export default function ArchiveList({ batches }: { batches: any[] }) {
   const [activeTab, setActiveTab] = useState<string>('PTE')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const tabs = ['PTE', 'IELTS', 'Grammar', 'Spoken_English', 'Corporate']
+  const tabs = ['PTE', 'IELTS', 'Grammar']
 
   const filteredBatches = batches.filter(batch => {
-    const matchesTab = batch.courses?.family === activeTab
+    let batchTab = ''
+    if (batch.courses?.name === 'PTE Booster' || batch.courses?.family === 'Grammar') {
+      batchTab = 'Grammar'
+    } else if (batch.courses?.family === 'PTE') {
+      batchTab = 'PTE'
+    } else if (batch.courses?.family === 'IELTS') {
+      batchTab = 'IELTS'
+    }
+
+    const matchesTab = batchTab === activeTab
     const matchesSearch = batch.batch_name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesTab && matchesSearch
   })
@@ -45,7 +54,7 @@ export default function ArchiveList({ batches }: { batches: any[] }) {
               placeholder={`Search ${activeTab.replace('_', ' ')} archives...`} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-9 pr-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
