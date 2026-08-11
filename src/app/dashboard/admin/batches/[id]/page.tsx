@@ -12,9 +12,9 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Check Admin role
+  // Check Admin or HR role
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'Admin') return <div className="text-red-500">Admin only</div>
+  if (!['Admin', 'HR'].includes(profile?.role || '')) return <div className="text-red-500 font-medium">Access Denied. Admin or HR only</div>
 
   // Fetch reference data and existing batch
   const [coursesRes, teachersRes, roomsRes, settingsRes, batchRes, enrollmentsRes] = await Promise.all([
@@ -54,6 +54,7 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
         teachers={teachersRes.data || []}
         rooms={roomsRes.data || []}
         settings={settingsRes.data}
+        userRole={profile?.role}
       />
 
       <EnrollmentManager batchId={id} students={students} />

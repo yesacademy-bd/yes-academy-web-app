@@ -3,10 +3,18 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Users, Calendar, TrendingUp } from 'lucide-react'
 import AttendanceGrid from '@/components/attendance/AttendanceGrid'
+import StudentProgressGrid from '@/components/attendance/StudentProgressGrid'
 
-export default async function AttendanceRegisterPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AttendanceRegisterPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
+}) {
   const supabase = await createClient()
   const { id } = await params
+  const { tab = 'attendance' } = await searchParams
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -36,12 +44,28 @@ export default async function AttendanceRegisterPage({ params }: { params: Promi
   }
 
   // Fetch students enrolled in this batch
-  const { data: enrollments } = await supabase
+  const { data: enrollmentsData } = await supabase
     .from('enrollments')
-    .select('students(id, name, phone, guardian_phone)')
+    .select('id, student_id, students(id, name, phone, guardian_phone)')
     .eq('batch_id', id)
 
-  const students = enrollments?.map(e => e.students).filter(Boolean) || []
+  const enrollments = (enrollmentsData || []).map((e: any) => ({
+    id: e.id,
+    student_id: e.student_id,
+    students: Array.isArray(e.students) ? e.students[0] : e.students
+  }))
+  const students = enrollments.map(e => e.students).filter(Boolean) || []
+
+  // Fetch exam scores
+  const enrollmentIds = enrollments.map(e => e.id)
+  let examScores: any[] = []
+  if (enrollmentIds.length > 0) {
+    const { data: scores } = await supabase
+      .from('exam_scores')
+      .select('*')
+      .in('enrollment_id', enrollmentIds)
+    examScores = scores || []
+  }
 
   // Fetch existing class sessions
   const { data: classSessions } = await supabase
@@ -63,14 +87,24 @@ export default async function AttendanceRegisterPage({ params }: { params: Promi
     attendanceRecords = records || []
   }
 
-  // Calculate Batch Summary Stats (Server-side snapshot)
+  // Calculate Batch Summary Stats & Attendance Map
   const totalStudents = students.length
   const totalClasses = batch.total_classes + batch.additional_classes
   let batchAttendancePct = 0
-  
+  const attendanceMap: Record<string, { present: number, total: number }> = {}
+
   if (attendanceRecords.length > 0) {
     const totalPresent = attendanceRecords.filter(r => r.status === 'Present').length
     batchAttendancePct = Math.round((totalPresent / attendanceRecords.length) * 100)
+
+    // Build map for individual student attendance
+    attendanceRecords.forEach(r => {
+      if (!attendanceMap[r.student_id]) {
+        attendanceMap[r.student_id] = { present: 0, total: 0 }
+      }
+      attendanceMap[r.student_id].total += 1
+      if (r.status === 'Present') attendanceMap[r.student_id].present += 1
+    })
   }
 
   return (
@@ -119,16 +153,59 @@ export default async function AttendanceRegisterPage({ params }: { params: Promi
         </div>
       </div>
 
-      {/* Attendance Grid */}
-      <div className="mt-8">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Attendance Register</h2>
-        <AttendanceGrid 
-          batch={batch}
-          students={students}
-          initialSessions={sessions}
-          initialRecords={attendanceRecords}
-          userRole={profile?.role || 'Faculty'}
-        />
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <Link
+            href={`/dashboard/faculty/batches/${id}?tab=attendance`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              tab === 'attendance'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Attendance Register
+          </Link>
+          <Link
+            href={`/dashboard/faculty/batches/${id}?tab=progress`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              tab === 'progress'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Student Progress & Details
+          </Link>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="mt-6">
+        {tab === 'attendance' ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Attendance Grid</h2>
+            <AttendanceGrid 
+              batch={batch}
+              students={students}
+              initialSessions={sessions}
+              initialRecords={attendanceRecords}
+              userRole={profile?.role || 'Faculty'}
+            />
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Student Progress & Scores</h2>
+              <p className="text-sm text-gray-500">Scores auto-save when changed.</p>
+            </div>
+            <StudentProgressGrid 
+              batchId={id}
+              enrollments={enrollments}
+              initialScores={examScores}
+              attendanceMap={attendanceMap}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

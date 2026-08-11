@@ -4,8 +4,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
-import { createBatch, updateBatch } from '@/app/actions/batches'
+import { createBatch, updateBatch, deleteBatch } from '@/app/actions/batches'
 import { useRouter } from 'next/navigation'
+import { Trash2 } from 'lucide-react'
 
 const batchSchema = z.object({
   batch_name: z.string().min(1, 'Batch name is required'),
@@ -31,17 +32,20 @@ export default function BatchForm({
   courses, 
   teachers, 
   rooms, 
-  settings 
+  settings,
+  userRole
 }: { 
   initialData?: any,
   courses: any[],
   teachers: any[],
   rooms: any[],
-  settings: any
+  settings: any,
+  userRole?: string
 }) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const defaultValues: Partial<BatchFormValues> = initialData || {
     status: 'Upcoming',
@@ -103,6 +107,19 @@ export default function BatchForm({
     } else {
       setError(result.message)
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!initialData?.id || !confirm('Are you absolutely sure you want to permanently delete this batch and all its attendance/enrollment records?')) return
+    setIsDeleting(true)
+    setError(null)
+    const res = await deleteBatch(initialData.id)
+    if (res.success) {
+      router.push('/dashboard/admin/batches')
+    } else {
+      setError(res.message)
+      setIsDeleting(false)
     }
   }
 
@@ -245,14 +262,30 @@ export default function BatchForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-        <button type="button" onClick={() => router.back()} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Cancel
-        </button>
-        <button type="submit" disabled={isSubmitting} className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
-          {isSubmitting ? 'Saving...' : initialData ? 'Update Batch' : 'Create Batch'}
-        </button>
+      <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+        <div>
+          {initialData && userRole === 'HR' && (
+            <button 
+              type="button" 
+              onClick={handleDelete}
+              disabled={isDeleting || isSubmitting}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              {isDeleting ? 'Deleting...' : 'Delete Batch'}
+            </button>
+          )}
+        </div>
+        <div className="flex gap-4">
+          <button type="button" onClick={() => router.back()} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Cancel
+          </button>
+          <button type="submit" disabled={isSubmitting || isDeleting} className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+            {isSubmitting ? 'Saving...' : initialData ? 'Update Batch' : 'Create Batch'}
+          </button>
+        </div>
       </div>
+
     </form>
   )
 }

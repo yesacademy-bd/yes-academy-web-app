@@ -76,3 +76,29 @@ export async function updateBatch(id: string, prevState: any, formData: FormData
     return { success: false, message: error.message || 'Failed to update batch' }
   }
 }
+
+export async function deleteBatch(id: string) {
+  const supabase = await createClient()
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'HR') {
+      throw new Error('Only HR can delete batches')
+    }
+
+    const { error } = await supabase
+      .from('batches')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw new Error(error.message)
+
+    revalidatePath('/dashboard/admin/batches')
+    return { success: true, message: 'Batch deleted successfully' }
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to delete batch' }
+  }
+}

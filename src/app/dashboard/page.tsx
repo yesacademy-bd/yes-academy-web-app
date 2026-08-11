@@ -15,6 +15,7 @@ export default async function DashboardPage() {
   if (profile?.role === 'Faculty') redirect('/dashboard/faculty/batches')
 
   const isFaculty = false // Because Faculty is redirected, this page is now HR-only
+  const role = profile?.role || 'HR'
 
   // Fetch batches based on role
   let query = supabase.from('batches').select(`
@@ -192,33 +193,35 @@ export default async function DashboardPage() {
 
         {/* Alerts Sidebar */}
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <h2 className="text-lg font-semibold text-red-900">Missed Attendance</h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {missedAttendanceBatches.map(b => (
-                <div key={b.id} className="p-4 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{b.batch_name}</h3>
-                    <p className="text-xs text-gray-500">Ended at {b.end_time.substring(0,5)}</p>
+          {role === 'HR' && (
+            <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <h2 className="text-lg font-semibold text-red-900">Missed Attendance</h2>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {missedAttendanceBatches.map(b => (
+                  <div key={b.id} className="p-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{b.batch_name}</h3>
+                      <p className="text-xs text-gray-500">Ended at {b.end_time.substring(0,5)}</p>
+                    </div>
+                    <Link 
+                      href={`/dashboard/faculty/batches/${b.id}`}
+                      className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded"
+                    >
+                      Mark Now
+                    </Link>
                   </div>
-                  <Link 
-                    href={`/dashboard/${isFaculty ? 'faculty' : 'admin'}/batches/${b.id}`}
-                    className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded"
-                  >
-                    Mark Now
-                  </Link>
-                </div>
-              ))}
-              {missedAttendanceBatches.length === 0 && (
-                <div className="p-6 text-center text-gray-500 text-sm">
-                  All caught up! No missed attendance for today.
-                </div>
-              )}
+                ))}
+                {missedAttendanceBatches.length === 0 && (
+                  <div className="p-6 text-center text-gray-500 text-sm">
+                    All caught up! No missed attendance for today.
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-sm p-6 text-white relative overflow-hidden">
              <div className="relative z-10">
