@@ -91,7 +91,16 @@ export default function AttendanceGrid({
   const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
 
   const getClassState = (classNum: number) => {
-    if (!batch.start_date) return { locked: false, reason: 'Manual Entry (No Start Date)' }
+    if (!batch.start_date) {
+      const createdTime = new Date(batch.created_at).getTime()
+      const nowTime = Date.now()
+      const hoursSinceCreation = (nowTime - createdTime) / (1000 * 60 * 60)
+      if (hoursSinceCreation <= 48) {
+        return { locked: false, reason: `Manual Entry (${Math.floor(48 - hoursSinceCreation)}h left)` }
+      } else {
+        return { locked: true, reason: 'Manual Entry Period Ended' }
+      }
+    }
 
     const classWindow = schedule.find(s => s.class_number === classNum)
     if (!classWindow) return { locked: true, reason: 'No schedule' }

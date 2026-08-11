@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBatch, updateBatch, deleteBatch } from '@/app/actions/batches'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
@@ -61,8 +61,31 @@ export default function BatchForm({
   })
 
   const selectedCourseId = watch('course_id')
+  const startDate = watch('start_date')
   const selectedCourse = courses.find(c => c.id === selectedCourseId)
   const isStrictCount = selectedCourse?.family === 'PTE' || selectedCourse?.family === 'IELTS'
+
+  useEffect(() => {
+    if (startDate && selectedCourseId) {
+      const course = courses.find(c => c.id === selectedCourseId)
+      if (course) {
+        const start = new Date(startDate)
+        let monthsToAdd = 0
+        
+        if (course.family === 'PTE') monthsToAdd = 2
+        else if (course.family === 'IELTS') {
+           if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
+           else monthsToAdd = 3
+        }
+        
+        if (monthsToAdd > 0) {
+          start.setMonth(start.getMonth() + monthsToAdd)
+          const endStr = start.toISOString().split('T')[0]
+          setValue('expected_end_date', endStr, { shouldValidate: true })
+        }
+      }
+    }
+  }, [startDate, selectedCourseId, courses, setValue])
 
   const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const courseId = e.target.value
