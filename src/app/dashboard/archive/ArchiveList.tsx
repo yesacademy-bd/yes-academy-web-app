@@ -81,8 +81,8 @@ export default function ArchiveList({ batches }: { batches: any[] }) {
                     {new Date(batch.start_date).toLocaleDateString()} - {new Date(batch.expected_end_date).toLocaleDateString()}
                   </td>
                   <td className="p-4 text-right">
-                    <Link href={`/dashboard/faculty/batches/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                      View Attendance Record
+                    <Link href={`/dashboard/archive/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      View Full Record
                     </Link>
                   </td>
                 </tr>

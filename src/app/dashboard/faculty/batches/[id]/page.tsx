@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Users, Calendar, TrendingUp } from 'lucide-react'
 import AttendanceGrid from '@/components/attendance/AttendanceGrid'
 import StudentProgressGrid from '@/components/attendance/StudentProgressGrid'
+import FineDetailsGrid from '@/components/attendance/FineDetailsGrid'
 
 export default async function AttendanceRegisterPage({ 
   params,
@@ -176,6 +177,16 @@ export default async function AttendanceRegisterPage({
           >
             Student Progress & Details
           </Link>
+          <Link
+            href={`/dashboard/faculty/batches/${id}?tab=fines`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              tab === 'fines'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Fine Details
+          </Link>
         </nav>
       </div>
 
@@ -192,7 +203,7 @@ export default async function AttendanceRegisterPage({
               userRole={profile?.role || 'Faculty'}
             />
           </div>
-        ) : (
+        ) : tab === 'progress' ? (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-900">Student Progress & Scores</h2>
@@ -205,7 +216,21 @@ export default async function AttendanceRegisterPage({
               attendanceMap={attendanceMap}
             />
           </div>
-        )}
+        ) : tab === 'fines' ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Fine Details</h2>
+              <p className="text-sm text-gray-500">Auto-calculated fine is 100 BDT per absent class. Adjust manually if needed.</p>
+            </div>
+            <FineDetailsGrid 
+              batchId={id}
+              enrollments={enrollments}
+              initialScores={examScores}
+              attendanceMap={attendanceMap}
+              totalSessions={sessions.length}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )
