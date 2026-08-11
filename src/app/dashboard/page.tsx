@@ -10,7 +10,11 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, display_name').eq('id', user.id).single()
-  const isFaculty = profile?.role === 'Faculty'
+  
+  if (profile?.role === 'Admin') redirect('/dashboard/admin/batches')
+  if (profile?.role === 'Faculty') redirect('/dashboard/faculty/batches')
+
+  const isFaculty = false // Because Faculty is redirected, this page is now HR-only
 
   // Fetch batches based on role
   let query = supabase.from('batches').select(`

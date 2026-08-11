@@ -26,12 +26,11 @@ export default async function DashboardLayout({
   const role = profile?.role || 'Faculty'
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR', 'Admin', 'Faculty'] },
-    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty'] },
-    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin'] },
-    { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR', 'Admin', 'Faculty'] },
-    { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR'] },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['Admin'] },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
+    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
+    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
+    { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
   ]
 
   const filteredNav = navItems.filter(item => item.roles.includes(role))
