@@ -91,6 +91,8 @@ export default function AttendanceGrid({
   const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
 
   const getClassState = (classNum: number) => {
+    if (!batch.start_date) return { locked: false, reason: 'Manual Entry (No Start Date)' }
+
     const classWindow = schedule.find(s => s.class_number === classNum)
     if (!classWindow) return { locked: true, reason: 'No schedule' }
     

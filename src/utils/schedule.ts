@@ -11,13 +11,13 @@ const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'F
  * Computes the exact dates and times for each class session based on the batch schedule.
  */
 export function computeClassSchedule(
-  startDate: string,
+  startDate: string | null | undefined,
   scheduleDays: string[], // e.g. ["Sunday", "Tuesday"]
   startTime: string,      // e.g. "14:00"
   endTime: string,        // e.g. "14:30"
   totalClasses: number
 ): ClassSessionSchedule[] {
-  if (!scheduleDays || scheduleDays.length === 0 || totalClasses <= 0) return [];
+  if (!startDate || !scheduleDays || scheduleDays.length === 0 || totalClasses <= 0) return [];
 
   const sessions: ClassSessionSchedule[] = [];
   
