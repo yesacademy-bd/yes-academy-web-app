@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import BatchForm from '@/components/batches/BatchForm'
+import EnrollmentManager from '@/components/batches/EnrollmentManager'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -16,13 +17,16 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
   if (profile?.role !== 'Admin') return <div className="text-red-500">Admin only</div>
 
   // Fetch reference data and existing batch
-  const [coursesRes, teachersRes, roomsRes, settingsRes, batchRes] = await Promise.all([
+  const [coursesRes, teachersRes, roomsRes, settingsRes, batchRes, enrollmentsRes] = await Promise.all([
     supabase.from('courses').select('*').order('family'),
     supabase.from('profiles').select('id, display_name').in('role', ['Faculty', 'Admin']).order('display_name'),
     supabase.from('rooms').select('*').order('name'),
     supabase.from('settings').select('*').eq('id', 1).single(),
-    supabase.from('batches').select('*').eq('id', id).single()
+    supabase.from('batches').select('*').eq('id', id).single(),
+    supabase.from('enrollments').select('students(*)').eq('batch_id', id)
   ])
+
+  const students = enrollmentsRes?.data?.map((e: any) => e.students).filter(Boolean) || []
 
   if (batchRes.error || !batchRes.data) {
     return (
@@ -51,6 +55,8 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
         rooms={roomsRes.data || []}
         settings={settingsRes.data}
       />
+
+      <EnrollmentManager batchId={id} students={students} />
     </div>
   )
 }

@@ -47,7 +47,7 @@ export default function BatchForm({
     status: 'Upcoming',
     max_students: settings?.default_max_students || 12,
     total_classes: settings?.default_total_classes || 24,
-    additional_classes: settings?.default_additional_classes || 8,
+    additional_classes: initialData?.additional_classes || 0,
     schedule_days: [],
   }
 
@@ -56,16 +56,25 @@ export default function BatchForm({
     defaultValues
   })
 
-  // When course changes, update defaults if it's a new batch
   const selectedCourseId = watch('course_id')
+  const selectedCourse = courses.find(c => c.id === selectedCourseId)
+  const isStrictCount = selectedCourse?.family === 'PTE' || selectedCourse?.family === 'IELTS'
+
   const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const courseId = e.target.value
     setValue('course_id', courseId)
-    if (!initialData) {
-      const course = courses.find(c => c.id === courseId)
-      if (course) {
+    const course = courses.find(c => c.id === courseId)
+    if (course) {
+      if (course.family === 'PTE') {
+        setValue('total_classes', 24)
+      } else if (course.family === 'IELTS') {
+        setValue('total_classes', 36)
+      } else if (!initialData) {
         setValue('total_classes', course.default_total_classes)
-        setValue('additional_classes', course.default_additional_classes)
+      }
+      
+      if (!initialData) {
+        setValue('additional_classes', 0)
       }
     }
   }
@@ -219,11 +228,16 @@ export default function BatchForm({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Total Classes</label>
-                  <input type="number" {...register('total_classes')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <input 
+                    type="number" 
+                    {...register('total_classes')} 
+                    readOnly={isStrictCount}
+                    className={`mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${isStrictCount ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900'}`} 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Additional</label>
-                  <input type="number" {...register('additional_classes')} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <input type="number" {...register('additional_classes')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white text-gray-900 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
               </div>
             </div>
