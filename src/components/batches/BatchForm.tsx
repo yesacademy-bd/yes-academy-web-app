@@ -95,7 +95,11 @@ export default function BatchForm({
       if (course.family === 'PTE') {
         setValue('total_classes', 24)
       } else if (course.family === 'IELTS') {
-        setValue('total_classes', 36)
+        if (course.name.toLowerCase().includes('crash')) {
+          setValue('total_classes', 24)
+        } else {
+          setValue('total_classes', 36)
+        }
       } else if (!initialData) {
         setValue('total_classes', course.default_total_classes)
       }
