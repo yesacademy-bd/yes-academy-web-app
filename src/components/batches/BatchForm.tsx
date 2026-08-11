@@ -14,8 +14,8 @@ const batchSchema = z.object({
   teacher_id: z.string().uuid('Teacher is required'),
   monitor_teacher_id: z.string().optional().nullable(),
   room_id: z.string().uuid('Room is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  expected_end_date: z.string().min(1, 'End date is required'),
+  start_date: z.string().optional().or(z.literal('')),
+  expected_end_date: z.string().optional().or(z.literal('')),
   max_students: z.coerce.number().min(1),
   total_classes: z.coerce.number().min(1),
   additional_classes: z.coerce.number().min(0),
@@ -92,7 +92,7 @@ export default function BatchForm({
     Object.entries(data).forEach(([key, value]) => {
       if (key === 'schedule_days') {
         ;(value as string[]).forEach(day => formData.append('schedule_days', day))
-      } else if (value !== null && value !== undefined) {
+      } else if (value !== null && value !== undefined && value !== '') {
         formData.append(key, value.toString())
       }
     })

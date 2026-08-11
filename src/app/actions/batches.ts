@@ -10,8 +10,8 @@ const batchSchema = z.object({
   teacher_id: z.string().uuid('Invalid teacher'),
   monitor_teacher_id: z.string().uuid('Invalid monitor teacher').optional().nullable(),
   room_id: z.string().uuid('Invalid room'),
-  start_date: z.string(),
-  expected_end_date: z.string(),
+  start_date: z.string().optional().nullable(),
+  expected_end_date: z.string().optional().nullable(),
   max_students: z.coerce.number().min(1),
   total_classes: z.coerce.number().min(1),
   additional_classes: z.coerce.number().min(0).default(0),
@@ -31,7 +31,9 @@ export async function createBatch(prevState: any, formData: FormData) {
     const validatedData = batchSchema.parse({
       ...rawData,
       schedule_days,
-      monitor_teacher_id: rawData.monitor_teacher_id || null
+      monitor_teacher_id: rawData.monitor_teacher_id || null,
+      start_date: rawData.start_date || null,
+      expected_end_date: rawData.expected_end_date || null
     })
 
     const { data, error } = await supabase
@@ -58,7 +60,9 @@ export async function updateBatch(id: string, prevState: any, formData: FormData
     const validatedData = batchSchema.parse({
       ...rawData,
       schedule_days,
-      monitor_teacher_id: rawData.monitor_teacher_id || null
+      monitor_teacher_id: rawData.monitor_teacher_id || null,
+      start_date: rawData.start_date || null,
+      expected_end_date: rawData.expected_end_date || null
     })
 
     const { data, error } = await supabase

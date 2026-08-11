@@ -17,7 +17,7 @@ export default async function NewBatchPage() {
   // Fetch reference data for dropdowns
   const [coursesRes, teachersRes, roomsRes, settingsRes] = await Promise.all([
     supabase.from('courses').select('*').order('family'),
-    supabase.from('profiles').select('id, display_name').in('role', ['Faculty', 'Admin']).order('display_name'),
+    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').order('display_name'),
     supabase.from('rooms').select('*').order('name'),
     supabase.from('settings').select('*').eq('id', 1).single()
   ])
