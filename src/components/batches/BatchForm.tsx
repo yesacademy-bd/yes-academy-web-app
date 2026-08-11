@@ -72,7 +72,10 @@ export default function BatchForm({
         const start = new Date(startDate)
         let monthsToAdd = 0
         
-        if (course.family === 'PTE') monthsToAdd = 2
+        if (course.family === 'PTE') {
+           if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
+           else monthsToAdd = 2
+        }
         else if (course.family === 'IELTS') {
            if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
            else monthsToAdd = 3
@@ -93,7 +96,11 @@ export default function BatchForm({
     const course = courses.find(c => c.id === courseId)
     if (course) {
       if (course.family === 'PTE') {
-        setValue('total_classes', 24)
+        if (course.name.toLowerCase().includes('crash')) {
+          setValue('total_classes', 12)
+        } else {
+          setValue('total_classes', 24)
+        }
       } else if (course.family === 'IELTS') {
         if (course.name.toLowerCase().includes('crash')) {
           setValue('total_classes', 24)
