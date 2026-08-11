@@ -53,11 +53,11 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
               value={selectedBatchId}
               onChange={(e) => { setSelectedBatchId(e.target.value); setSelectedClassNum('ALL'); }}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">-- Choose a Batch --</option>
+              <option value="" className="text-gray-900">-- Choose a Batch --</option>
               {batches.map(b => (
-                <option key={b.id} value={b.id}>{b.batch_name} ({b.status})</option>
+                <option key={b.id} value={b.id} className="text-gray-900">{b.batch_name} ({b.status})</option>
               ))}
             </select>
           </div>
@@ -68,11 +68,11 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
               value={selectedClassNum}
               onChange={(e) => setSelectedClassNum(e.target.value)}
               disabled={!selectedBatchId}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
             >
-              <option value="ALL">Entire Batch (All past/current classes)</option>
+              <option value="ALL" className="text-gray-900">Entire Batch (All past/current classes)</option>
               {classNumbers.map(num => (
-                <option key={num} value={num}>Class {num}</option>
+                <option key={num} value={num} className="text-gray-900">Class {num}</option>
               ))}
             </select>
           </div>
@@ -82,12 +82,12 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
             <select 
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="15">15 Minutes</option>
-              <option value="30">30 Minutes</option>
-              <option value="60">1 Hour</option>
-              <option value="120">2 Hours</option>
+              <option value="15" className="text-gray-900">15 Minutes</option>
+              <option value="30" className="text-gray-900">30 Minutes</option>
+              <option value="60" className="text-gray-900">1 Hour</option>
+              <option value="120" className="text-gray-900">2 Hours</option>
             </select>
           </div>
 

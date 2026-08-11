@@ -98,9 +98,9 @@ export default function AttendanceGrid({
     const now = new Date()
     const isOverrideActive = session?.override_unlock_until && new Date(session.override_unlock_until) > now
     
+    if (isOverrideActive) return { locked: false, reason: 'Unlocked by HR' }
     if (now < classWindow.start_datetime) return { locked: true, reason: 'Upcoming' }
     if (now >= classWindow.start_datetime && now <= classWindow.end_datetime) return { locked: false, reason: 'In Progress' }
-    if (isOverrideActive) return { locked: false, reason: 'Unlocked by HR' }
     return { locked: true, reason: 'Completed & Locked' }
   }
 

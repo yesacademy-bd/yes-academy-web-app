@@ -136,7 +136,7 @@ export async function unlockClassSession(batchId: string, classNum: number, dura
         class_number: classNum,
         session_date: sessionDate,
         override_unlock_until: unlockUntil.toISOString()
-      }, { onConflict: 'batch_id, class_number' })
+      }, { onConflict: 'batch_id,class_number' })
 
     if (error) throw new Error(error.message)
 
@@ -178,7 +178,7 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
 
     const { error } = await supabase
       .from('class_sessions')
-      .upsert(sessionsToUpsert, { onConflict: 'batch_id, class_number' })
+      .upsert(sessionsToUpsert, { onConflict: 'batch_id,class_number' })
 
     if (error) throw new Error(error.message)
 
