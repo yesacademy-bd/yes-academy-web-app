@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, LogOut, Key } from 'lucide-react'
 import { logout } from '@/app/login/actions'
 
 export default async function DashboardLayout({
@@ -29,7 +29,9 @@ export default async function DashboardLayout({
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
     { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
+    { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
     { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
+    { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR'] },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
   ]
 

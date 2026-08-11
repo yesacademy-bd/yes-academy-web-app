@@ -135,3 +135,33 @@ export async function unlockClassSession(batchId: string, classSessionId: string
     return { success: false, message: error.message || 'Failed to unlock session' }
   }
 }
+
+export async function unlockEntireBatch(batchId: string, durationMinutes: number = 60) {
+  const supabase = await createClient()
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // Verify HR/Admin
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!['HR', 'Admin'].includes(profile?.role || '')) {
+      throw new Error('Only HR or Admin can unlock sessions')
+    }
+
+    const unlockUntil = new Date()
+    unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
+
+    const { error } = await supabase
+      .from('class_sessions')
+      .update({ override_unlock_until: unlockUntil.toISOString() })
+      .eq('batch_id', batchId)
+
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/dashboard/faculty/batches/${batchId}`)
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to unlock batch' }
+  }
+}

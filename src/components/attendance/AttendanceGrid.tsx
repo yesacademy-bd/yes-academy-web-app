@@ -157,15 +157,6 @@ export default function AttendanceGrid({
                 {schedule.find(s => s.class_number === activeClassNum)?.date}
               </p>
             </div>
-            {activeClassState.locked && ['HR', 'Admin'].includes(userRole) && (
-              <button 
-                onClick={handleUnlock}
-                disabled={isPending}
-                className="px-3 py-1.5 bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
-              >
-                <Unlock className="w-4 h-4" /> Unlock (1hr)
-              </button>
-            )}
           </div>
         )}
 
