@@ -65,14 +65,19 @@ export default async function DashboardPage() {
   const batchIds = todaysBatches.map(b => b.id)
   
   let missedAttendanceBatches: any[] = []
+  const sessionCounts: Record<string, number> = {}
+  
   if (batchIds.length > 0) {
-    const { data: sessionsToday } = await supabase
-      .from('class_sessions')
-      .select('batch_id, id')
-      .in('batch_id', batchIds)
-      .eq('session_date', todayStr)
+    const [sessionsTodayRes, allSessionsRes] = await Promise.all([
+      supabase.from('class_sessions').select('batch_id, id').in('batch_id', batchIds).eq('session_date', todayStr),
+      supabase.from('class_sessions').select('batch_id').in('batch_id', batchIds)
+    ])
       
-    const batchesWithSessions = new Set((sessionsToday || []).map(s => s.batch_id))
+    const batchesWithSessions = new Set((sessionsTodayRes.data || []).map(s => s.batch_id))
+    
+    ;(allSessionsRes.data || []).forEach(s => {
+      sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
+    })
     
     // If a batch is scheduled today, but the time has passed and no session exists, it's missed.
     missedAttendanceBatches = todaysBatches.filter(b => {
@@ -200,20 +205,25 @@ export default async function DashboardPage() {
                 <h2 className="text-lg font-semibold text-red-900">Missed Attendance</h2>
               </div>
               <div className="divide-y divide-gray-100">
-                {missedAttendanceBatches.map(b => (
-                  <div key={b.id} className="p-4 flex items-center justify-between">
+                {missedAttendanceBatches.map(b => {
+                  const missedClassNo = (sessionCounts[b.id] || 0) + 1;
+                  return (
+                  <div key={b.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                     <div>
                       <h3 className="font-semibold text-gray-900">{b.batch_name}</h3>
-                      <p className="text-xs text-gray-500">Ended at {b.end_time.substring(0,5)}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Class {missedClassNo} • Teacher: {(b.profiles as any)?.display_name || 'Unassigned'} • Ended at {b.end_time.substring(0,5)}
+                      </p>
                     </div>
                     <Link 
                       href={`/dashboard/faculty/batches/${b.id}`}
-                      className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded"
+                      className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded whitespace-nowrap ml-2"
                     >
                       Mark Now
                     </Link>
                   </div>
-                ))}
+                  )
+                })}
                 {missedAttendanceBatches.length === 0 && (
                   <div className="p-6 text-center text-gray-500 text-sm">
                     All caught up! No missed attendance for today.
