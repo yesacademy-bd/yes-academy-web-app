@@ -20,10 +20,10 @@ body {
 @layer utilities {
   /* Glassmorphism for containers */
   .bg-white, .bg-gray-50, .bg-gray-100 {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
   }
 
@@ -38,12 +38,12 @@ body {
     color: #ffffff !important;
   }
   .text-gray-500, .text-gray-400 {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
   }
 
   /* Borders */
   .border-gray-200, .border-gray-300 {
-    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
   }
 
   /* Gradient Text Theme for headings and primary colored text */
@@ -68,13 +68,45 @@ body {
   
   /* Tables specific fixes for glassmorphism */
   table th {
-    background-color: rgba(0, 0, 0, 0.2) !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
     color: #ffffff !important;
   }
   table td {
     background-color: transparent !important;
   }
   tr.hover\:bg-gray-50:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Inputs, Selects, Search Bars */
+  input, select, textarea {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border-color: #93c5fd !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5) !important;
+  }
+  
+  /* Dropdown Options specific fix */
+  option {
+    background-color: #1e3a8a !important; /* solid blue for readability */
+    color: #ffffff !important;
+  }
+
+  /* General Hover states for sidebar items, table rows, etc */
+  .hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover, .hover\:bg-blue-50:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+  .hover\:text-blue-600:hover {
+    -webkit-text-fill-color: #93c5fd !important;
+    color: #93c5fd !important;
   }
 }
