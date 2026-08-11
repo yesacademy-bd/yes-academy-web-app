@@ -1,7 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 import BatchList from '@/components/batches/BatchList'
 
 export default async function BatchManagerPage() {
