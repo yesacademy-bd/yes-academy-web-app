@@ -4,8 +4,17 @@ import { useState, useMemo } from 'react'
 import { TrendingUp, Users, DollarSign, PieChart } from 'lucide-react'
 
 export default function CRMClient({ initialData }: { initialData: any[] }) {
-  const [data, setData] = useState(initialData)
+  const currentDate = new Date()
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth())
   
+  const data = useMemo(() => {
+    return initialData.filter(e => {
+      const d = new Date(e.enrolled_at)
+      return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+    })
+  }, [initialData, selectedYear, selectedMonth])
+
   // Calculate analytics
   const totalEarnings = useMemo(() => data.reduce((sum, e) => sum + e.paid_amount, 0), [data])
   const totalDue = useMemo(() => data.reduce((sum, e) => sum + e.due_amount, 0), [data])
@@ -28,9 +37,30 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
     return Object.entries(counts).sort((a, b) => b[1] - a[1])
   }, [data])
 
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i)
+
   return (
     <div className="space-y-6">
       
+      {/* Filters */}
+      <div className="flex gap-4 items-center">
+        <select 
+          value={selectedMonth} 
+          onChange={e => setSelectedMonth(Number(e.target.value))}
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+        </select>
+        <select 
+          value={selectedYear} 
+          onChange={e => setSelectedYear(Number(e.target.value))}
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+
       {/* Analytics Dashboard */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">

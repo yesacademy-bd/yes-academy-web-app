@@ -28,7 +28,14 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="bg-white min-h-screen p-8 text-gray-900 font-sans">
-      <div className="max-w-3xl mx-auto border border-gray-200 p-10 shadow-sm relative print:border-none print:shadow-none">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          * {
+            color: black !important;
+          }
+        }
+      `}} />
+      <div className="max-w-3xl mx-auto border border-gray-200 p-10 shadow-sm relative print:border-none print:shadow-none print:p-0">
         
         {/* Print Button (Hidden in print mode) */}
         <div className="absolute top-4 right-4 print:hidden">
