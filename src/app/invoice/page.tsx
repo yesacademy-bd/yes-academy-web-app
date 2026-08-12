@@ -35,10 +35,49 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
   const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).format(d)
 
   return (
-    <div className="bg-white min-h-screen p-8 text-black font-sans" style={{ color: 'black', backgroundColor: 'white' }}>
+    <div className="invoice-safe-zone bg-white min-h-screen p-8 text-black font-sans" style={{ color: 'black', backgroundColor: 'white' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         :root { color-scheme: light !important; }
-        body { background-color: white !important; color: black !important; }
+        
+        /* completely nuke globals.css for invoice */
+        .invoice-safe-zone, .invoice-safe-zone * {
+          background: none !important;
+          background-color: transparent !important;
+          color: black !important;
+          -webkit-text-fill-color: black !important;
+          text-fill-color: black !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          box-shadow: none !important;
+        }
+        
+        .invoice-safe-zone {
+          background-color: white !important;
+          background: white !important;
+        }
+        
+        .invoice-safe-zone .border-black,
+        .invoice-safe-zone tr {
+          border-color: black !important;
+        }
+
+        .invoice-safe-zone .border-y {
+          border-top-width: 1px !important;
+          border-bottom-width: 1px !important;
+          border-top-style: solid !important;
+          border-bottom-style: solid !important;
+        }
+        
+        .invoice-safe-zone .border-b {
+          border-bottom-width: 1px !important;
+          border-bottom-style: solid !important;
+        }
+
+        .invoice-safe-zone .border {
+          border-width: 1px !important;
+          border-style: solid !important;
+        }
+
         @media print {
           * {
             -webkit-print-color-adjust: exact !important;
@@ -47,7 +86,7 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           }
         }
       `}} />
-      <div className="max-w-3xl mx-auto p-10 relative bg-white">
+      <div className="max-w-3xl mx-auto p-10 relative bg-white" style={{ backgroundColor: 'white' }}>
         
         {/* Print Button (Hidden in print mode) */}
         <div className="absolute top-4 right-4 print:hidden">
