@@ -29,6 +29,7 @@ export default async function DashboardLayout({
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
     { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
+    { name: 'CRM (Enrollments)', href: '/dashboard/crm', icon: Users, roles: ['Admin', 'HR'] },
     { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
     { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
     { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR'] },

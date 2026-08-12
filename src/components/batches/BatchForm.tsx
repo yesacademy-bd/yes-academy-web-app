@@ -169,18 +169,18 @@ export default function BatchForm({
           <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Basic Info</h3>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Batch Name</label>
-            <input type="text" {...register('batch_name')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            {errors.batch_name && <p className="mt-1 text-xs text-red-500">{errors.batch_name.message}</p>}
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700">Course</label>
             <select {...register('course_id')} onChange={handleCourseChange} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="">Select a course...</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.family} - {c.name}</option>)}
             </select>
             {errors.course_id && <p className="mt-1 text-xs text-red-500">{errors.course_id.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Batch Name</label>
+            <input type="text" {...register('batch_name')} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            {errors.batch_name && <p className="mt-1 text-xs text-red-500">{errors.batch_name.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

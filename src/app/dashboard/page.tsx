@@ -66,7 +66,23 @@ export default async function DashboardPage() {
   
   let missedAttendanceBatches: any[] = []
   const sessionCounts: Record<string, number> = {}
+  let batchEndAlerts: any[] = []
+
+  const activeBatchIds = activeBatches.map(b => b.id)
   
+  if (activeBatchIds.length > 0) {
+    const { data: allActiveSessions } = await supabase.from('class_sessions').select('batch_id').in('batch_id', activeBatchIds)
+    ;(allActiveSessions || []).forEach(s => {
+      sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
+    })
+
+    batchEndAlerts = activeBatches.filter(b => {
+      const completed = sessionCounts[b.id] || 0
+      const remaining = b.total_classes + b.additional_classes - completed
+      return remaining > 0 && remaining <= 6
+    })
+  }
+
   if (batchIds.length > 0) {
     const [sessionsTodayRes, allSessionsRes] = await Promise.all([
       supabase.from('class_sessions').select('batch_id, id').in('batch_id', batchIds).eq('session_date', todayStr),
@@ -74,11 +90,6 @@ export default async function DashboardPage() {
     ])
       
     const batchesWithSessions = new Set((sessionsTodayRes.data || []).map(s => s.batch_id))
-    
-    ;(allSessionsRes.data || []).forEach(s => {
-      sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
-    })
-    
     // If a batch is scheduled today, but the time has passed and no session exists, it's missed.
     missedAttendanceBatches = todaysBatches.filter(b => {
       const endMinutes = timeToMinutes(b.end_time)
@@ -130,8 +141,43 @@ export default async function DashboardPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
         
-        {/* Live Now Panel */}
+        {/* Alerts & Live Now Panel */}
         <div className="lg:col-span-2 space-y-6">
+
+          {batchEndAlerts.length > 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-orange-100 flex justify-between items-center bg-orange-100/50">
+                <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-orange-600" />
+                  Batch End Alerts (Next 2 Weeks)
+                </h2>
+                <span className="bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">{batchEndAlerts.length}</span>
+              </div>
+              <div className="divide-y divide-orange-100">
+                {batchEndAlerts.map(b => {
+                  const completed = sessionCounts[b.id] || 0
+                  const remaining = b.total_classes + b.additional_classes - completed
+                  return (
+                    <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-orange-100/30 transition-colors">
+                      <div>
+                        <h3 className="font-bold text-orange-900">{b.batch_name}</h3>
+                        <p className="text-sm text-orange-800 mt-1">
+                          Teacher: <span className="font-medium">{(b.profiles as any)?.display_name}</span> • 
+                          Schedule: <span className="font-medium">{b.schedule_days.join(', ')} ({b.start_time})</span>
+                        </p>
+                      </div>
+                      <div className="mt-2 sm:mt-0 text-right">
+                        <span className="inline-block bg-orange-600 text-white font-medium text-xs px-3 py-1 rounded-full">
+                          {remaining} classes left
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">

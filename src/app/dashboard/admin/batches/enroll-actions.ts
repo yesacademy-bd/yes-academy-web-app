@@ -9,12 +9,15 @@ export async function enrollStudent(batchId: string, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'Admin') return { success: false, message: 'Admin only' }
+  if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
 
-  const system_id = formData.get('system_id') as string
+  const system_id = formData.get('system_id') as string || null
   const name = formData.get('name') as string
   const phone = formData.get('phone') as string
   const guardian_phone = formData.get('guardian_phone') as string
+  const reference = formData.get('reference') as string
+  const course_fee = parseFloat(formData.get('course_fee') as string) || 0
+  const paid_amount = parseFloat(formData.get('paid_amount') as string) || 0
 
   if (!name) return { success: false, message: 'Student Name is required' }
 
@@ -30,7 +33,7 @@ export async function enrollStudent(batchId: string, formData: FormData) {
   if (!studentId) {
     const { data: newStudent, error: createError } = await supabase
       .from('students')
-      .insert({ system_id: system_id || null, name, phone, guardian_phone })
+      .insert({ system_id: system_id, name, phone, guardian_phone })
       .select('id')
       .single()
     if (createError) return { success: false, message: createError.message }
@@ -41,7 +44,13 @@ export async function enrollStudent(batchId: string, formData: FormData) {
   if (!studentId) return { success: false, message: 'Failed to resolve student' }
   const { error: enrollError } = await supabase
     .from('enrollments')
-    .insert({ batch_id: batchId, student_id: studentId })
+    .insert({ 
+      batch_id: batchId, 
+      student_id: studentId,
+      course_fee,
+      paid_amount,
+      reference 
+    })
 
   if (enrollError) {
     if (enrollError.code === '23505') return { success: false, message: 'Student is already enrolled in this batch' }
@@ -58,7 +67,7 @@ export async function removeEnrollment(batchId: string, studentId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'Admin') return { success: false, message: 'Admin only' }
+  if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
 
   const { error } = await supabase
     .from('enrollments')

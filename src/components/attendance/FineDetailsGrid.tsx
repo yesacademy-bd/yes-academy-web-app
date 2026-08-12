@@ -75,7 +75,6 @@ export default function FineDetailsGrid({
               <th className="p-4 whitespace-nowrap text-center">Present</th>
               <th className="p-4 whitespace-nowrap text-center">Absent</th>
               <th className="p-4 whitespace-nowrap text-center text-red-600">Calculated Fine (100 BDT/Absent)</th>
-              <th className="p-4 whitespace-nowrap text-center text-blue-600">Applied Fine (BDT)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -94,22 +93,6 @@ export default function FineDetailsGrid({
                   <td className="p-4 text-center text-red-600 font-medium">{absent}</td>
                   <td className="p-4 text-center font-bold text-gray-900">
                     {calculatedFine} BDT
-                  </td>
-                  
-                  <td className="p-4 text-center">
-                    <div className="relative inline-block w-28">
-                      <input
-                        type="number"
-                        placeholder={calculatedFine.toString()}
-                        value={getFine(e.id)}
-                        onChange={(ev) => handleFineChange(e.id, ev.target.value)}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition-colors
-                          ${savingField === e.id ? 'bg-blue-50 border-blue-200' : 'border-gray-300'}`}
-                      />
-                      {savingField === e.id && (
-                        <Save className="w-4 h-4 text-blue-500 absolute right-3 top-1/2 -translate-y-1/2 animate-pulse" />
-                      )}
-                    </div>
                   </td>
                 </tr>
               )

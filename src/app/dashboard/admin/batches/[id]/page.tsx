@@ -23,10 +23,18 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
     supabase.from('rooms').select('*').order('name'),
     supabase.from('settings').select('*').eq('id', 1).single(),
     supabase.from('batches').select('*').eq('id', id).single(),
-    supabase.from('enrollments').select('students(*)').eq('batch_id', id)
+    supabase.from('enrollments').select('*, students(*)').eq('batch_id', id)
   ])
 
-  const students = enrollmentsRes?.data?.map((e: any) => e.students).filter(Boolean) || []
+  const students = enrollmentsRes?.data?.map((e: any) => ({
+    ...e.students,
+    enrollment_data: {
+      course_fee: e.course_fee,
+      paid_amount: e.paid_amount,
+      due_amount: e.due_amount,
+      reference: e.reference
+    }
+  })).filter((s: any) => s.id) || []
 
   if (batchRes.error || !batchRes.data) {
     return (
