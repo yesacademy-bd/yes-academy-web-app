@@ -39,40 +39,55 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
       <style dangerouslySetInnerHTML={{ __html: `
         :root { color-scheme: light !important; }
         
-        /* completely nuke globals.css for invoice */
-        .invoice-safe-zone, .invoice-safe-zone * {
-          background: none !important;
-          background-color: transparent !important;
+        /* Force body to be white, killing the global gradient */
+        html, body {
+          background: white !important;
+          background-color: white !important;
+          background-image: none !important;
+        }
+        
+        /* Kill global text gradients for all elements in invoice */
+        .invoice-safe-zone, .invoice-safe-zone h1, .invoice-safe-zone h2, .invoice-safe-zone h3, .invoice-safe-zone p, .invoice-safe-zone span, .invoice-safe-zone td, .invoice-safe-zone th, .invoice-safe-zone div {
           color: black !important;
           -webkit-text-fill-color: black !important;
           text-fill-color: black !important;
+          background-clip: border-box !important;
+          -webkit-background-clip: border-box !important;
+        }
+
+        /* Kill glassmorphism effects */
+        .invoice-safe-zone .bg-white, .invoice-safe-zone .bg-gray-50, .invoice-safe-zone .bg-gray-100 {
           backdrop-filter: none !important;
           -webkit-backdrop-filter: none !important;
           box-shadow: none !important;
+          background-color: transparent !important;
         }
-        
-        .invoice-safe-zone {
-          background-color: white !important;
-          background: white !important;
+
+        /* Force table headers to have light gray background for the table header row as requested */
+        .invoice-safe-zone thead tr {
+          background-color: #f3f4f6 !important; /* light gray */
+          -webkit-text-fill-color: black !important;
         }
-        
+        .invoice-safe-zone thead th {
+          background-color: transparent !important; /* let the tr background show through */
+          color: black !important;
+        }
+
+        /* Force black borders */
         .invoice-safe-zone .border-black,
         .invoice-safe-zone tr {
           border-color: black !important;
         }
-
         .invoice-safe-zone .border-y {
           border-top-width: 1px !important;
           border-bottom-width: 1px !important;
           border-top-style: solid !important;
           border-bottom-style: solid !important;
         }
-        
         .invoice-safe-zone .border-b {
           border-bottom-width: 1px !important;
           border-bottom-style: solid !important;
         }
-
         .invoice-safe-zone .border {
           border-width: 1px !important;
           border-style: solid !important;
@@ -82,7 +97,9 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            color: black !important;
+          }
+          .print\\:hidden {
+            display: none !important;
           }
         }
       `}} />
