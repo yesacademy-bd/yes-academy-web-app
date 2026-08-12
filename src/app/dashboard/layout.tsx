@@ -26,6 +26,8 @@ export default async function DashboardLayout({
 
   const role = profile?.role || 'Faculty'
 
+  return (
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar Component with Active Highlighting */}
       <Sidebar 
         role={role} 
