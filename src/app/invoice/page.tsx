@@ -115,7 +115,9 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 id="invoice-company-name" className="text-4xl font-black tracking-tight">YES ACADEMY</h1>
+          <div className="text-4xl font-black tracking-tight text-black print:text-black" style={{ color: 'black' }}>
+            YES ACADEMY
+          </div>
           <div className="mt-4 inline-block border border-black px-4 py-1 font-bold tracking-widest text-sm text-black">
             OFFICIAL INVOICE
           </div>
