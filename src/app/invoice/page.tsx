@@ -35,8 +35,19 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
   const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).format(d)
 
   return (
-    <div className="bg-white min-h-screen p-8 font-sans" style={{ color: 'black' }}>
-      <div className="max-w-3xl mx-auto p-10 relative">
+    <div className="bg-white min-h-screen p-8 text-black font-sans" style={{ color: 'black', backgroundColor: 'white' }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root { color-scheme: light !important; }
+        body { background-color: white !important; color: black !important; }
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color: black !important;
+          }
+        }
+      `}} />
+      <div className="max-w-3xl mx-auto p-10 relative bg-white">
         
         {/* Print Button (Hidden in print mode) */}
         <div className="absolute top-4 right-4 print:hidden">
