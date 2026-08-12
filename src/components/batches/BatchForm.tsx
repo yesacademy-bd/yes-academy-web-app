@@ -172,7 +172,13 @@ export default function BatchForm({
             <label className="block text-sm font-medium text-gray-700">Course</label>
             <select {...register('course_id')} onChange={handleCourseChange} className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
               <option value="">Select a course...</option>
-              {courses.map(c => <option key={c.id} value={c.id}>{c.family} - {c.name}</option>)}
+              {courses.map(c => {
+                const combined = `${c.family} - ${c.name}`
+                let display = combined
+                if (combined === 'PTE - PTE') display = 'PTE - PTE Academic'
+                if (combined === 'Grammar - Basic Grammar') display = 'Grammar - Basic Grammar to Advance'
+                return <option key={c.id} value={c.id}>{display}</option>
+              })}
             </select>
             {errors.course_id && <p className="mt-1 text-xs text-red-500">{errors.course_id.message}</p>}
           </div>

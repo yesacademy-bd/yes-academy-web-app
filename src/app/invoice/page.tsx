@@ -26,6 +26,10 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
   const enrollment = enrollmentRes.data
   const course = batch.courses
 
+  let displayCourseName = `${course.family} - ${course.name}`
+  if (displayCourseName === 'PTE - PTE') displayCourseName = 'PTE - PTE Academic'
+  if (displayCourseName === 'Grammar - Basic Grammar') displayCourseName = 'Grammar - Basic Grammar to Advance'
+
   return (
     <div className="bg-white min-h-screen p-8 text-black font-sans">
       <div className="max-w-3xl mx-auto p-10 relative">
@@ -53,8 +57,8 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           </div>
           <div className="text-right">
             <p className="mb-1">Enrollment Details:</p>
-            <p className="font-medium">Date: {new Date(enrollment.enrolled_at).toLocaleDateString()}</p>
-            <p className="font-medium">Time: {new Date(enrollment.enrolled_at).toLocaleTimeString()}</p>
+            <p className="font-medium">Date: {new Date(enrollment.enrolled_at).toLocaleDateString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
+            <p className="font-medium">Time: {new Date(enrollment.enrolled_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
             <p className="mt-2">Ref: {enrollment.reference || 'None'}</p>
           </div>
         </div>
@@ -70,7 +74,7 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           <tbody className="divide-y divide-black/20">
             <tr>
               <td className="py-4 px-4">
-                <p className="font-bold text-base">{course.family} - {course.name}</p>
+                <p className="font-bold text-base">{displayCourseName}</p>
                 <p className="text-sm mt-1">Batch: {batch.batch_name}</p>
               </td>
               <td className="py-4 px-4 text-right font-medium">
