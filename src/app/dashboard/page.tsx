@@ -20,6 +20,7 @@ export default async function DashboardPage() {
   // Fetch batches based on role
   let query = supabase.from('batches').select(`
     id, batch_name, status, schedule_days, start_time, end_time, start_date, expected_end_date,
+    total_classes, additional_classes,
     courses(family, name), rooms(name), profiles!batches_teacher_id_fkey(display_name)
   `)
   
