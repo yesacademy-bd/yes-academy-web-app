@@ -15,7 +15,8 @@ export function computeClassSchedule(
   scheduleDays: string[], // e.g. ["Sunday", "Tuesday"]
   startTime: string,      // e.g. "14:00"
   endTime: string,        // e.g. "14:30"
-  totalClasses: number
+  totalClasses: number,
+  holidays: string[] = [] // Array of 'YYYY-MM-DD'
 ): ClassSessionSchedule[] {
   if (!startDate || !scheduleDays || scheduleDays.length === 0 || totalClasses <= 0) return [];
 
@@ -34,11 +35,10 @@ export function computeClassSchedule(
   // Advance day by day until we schedule all classes
   while (classesScheduled < totalClasses) {
     const currentDayName = DAYS_OF_WEEK[currentDate.getDay()];
+    const sessionDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
     
-    if (scheduleDays.includes(currentDayName)) {
+    if (scheduleDays.includes(currentDayName) && !holidays.includes(sessionDateStr)) {
       classesScheduled++;
-      
-      const sessionDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
       
       // Create accurate Date objects for start and end times in local timezone
       const startDatetime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), startHour, startMin, 0);

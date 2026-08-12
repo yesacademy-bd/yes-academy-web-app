@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { markAttendance, createClassSession, unlockClassSession } from '@/app/actions/attendance'
+import { getHolidays } from '@/app/actions/holidays'
 import { computeClassSchedule } from '@/utils/schedule'
 import { Check, X, Minus, Plus, Loader2, Lock, Unlock } from 'lucide-react'
 
@@ -20,7 +21,12 @@ export default function AttendanceGrid({
 }) {
   const [sessions, setSessions] = useState(initialSessions)
   const [records, setRecords] = useState(initialRecords)
+  const [holidays, setHolidays] = useState<string[]>([])
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    getHolidays().then(setHolidays)
+  }, [])
   
   const totalClasses = batch.total_classes + batch.additional_classes
   const classNumbers = Array.from({ length: totalClasses }, (_, i) => i + 1)
@@ -88,31 +94,65 @@ export default function AttendanceGrid({
     }
   }
 
-  const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+  const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses, holidays)
 
   const getClassState = (classNum: number) => {
-    if (!batch.start_date) {
-      const createdTime = new Date(batch.created_at).getTime()
-      const nowTime = Date.now()
-      const hoursSinceCreation = (nowTime - createdTime) / (1000 * 60 * 60)
-      if (hoursSinceCreation <= 48) {
-        return { locked: false, reason: `Manual Entry (${Math.floor(48 - hoursSinceCreation)}h left)` }
-      } else {
-        return { locked: true, reason: 'Manual Entry Period Ended' }
-      }
-    }
-
-    const classWindow = schedule.find(s => s.class_number === classNum)
-    if (!classWindow) return { locked: true, reason: 'No schedule' }
-    
+    // 1. HR Override
     const session = sessions.find(s => s.class_number === classNum)
     const now = new Date()
     const isOverrideActive = session?.override_unlock_until && new Date(session.override_unlock_until) > now
     
     if (isOverrideActive) return { locked: false, reason: 'Unlocked by HR' }
-    if (now < classWindow.start_datetime) return { locked: true, reason: 'Upcoming' }
-    if (now >= classWindow.start_datetime && now <= classWindow.end_datetime) return { locked: false, reason: 'In Progress' }
-    return { locked: true, reason: 'Completed & Locked' }
+
+    // 2. Already completed classes are locked
+    if (session) return { locked: true, reason: 'Completed & Locked' }
+
+    // 3. 48 hour grace period if no start_date
+    if (!batch.start_date) {
+      const createdTime = new Date(batch.created_at).getTime()
+      const hoursSinceCreation = (now.getTime() - createdTime) / (1000 * 60 * 60)
+      if (hoursSinceCreation <= 48) {
+        return { locked: false, reason: `Manual Entry (${Math.floor(48 - hoursSinceCreation)}h left)` }
+      }
+    }
+
+    // 4. Dynamic N+1 Rule
+    const highestCompleted = sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 0
+    if (classNum !== highestCompleted + 1) {
+      if (classNum <= highestCompleted) return { locked: true, reason: 'Completed & Locked' }
+      return { locked: true, reason: 'Upcoming' }
+    }
+
+    // 5. Valid Time Window Check for N+1
+    const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    const todayName = DAYS_OF_WEEK[now.getDay()]
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+    if (batch.start_date && now < new Date(batch.start_date)) {
+      return { locked: true, reason: 'Batch not started yet' }
+    }
+
+    if (holidays.includes(todayDateStr)) {
+      return { locked: true, reason: 'Holiday' }
+    }
+
+    if (!batch.schedule_days.includes(todayName)) {
+      return { locked: true, reason: 'Not a scheduled day' }
+    }
+
+    const [startHour, startMin] = batch.start_time.split(':').map(Number)
+    const [endHour, endMin] = batch.end_time.split(':').map(Number)
+    
+    const startDatetime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin, 0)
+    const endDatetime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin, 0)
+    
+    if (now >= startDatetime && now <= endDatetime) {
+      return { locked: false, reason: 'In Progress' }
+    } else if (now < startDatetime) {
+      return { locked: true, reason: 'Upcoming Today' }
+    } else {
+      return { locked: true, reason: 'Class Time Ended' }
+    }
   }
 
   const handleUnlock = async () => {

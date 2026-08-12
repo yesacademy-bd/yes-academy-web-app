@@ -31,6 +31,7 @@ export default async function DashboardLayout({
     { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
     { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
     { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
+    { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR'] },
     { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR'] },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
   ]
