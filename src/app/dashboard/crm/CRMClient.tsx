@@ -7,13 +7,24 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
   const currentDate = new Date()
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth())
+  const [selectedCourse, setSelectedCourse] = useState('All')
   
+  const availableCourses = useMemo(() => {
+    const courses = new Set<string>()
+    initialData.forEach(e => {
+      if (e.course?.family) courses.add(e.course.family)
+    })
+    return Array.from(courses).sort()
+  }, [initialData])
+
   const data = useMemo(() => {
     return initialData.filter(e => {
       const d = new Date(e.enrolled_at)
-      return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+      const matchDate = d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+      const matchCourse = selectedCourse === 'All' || e.course?.family === selectedCourse
+      return matchDate && matchCourse
     })
-  }, [initialData, selectedYear, selectedMonth])
+  }, [initialData, selectedYear, selectedMonth, selectedCourse])
 
   // Calculate analytics
   const totalEarnings = useMemo(() => data.reduce((sum, e) => sum + e.paid_amount, 0), [data])
@@ -58,6 +69,14 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
           className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+        <select 
+          value={selectedCourse} 
+          onChange={e => setSelectedCourse(e.target.value)}
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="All">All Courses</option>
+          {availableCourses.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
 

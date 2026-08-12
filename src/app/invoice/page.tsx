@@ -30,8 +30,12 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
   if (displayCourseName === 'PTE - PTE') displayCourseName = 'PTE - PTE Academic'
   if (displayCourseName === 'Grammar - Basic Grammar') displayCourseName = 'Grammar - Basic Grammar to Advance'
 
+  const d = new Date(enrollment.enrolled_at)
+  const dateStr = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
+  const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).format(d)
+
   return (
-    <div className="bg-white min-h-screen p-8 text-black font-sans">
+    <div className="bg-white min-h-screen p-8 font-sans" style={{ color: 'black' }}>
       <div className="max-w-3xl mx-auto p-10 relative">
         
         {/* Print Button (Hidden in print mode) */}
@@ -41,14 +45,14 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
 
         {/* Header */}
         <div className="text-center border-b pb-8 mb-8 border-black">
-          <h1 className="text-4xl font-black tracking-tight">YES ACADEMY</h1>
-          <div className="mt-6 inline-block border border-black px-4 py-2 rounded font-bold tracking-widest text-sm">
+          <h1 className="text-4xl font-black tracking-tight print:text-black text-black" style={{ color: 'black' }}>YES ACADEMY</h1>
+          <div className="mt-6 inline-block border border-black px-4 py-2 rounded font-bold tracking-widest text-sm text-black print:text-black" style={{ color: 'black' }}>
             OFFICIAL INVOICE
           </div>
         </div>
 
         {/* Invoice Info */}
-        <div className="flex justify-between items-start mb-8 text-sm">
+        <div className="flex justify-between items-start mb-8 text-sm text-black">
           <div>
             <p className="mb-1">Invoice To:</p>
             <p className="font-bold text-lg">{student.name}</p>
@@ -57,8 +61,8 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           </div>
           <div className="text-right">
             <p className="mb-1">Enrollment Details:</p>
-            <p className="font-medium">Date: {new Date(enrollment.enrolled_at).toLocaleDateString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
-            <p className="font-medium">Time: {new Date(enrollment.enrolled_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
+            <p className="font-medium">Date: {dateStr}</p>
+            <p className="font-medium">Time: {timeStr}</p>
             <p className="mt-2">Ref: {enrollment.reference || 'None'}</p>
           </div>
         </div>
