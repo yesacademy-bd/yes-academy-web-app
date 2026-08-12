@@ -51,6 +51,8 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           color: black !important;
           -webkit-text-fill-color: black !important;
           text-fill-color: black !important;
+          background-image: none !important;
+          background: transparent !important;
           background-clip: border-box !important;
           -webkit-background-clip: border-box !important;
         }
@@ -63,13 +65,14 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
           background-color: transparent !important;
         }
 
-        /* Force table headers to have light gray background for the table header row as requested */
+        /* Clean table headers */
         .invoice-safe-zone thead tr {
-          background-color: #f3f4f6 !important; /* light gray */
+          background-color: transparent !important;
+          background: none !important;
           -webkit-text-fill-color: black !important;
         }
         .invoice-safe-zone thead th {
-          background-color: transparent !important; /* let the tr background show through */
+          background-color: transparent !important;
           color: black !important;
         }
 
@@ -111,9 +114,9 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
         </div>
 
         {/* Header */}
-        <div className="text-center border-b pb-8 mb-8 border-black">
+        <div className="text-center mb-10">
           <h1 className="text-4xl font-black tracking-tight print:text-black text-black" style={{ color: 'black' }}>YES ACADEMY</h1>
-          <div className="mt-6 inline-block border border-black px-4 py-2 rounded font-bold tracking-widest text-sm text-black print:text-black" style={{ color: 'black' }}>
+          <div className="mt-4 inline-block px-4 py-1 font-bold tracking-widest text-sm text-black print:text-black" style={{ color: 'black' }}>
             OFFICIAL INVOICE
           </div>
         </div>
@@ -130,25 +133,24 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
             <p className="mb-1">Enrollment Details:</p>
             <p className="font-medium">Date: {dateStr}</p>
             <p className="font-medium">Time: {timeStr}</p>
-            <p className="mt-2">Ref: {enrollment.reference || 'None'}</p>
           </div>
         </div>
 
         {/* Course Info Table */}
         <table className="w-full mb-8 border-collapse">
           <thead>
-            <tr className="border-y border-black text-left text-sm uppercase tracking-wider">
-              <th className="py-3 px-4">Description</th>
-              <th className="py-3 px-4 text-right">Amount</th>
+            <tr className="border-y border-black text-left text-sm uppercase tracking-wider font-bold">
+              <th className="py-2 px-1">Description</th>
+              <th className="py-2 px-1 text-right">Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/20">
             <tr>
-              <td className="py-4 px-4">
+              <td className="py-4 px-1">
                 <p className="font-bold text-base">{displayCourseName}</p>
-                <p className="text-sm mt-1">Batch: {batch.batch_name}</p>
+                <p className="text-sm mt-1 text-black">Batch: {batch.batch_name}</p>
               </td>
-              <td className="py-4 px-4 text-right font-medium">
+              <td className="py-4 px-1 text-right font-medium">
                 ৳{enrollment.course_fee}
               </td>
             </tr>
