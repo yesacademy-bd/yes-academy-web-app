@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, LogOut, Key } from 'lucide-react'
 import { logout } from '@/app/login/actions'
+import Sidebar from '@/components/layout/Sidebar'
 
 export default async function DashboardLayout({
   children,
@@ -25,59 +26,12 @@ export default async function DashboardLayout({
 
   const role = profile?.role || 'Faculty'
 
-  const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
-    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
-    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
-    { name: 'CRM (Enrollments)', href: '/dashboard/crm', icon: Users, roles: ['Admin', 'HR'] },
-    { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
-    { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
-    { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR'] },
-    { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR'] },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
-  ]
-
-  const filteredNav = navItems.filter(item => item.roles.includes(role))
-
-  return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col print:hidden">
-        <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-blue-600">YES Academy</h1>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {filteredNav.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600"
-            >
-              <item.icon className="w-5 h-5 text-gray-400" />
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 mb-4 px-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-              {profile?.display_name?.charAt(0) || user.email?.charAt(0)}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-medium text-gray-900 truncate">{profile?.display_name}</p>
-              <p className="text-xs text-gray-500 truncate">{role}</p>
-            </div>
-          </div>
-          <form action={logout}>
-            <button className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">
-              <LogOut className="w-5 h-5" />
-              Sign out
-            </button>
-          </form>
-        </div>
-      </aside>
+      {/* Sidebar Component with Active Highlighting */}
+      <Sidebar 
+        role={role} 
+        displayName={profile?.display_name || ''} 
+        email={user.email || ''} 
+      />
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
