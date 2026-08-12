@@ -47,7 +47,7 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
         }
         
         /* Kill global text gradients for all elements in invoice */
-        .invoice-safe-zone, .invoice-safe-zone h1, .invoice-safe-zone h2, .invoice-safe-zone h3, .invoice-safe-zone p, .invoice-safe-zone span, .invoice-safe-zone td, .invoice-safe-zone th, .invoice-safe-zone div {
+        .invoice-safe-zone, #invoice-company-name, .invoice-safe-zone h1, .invoice-safe-zone h2, .invoice-safe-zone h3, .invoice-safe-zone p, .invoice-safe-zone span, .invoice-safe-zone td, .invoice-safe-zone th, .invoice-safe-zone div {
           color: black !important;
           -webkit-text-fill-color: black !important;
           text-fill-color: black !important;
@@ -114,12 +114,15 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
         </div>
 
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-black tracking-tight print:text-black text-black" style={{ color: 'black' }}>YES ACADEMY</h1>
-          <div className="mt-4 inline-block px-4 py-1 font-bold tracking-widest text-sm text-black print:text-black" style={{ color: 'black' }}>
+        <div className="text-center mb-8">
+          <h1 id="invoice-company-name" className="text-4xl font-black tracking-tight">YES ACADEMY</h1>
+          <div className="mt-4 inline-block border border-black px-4 py-1 font-bold tracking-widest text-sm text-black">
             OFFICIAL INVOICE
           </div>
         </div>
+        
+        {/* Simple Separator */}
+        <hr className="border-t border-gray-300 mb-8" />
 
         {/* Invoice Info */}
         <div className="flex justify-between items-start mb-8 text-sm text-black">
