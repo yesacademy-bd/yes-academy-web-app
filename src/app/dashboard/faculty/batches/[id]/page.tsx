@@ -5,6 +5,7 @@ import { ArrowLeft, Users, Calendar, TrendingUp } from 'lucide-react'
 import AttendanceGrid from '@/components/attendance/AttendanceGrid'
 import StudentProgressGrid from '@/components/attendance/StudentProgressGrid'
 import FineDetailsGrid from '@/components/attendance/FineDetailsGrid'
+import TopAttendanceView from '@/components/attendance/TopAttendanceView'
 
 export default async function AttendanceRegisterPage({ 
   params,
@@ -187,6 +188,16 @@ export default async function AttendanceRegisterPage({
           >
             Fine Details
           </Link>
+          <Link
+            href={`/dashboard/faculty/batches/${id}?tab=top-attendance`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
+              tab === 'top-attendance'
+                ? 'border-yellow-500 text-yellow-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Top Attendance
+          </Link>
         </nav>
       </div>
 
@@ -224,6 +235,19 @@ export default async function AttendanceRegisterPage({
             </div>
             <FineDetailsGrid 
               batchId={id}
+              enrollments={enrollments}
+              initialScores={examScores}
+              attendanceMap={attendanceMap}
+              totalSessions={sessions.length}
+            />
+          </div>
+        ) : tab === 'top-attendance' ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Top Attendance</h2>
+              <p className="text-sm text-gray-500">The top 2 performing students based on class attendance.</p>
+            </div>
+            <TopAttendanceView 
               enrollments={enrollments}
               initialScores={examScores}
               attendanceMap={attendanceMap}
