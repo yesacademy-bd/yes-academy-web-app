@@ -123,7 +123,7 @@ export default function EnrollmentManager({
                     <td className="p-4 text-right flex items-center justify-end gap-2">
                       <button onClick={() => {
                         // Print Invoice
-                        const url = `/dashboard/invoice?studentId=${s.id}&batchId=${batchId}`
+                        const url = `/invoice?studentId=${s.id}&batchId=${batchId}`
                         window.open(url, '_blank', 'width=800,height=800')
                       }} className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 bg-blue-50 rounded transition-colors">
                         Print Invoice
