@@ -100,50 +100,50 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
           <div className="p-3 bg-green-50 rounded-lg text-green-600"><DollarSign className="w-6 h-6" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Earnings</p>
-            <p className="text-2xl font-bold text-gray-900">৳{totalEarnings}</p>
+            <p className="text-sm font-medium text-gray-500 print:text-black">Total Earnings</p>
+            <p className="text-2xl font-bold text-gray-900 print:text-black">৳{totalEarnings}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
           <div className="p-3 bg-red-50 rounded-lg text-red-600"><TrendingUp className="w-6 h-6" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Due</p>
-            <p className="text-2xl font-bold text-gray-900">৳{totalDue}</p>
+            <p className="text-sm font-medium text-gray-500 print:text-black">Total Due</p>
+            <p className="text-2xl font-bold text-gray-900 print:text-black">৳{totalDue}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
           <div className="p-3 bg-blue-50 rounded-lg text-blue-600"><Users className="w-6 h-6" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Top Reference</p>
-            <p className="text-lg font-bold text-gray-900">{refStats[0]?.[0] || 'N/A'} ({refStats[0]?.[1] || 0})</p>
+            <p className="text-sm font-medium text-gray-500 print:text-black">Top Reference</p>
+            <p className="text-lg font-bold text-gray-900 print:text-black">{refStats[0]?.[0] || 'N/A'} ({refStats[0]?.[1] || 0})</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
           <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600"><PieChart className="w-6 h-6" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Top Course Type</p>
-            <p className="text-lg font-bold text-gray-900">{courseTypeStats[0]?.[0] || 'N/A'} ({courseTypeStats[0]?.[1] || 0})</p>
+            <p className="text-sm font-medium text-gray-500 print:text-black">Top Course Type</p>
+            <p className="text-lg font-bold text-gray-900 print:text-black">{courseTypeStats[0]?.[0] || 'N/A'} ({courseTypeStats[0]?.[1] || 0})</p>
           </div>
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">All Enrollments</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:border-none print:shadow-none">
+        <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center print:bg-white print:p-2">
+          <h3 className="font-semibold text-gray-900 print:text-black">All Enrollments</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-max">
+        <div className="overflow-x-auto print:overflow-visible">
+          <table className="w-full text-left border-collapse min-w-full print:min-w-0">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                <th className="p-4">Admission Date</th>
-                <th className="p-4">Student</th>
-                <th className="p-4">Course / Batch</th>
-                <th className="p-4">Fee</th>
-                <th className="p-4">Paid</th>
-                <th className="p-4">Due</th>
-                <th className="p-4">Reference</th>
-                <th className="p-4">Last Modified</th>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold print:text-black print:text-[10px]">
+                <th className="p-4 print:p-2">Admission Date</th>
+                <th className="p-4 print:p-2">Student</th>
+                <th className="p-4 print:p-2">Course / Batch</th>
+                <th className="p-4 print:p-2">Fee</th>
+                <th className="p-4 print:p-2">Paid</th>
+                <th className="p-4 print:p-2">Due</th>
+                <th className="p-4 print:p-2">Reference</th>
+                <th className="p-4 print:p-2">Last Modified</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -154,17 +154,17 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
               )}
               {data.map(e => (
                 <tr key={e.id} className="hover:bg-gray-50">
-                  <td className="p-4 text-sm text-gray-600">{new Date(e.enrolled_at).toLocaleDateString()}</td>
-                  <td className="p-4 text-sm font-medium text-gray-900">{e.student?.name}</td>
-                  <td className="p-4 text-sm text-gray-600">
-                    <p className="font-medium text-gray-900">{e.course?.family}</p>
-                    <p className="text-xs">{e.batch?.batch_name}</p>
+                  <td className="p-4 text-sm text-gray-600 print:p-2 print:text-[10px] print:text-black">{new Date(e.enrolled_at).toLocaleDateString()}</td>
+                  <td className="p-4 text-sm font-medium text-gray-900 print:p-2 print:text-[10px] print:text-black">{e.student?.name}</td>
+                  <td className="p-4 text-sm text-gray-600 print:p-2 print:text-[10px] print:text-black">
+                    <p className="font-medium text-gray-900 print:text-black">{e.course?.family}</p>
+                    <p className="text-xs print:text-[10px]">{e.batch?.batch_name}</p>
                   </td>
-                  <td className="p-4 text-sm text-gray-600">৳{e.course_fee}</td>
-                  <td className="p-4 text-sm font-medium text-green-600">৳{e.paid_amount}</td>
-                  <td className="p-4 text-sm font-bold text-red-600">৳{e.due_amount}</td>
-                  <td className="p-4 text-sm text-gray-600">{e.reference || '-'}</td>
-                  <td className="p-4 text-xs text-gray-400">{e.last_modified_date ? new Date(e.last_modified_date).toLocaleDateString() : '-'}</td>
+                  <td className="p-4 text-sm text-gray-600 print:p-2 print:text-[10px] print:text-black">৳{e.course_fee}</td>
+                  <td className="p-4 text-sm font-medium text-green-600 print:p-2 print:text-[10px] print:text-green-800">৳{e.paid_amount}</td>
+                  <td className="p-4 text-sm font-bold text-red-600 print:p-2 print:text-[10px] print:text-red-800">৳{e.due_amount}</td>
+                  <td className="p-4 text-sm text-gray-600 print:p-2 print:text-[10px] print:text-black">{e.reference || '-'}</td>
+                  <td className="p-4 text-xs text-gray-400 print:p-2 print:text-[10px] print:text-black">{e.last_modified_date ? new Date(e.last_modified_date).toLocaleDateString() : '-'}</td>
                 </tr>
               ))}
             </tbody>

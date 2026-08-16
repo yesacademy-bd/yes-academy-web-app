@@ -45,8 +45,8 @@ export default async function CRMPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Student Enrollment CRM</h1>
-          <p className="text-gray-500 mt-1">Analytics, Admissions, and Financial tracking.</p>
+          <h1 className="text-3xl font-bold text-gray-900 print:text-black">Student Enrollment CRM</h1>
+          <p className="text-gray-500 print:text-black mt-1">Analytics, Admissions, and Financial tracking.</p>
         </div>
       </div>
       
