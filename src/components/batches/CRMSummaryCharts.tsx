@@ -64,7 +64,7 @@ export default function CRMSummaryCharts({
               <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} tickFormatter={(value) => \`৳\${value}\`} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} tickFormatter={(value) => `৳${value}`} />
                 <RechartsTooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar dataKey="Earnings" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
@@ -90,10 +90,10 @@ export default function CRMSummaryCharts({
                     innerRadius={60}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => \`\${name} (\${(percent * 100).toFixed(0)}%)\`}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                   >
                     {courseDistribution.map((entry, index) => (
-                      <Cell key={\`cell-\${index}\`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
