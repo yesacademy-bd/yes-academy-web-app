@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { TrendingUp, Users, DollarSign, PieChart } from 'lucide-react'
+import { TrendingUp, Users, DollarSign, PieChart, Printer } from 'lucide-react'
+import CRMSummaryCharts from '@/components/batches/CRMSummaryCharts'
 
 export default function CRMClient({ initialData }: { initialData: any[] }) {
   const currentDate = new Date()
@@ -54,8 +55,8 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
   return (
     <div className="space-y-6">
       
-      {/* Filters */}
-      <div className="flex gap-4 items-center">
+      {/* Filters (Hidden during print) */}
+      <div className="flex flex-wrap gap-4 items-center print:hidden">
         <select 
           value={selectedMonth} 
           onChange={e => setSelectedMonth(Number(e.target.value))}
@@ -76,12 +77,26 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
           className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="All">All Courses</option>
+          <option value="Summary">Overall Summary (Charts)</option>
           {availableCourses.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
+        
+        {/* Print Button */}
+        <button
+          onClick={() => window.print()}
+          className="ml-auto flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          <Printer className="w-4 h-4" />
+          Print Report
+        </button>
       </div>
 
-      {/* Analytics Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {selectedCourse === 'Summary' ? (
+        <CRMSummaryCharts initialData={initialData} selectedYear={selectedYear} />
+      ) : (
+        <>
+          {/* Analytics Dashboard */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
           <div className="p-3 bg-green-50 rounded-lg text-green-600"><DollarSign className="w-6 h-6" /></div>
           <div>
@@ -155,7 +170,9 @@ export default function CRMClient({ initialData }: { initialData: any[] }) {
             </tbody>
           </table>
         </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
