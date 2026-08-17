@@ -28,7 +28,7 @@ export default function EnrollmentClient({ students, courses, batches, teachers,
   const filteredFormBatches = batches.filter(b => {
     let match = true
     if (selectedCourse) match = match && b.course_id?.toString() === selectedCourse
-    if (selectedTeacherForm !== 'All') match = match && b.faculty_id === selectedTeacherForm
+    if (selectedTeacherForm !== 'All') match = match && b.teacher_id === selectedTeacherForm
     return match
   })
 
