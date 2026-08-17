@@ -8,22 +8,29 @@ type EnrollmentClientProps = {
   students: any[]
   courses: any[]
   batches: any[]
+  teachers: any[]
   initialEnrollments: any[]
 }
 
-export default function EnrollmentClient({ students, courses, batches, initialEnrollments }: EnrollmentClientProps) {
+export default function EnrollmentClient({ students, courses, batches, teachers, initialEnrollments }: EnrollmentClientProps) {
   const [enrollments, setEnrollments] = useState(initialEnrollments)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   const [selectedCourse, setSelectedCourse] = useState('')
+  const [selectedTeacherForm, setSelectedTeacherForm] = useState('All')
   const [installmentCount, setInstallmentCount] = useState(0)
 
   // Filters
   const [filterBatch, setFilterBatch] = useState('All')
   const [filterCourse, setFilterCourse] = useState('All')
 
-  const filteredBatches = batches.filter(b => b.course_id?.toString() === selectedCourse)
+  const filteredFormBatches = batches.filter(b => {
+    let match = true
+    if (selectedCourse) match = match && b.course_id?.toString() === selectedCourse
+    if (selectedTeacherForm !== 'All') match = match && b.faculty_id === selectedTeacherForm
+    return match
+  })
 
   const handleEnroll = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -78,12 +85,20 @@ export default function EnrollmentClient({ students, courses, batches, initialEn
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
-              <select name="course_id" required value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Select Course...</option>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course Filter (Optional)</label>
+              <select name="course_id" value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">All Courses</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Teacher Filter (Optional)</label>
+              <select value={selectedTeacherForm} onChange={e => setSelectedTeacherForm(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="All">All Teachers</option>
+                {teachers.map(t => <option key={t.id} value={t.id}>{t.display_name}</option>)}
               </select>
             </div>
 
@@ -91,10 +106,12 @@ export default function EnrollmentClient({ students, courses, batches, initialEn
               <label className="block text-sm font-medium text-gray-700 mb-1">Batch</label>
               <select name="batch_id" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="">Select Batch...</option>
-                {filteredBatches.map(b => <option key={b.id} value={b.id}>{b.batch_name}</option>)}
+                {filteredFormBatches.map(b => <option key={b.id} value={b.id}>{b.batch_name}</option>)}
               </select>
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Total Course Fee</label>
               <input type="number" name="course_fee" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />

@@ -32,9 +32,18 @@ export default async function EnrollmentsPage() {
 
   const { data: batches } = await supabase
     .from('batches')
-    .select('id, batch_name, course_id, status, expected_end_date')
+    .select(`
+      id, batch_name, course_id, status, expected_end_date, faculty_id,
+      profiles!batches_faculty_id_fkey(display_name)
+    `)
     .neq('status', 'Completed')
     .order('created_at', { ascending: false })
+
+  const { data: teachers } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .eq('role', 'Faculty')
+    .order('display_name')
 
   const { data: enrollments } = await supabase
     .from('enrollments')
@@ -58,6 +67,7 @@ export default async function EnrollmentsPage() {
         students={students || []} 
         courses={courses || []} 
         batches={batches || []} 
+        teachers={teachers || []}
         initialEnrollments={enrollments || []} 
       />
     </div>

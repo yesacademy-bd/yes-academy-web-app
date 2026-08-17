@@ -19,7 +19,7 @@ export default function CRMClient({
   const currentDate = new Date()
   
   // Toggles
-  const [activeTab, setActiveTab] = useState<'Sales' | 'Expenses'>('Sales')
+  const [activeTab, setActiveTab] = useState<'Sales' | 'Expenses' | 'Conversion'>('Sales')
   
   // Filters
   const [dateFilterMode, setDateFilterMode] = useState<'Month' | '7Days' | '15Days'>('Month')
@@ -49,24 +49,30 @@ export default function CRMClient({
   // Filter Data
   const filteredData = useMemo(() => {
     return initialData.filter(item => {
+      // 1. Tab filter
+      if (activeTab === 'Sales' && item.type === 'Expense') return false
+      if (activeTab === 'Expenses' && item.type !== 'Expense') return false
+      if (activeTab === 'Conversion') return false // Unified Data not used for conversion
+
+      // 2. Date filter
       const d = new Date(item.date)
-      let matchDate = false
-      
       if (dateFilterMode === 'Month') {
-        matchDate = d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+        if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false
       } else if (dateFilterMode === '7Days') {
-        const diffTime = Math.abs(currentDate.getTime() - d.getTime())
-        matchDate = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) <= 7
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        if (diff > 7) return false
       } else if (dateFilterMode === '15Days') {
-        const diffTime = Math.abs(currentDate.getTime() - d.getTime())
-        matchDate = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) <= 15
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        if (diff > 15) return false
       }
 
-      const matchTab = activeTab === 'Expenses' ? item.type === 'Expense' : item.type !== 'Expense'
-      const matchMethod = filterMethod === 'All' || item.payment_method === filterMethod
-      const matchRef = !selectedRef || item.reference === selectedRef
+      // 3. Payment Method filter
+      if (filterMethod !== 'All' && item.payment_method !== filterMethod) return false
+      
+      // 4. Reference filter
+      if (selectedRef && item.reference !== selectedRef) return false
 
-      return matchDate && matchTab && matchMethod && matchRef
+      return true
     })
   }, [initialData, selectedYear, selectedMonth, dateFilterMode, activeTab, filterMethod, selectedRef, currentDate])
 
@@ -144,7 +150,7 @@ export default function CRMClient({
     <div className="space-y-6">
       
       {/* Top Level Tabs */}
-      <div className="flex gap-4 border-b border-gray-200 print:hidden">
+      <div className="flex gap-4 border-b border-gray-200 print:hidden overflow-x-auto whitespace-nowrap">
         <button 
           onClick={() => { setActiveTab('Sales'); setFilterMethod('All'); setSelectedRef(null); }}
           className={`pb-4 px-2 font-medium text-lg border-b-2 transition-colors ${activeTab === 'Sales' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -156,6 +162,12 @@ export default function CRMClient({
           className={`pb-4 px-2 font-medium text-lg border-b-2 transition-colors ${activeTab === 'Expenses' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           Total Expenses
+        </button>
+        <button 
+          onClick={() => { setActiveTab('Conversion'); setFilterMethod('All'); setSelectedRef(null); }}
+          className={`pb-4 px-2 font-medium text-lg border-b-2 transition-colors ${activeTab === 'Conversion' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Walk-in vs Lead Call
         </button>
       </div>
 
@@ -214,50 +226,28 @@ export default function CRMClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black">
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
-              {activeTab === 'Sales' ? <TrendingUp className="w-6 h-6 text-green-600" /> : <TrendingDown className="w-6 h-6 text-red-600" />}
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 print:text-black">
-                {activeTab === 'Sales' ? 'Total Sales Amount' : 'Total Expense Amount'}
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900 print:text-black">৳{totalAmount.toLocaleString()}</h3>
-            </div>
-          </div>
-        </div>
-
-        {activeTab === 'Sales' ? (
-          <div 
-            onClick={() => setShowDueModal(true)}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
-          >
-            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden">
-              <TrendingDown className="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 print:text-black">Total Due (Click for Details)</p>
-              <h3 className="text-2xl font-bold text-red-600 print:text-black">৳{totalDue.toLocaleString()}</h3>
-            </div>
-          </div>
-        ) : (
+      {activeTab === 'Conversion' ? (
+        <div className="mb-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center print:border-black">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-sm font-medium text-gray-500 print:text-black">Lead to Walk-in Conversion</h3>
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-sm font-medium text-gray-500 print:text-black">Lead to Walk-in Conversion Overview</h3>
               <div className="text-right">
-                <span className="text-2xl font-bold text-gray-900 print:text-black">{conversionStats.rate}%</span>
+                <p className="text-xs text-gray-500 mb-1">Conversion Rate</p>
+                <span className="text-3xl font-bold text-gray-900 print:text-black">{conversionStats.rate}%</span>
               </div>
             </div>
             
             {leadWalkinData.length > 0 ? (
-              <div className="h-[50px] w-full mb-2 print:hidden">
+              <div className="h-[250px] w-full mb-6 print:hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={leadWalkinData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
                     <RechartsTooltip cursor={{fill: '#f3f4f6'}} />
-                    <Line type="monotone" dataKey="Leads" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="Walkins" stroke="#10b981" strokeWidth={2} dot={false} />
+                    <Legend />
+                    <Line type="monotone" dataKey="Leads" stroke="#3b82f6" strokeWidth={3} dot={{r: 4, fill: '#3b82f6'}} />
+                    <Line type="monotone" dataKey="Walkins" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981'}} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -265,48 +255,82 @@ export default function CRMClient({
               <p className="text-xs text-gray-400 my-4 print:hidden">No inquiry data for this period.</p>
             )}
             
-            <div className="flex justify-between items-center text-xs text-gray-500 print:text-black mt-auto">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 print:hidden"></span> {conversionStats.totalLeads} Leads</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 print:hidden"></span> {conversionStats.totalWalkins} Walk-ins</span>
-              <span className="font-medium">({conversionStats.converted} Converted)</span>
+            <div className="flex justify-between items-center text-sm text-gray-600 print:text-black mt-auto border-t border-gray-100 pt-4">
+              <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 print:hidden"></span> <strong>{conversionStats.totalLeads}</strong> Total Leads</span>
+              <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500 print:hidden"></span> <strong>{conversionStats.totalWalkins}</strong> Total Walk-ins</span>
+              <span className="font-medium text-gray-900">({conversionStats.converted} Walk-ins Converted from Leads)</span>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Charts (Hidden on print) */}
-      <div className="print:hidden space-y-6">
-        <CRMSummaryCharts 
-          filteredData={filteredData}
-          selectedYear={selectedYear} 
-          selectedMonth={selectedMonth}
-          dateFilterMode={dateFilterMode}
-          activeTab={activeTab}
-        />
-      </div>
-
-      {/* Unified Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:border-none print:shadow-none">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 print:bg-white print:border-black">
-          <h3 className="font-semibold text-gray-900 print:text-black">
-            {activeTab} Details
-          </h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse print:text-xs">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold print:bg-white print:text-black print:border-black">
-                <th className="p-4 print:p-2 border-r print:border-black">Date</th>
-                <th className="p-4 print:p-2 border-r print:border-black">Type / Category</th>
-                <th className="p-4 print:p-2 border-r print:border-black">Description / Item</th>
-                {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black">Student</th>}
-                <th className="p-4 print:p-2 border-r print:border-black">Method</th>
-                {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black text-right">Fee</th>}
-                {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black text-right">Due</th>}
-                <th className="p-4 print:p-2 text-right">Paid Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 print:divide-black">
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
+                {activeTab === 'Sales' ? <TrendingUp className="w-6 h-6 text-green-600" /> : <TrendingDown className="w-6 h-6 text-red-600" />}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500 print:text-black">
+                  {activeTab === 'Sales' ? 'Total Sales Amount' : 'Total Expense Amount'}
+                </p>
+                <h3 className="text-2xl font-bold text-gray-900 print:text-black">৳ {totalAmount.toLocaleString()}</h3>
+              </div>
+            </div>
+          </div>
+
+          {activeTab === 'Sales' && (
+            <div 
+              onClick={() => setShowDueModal(true)}
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden">
+                <TrendingDown className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500 print:text-black">Total Due (Click for Details)</p>
+                <h3 className="text-2xl font-bold text-red-600 print:text-black">৳ {totalDue.toLocaleString()}</h3>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Charts (Hidden on print, and hidden in Conversion tab) */}
+      {activeTab !== 'Conversion' && (
+        <div className="print:hidden space-y-6">
+          <CRMSummaryCharts 
+            filteredData={filteredData}
+            selectedYear={selectedYear} 
+            selectedMonth={selectedMonth}
+            dateFilterMode={dateFilterMode}
+            activeTab={activeTab}
+          />
+        </div>
+      )}
+
+      {/* Unified Table (Hidden in Conversion tab) */}
+      {activeTab !== 'Conversion' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:border-none print:shadow-none">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 print:bg-white print:border-black">
+            <h3 className="font-semibold text-gray-900 print:text-black">
+              {activeTab} Details
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse print:text-xs">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold print:bg-white print:text-black print:border-black">
+                  <th className="p-4 print:p-2 border-r print:border-black">Date</th>
+                  <th className="p-4 print:p-2 border-r print:border-black">Type / Category</th>
+                  <th className="p-4 print:p-2 border-r print:border-black">Description / Item</th>
+                  {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black">Student</th>}
+                  <th className="p-4 print:p-2 border-r print:border-black">Method</th>
+                  {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black text-right">Fee</th>}
+                  {activeTab === 'Sales' && <th className="p-4 print:p-2 border-r print:border-black text-right">Due</th>}
+                  <th className="p-4 print:p-2 text-right">Paid Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 print:divide-black">
               {filteredData.length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-gray-500 print:text-black">No transactions found for this period.</td>
@@ -351,6 +375,7 @@ export default function CRMClient({
           </table>
         </div>
       </div>
+      )}
 
       {/* MODAL: Due Details */}
       {showDueModal && (
