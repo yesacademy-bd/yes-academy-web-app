@@ -62,8 +62,31 @@ export default function BatchForm({
 
   const selectedCourseId = watch('course_id')
   const startDate = watch('start_date')
+  const startTime = watch('start_time')
   const selectedCourse = courses.find(c => c.id === selectedCourseId)
   const isStrictCount = selectedCourse?.family === 'PTE' || selectedCourse?.family === 'IELTS'
+
+  useEffect(() => {
+    if (startTime) {
+      const [hoursStr, minutesStr] = startTime.split(':')
+      if (hoursStr && minutesStr) {
+        let hours = parseInt(hoursStr, 10)
+        let minutes = parseInt(minutesStr, 10)
+        
+        minutes += 30
+        if (minutes >= 60) {
+          hours += 1
+          minutes -= 60
+        }
+        hours += 1
+        
+        if (hours >= 24) hours %= 24
+        
+        const newEndTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+        setValue('end_time', newEndTime, { shouldValidate: true })
+      }
+    }
+  }, [startTime, setValue])
 
   useEffect(() => {
     if (startDate && selectedCourseId) {
