@@ -18,19 +18,29 @@ export default async function CRMPage() {
     return <div className="p-8 text-red-500">Access Denied. HR or Admin only.</div>
   }
 
-  // Fetch all enrollments with student and batch/course details
-  const { data: enrollmentsData } = await supabase
-    .from('enrollments')
-    .select(`
-      id, enrolled_at, course_fee, paid_amount, due_amount, payment_method, reference, last_modified_date,
-      students (id, name, phone),
-      batches (id, batch_name, courses (id, family, name))
-    `)
-    .order('enrolled_at', { ascending: false })
-
-  const { data: mocksData } = await supabase.from('mock_services').select('*')
-  const { data: registrationsData } = await supabase.from('registrations').select('*')
-  const { data: expensesData } = await supabase.from('expenses').select('*')
+  // Fetch all data in parallel
+  const [
+    { data: enrollmentsData },
+    { data: mocksData },
+    { data: registrationsData },
+    { data: expensesData },
+    { data: leads },
+    { data: walkins }
+  ] = await Promise.all([
+    supabase
+      .from('enrollments')
+      .select(`
+        id, enrolled_at, course_fee, paid_amount, due_amount, payment_method, reference, last_modified_date,
+        students (id, name, phone),
+        batches (id, batch_name, courses (id, family, name))
+      `)
+      .order('enrolled_at', { ascending: false }),
+    supabase.from('mock_services').select('*'),
+    supabase.from('registrations').select('*'),
+    supabase.from('expenses').select('*'),
+    supabase.from('lead_calls').select('*'),
+    supabase.from('walk_ins').select('*')
+  ])
 
   const enrollments = enrollmentsData?.map((e: any) => ({
     id: e.id,
@@ -86,9 +96,6 @@ export default async function CRMPage() {
   })) || []
 
   const unifiedData = [...enrollments, ...mocks, ...registrations, ...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-
-  const { data: leads } = await supabase.from('lead_calls').select('*')
-  const { data: walkins } = await supabase.from('walk_ins').select('*')
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

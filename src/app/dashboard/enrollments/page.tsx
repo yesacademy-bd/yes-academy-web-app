@@ -21,41 +21,21 @@ export default async function EnrollmentsPage() {
     redirect('/dashboard')
   }
 
-  // 2. Fetch Data
-  const { data: students } = await supabase
-    .from('students')
-    .select('id, name, phone, system_id')
-    .order('created_at', { ascending: false })
-
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('*')
-    .order('name')
-
-  const { data: batches } = await supabase
-    .from('batches')
-    .select(`
+  // 2. Fetch Data in Parallel
+  const [
+    { data: students },
+    { data: courses },
+    { data: batches },
+    { data: teachers }
+  ] = await Promise.all([
+    supabase.from('students').select('id, name, phone, system_id').order('created_at', { ascending: false }),
+    supabase.from('courses').select('*').order('name'),
+    supabase.from('batches').select(`
       id, batch_name, course_id, status, expected_end_date, teacher_id,
       profiles!batches_teacher_id_fkey(display_name)
-    `)
-    .neq('status', 'Completed')
-    .order('created_at', { ascending: false })
-
-  const { data: teachers } = await supabase
-    .from('profiles')
-    .select('id, display_name')
-    .eq('role', 'Faculty')
-    .order('display_name')
-
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select(`
-      *,
-      student:students(name, phone),
-      batch:batches(batch_name, course:courses(id, name, family)),
-      installments(*)
-    `)
-    .order('created_at', { ascending: false })
+    `).neq('status', 'Completed').order('created_at', { ascending: false }),
+    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').order('display_name')
+  ])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -69,7 +49,6 @@ export default async function EnrollmentsPage() {
         courses={courses || []} 
         batches={batches || []} 
         teachers={teachers || []}
-        initialEnrollments={enrollments || []} 
       />
     </div>
   )

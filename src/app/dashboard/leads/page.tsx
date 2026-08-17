@@ -18,12 +18,13 @@ export default async function LeadsPage() {
     redirect('/dashboard')
   }
 
-  const { data: leads } = await supabase
-    .from('lead_calls')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  const { data: courses } = await supabase.from('courses').select('*')
+  const [
+    { data: leads },
+    { data: courses }
+  ] = await Promise.all([
+    supabase.from('lead_calls').select('*').order('created_at', { ascending: false }),
+    supabase.from('courses').select('*')
+  ])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

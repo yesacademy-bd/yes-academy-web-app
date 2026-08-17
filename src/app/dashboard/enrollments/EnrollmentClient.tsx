@@ -9,21 +9,15 @@ type EnrollmentClientProps = {
   courses: any[]
   batches: any[]
   teachers: any[]
-  initialEnrollments: any[]
 }
 
-export default function EnrollmentClient({ students, courses, batches, teachers, initialEnrollments }: EnrollmentClientProps) {
-  const [enrollments, setEnrollments] = useState(initialEnrollments)
+export default function EnrollmentClient({ students, courses, batches, teachers }: EnrollmentClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   const [selectedCourse, setSelectedCourse] = useState('')
   const [selectedTeacherForm, setSelectedTeacherForm] = useState('All')
   const [installmentCount, setInstallmentCount] = useState(0)
-
-  // Filters
-  const [filterBatch, setFilterBatch] = useState('All')
-  const [filterCourse, setFilterCourse] = useState('All')
 
   const filteredFormBatches = batches.filter(b => {
     let match = true
@@ -170,87 +164,6 @@ export default function EnrollmentClient({ students, courses, batches, teachers,
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Enrollments List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-gray-500" /> Enrollment Records
-          </h3>
-          <div className="flex gap-2">
-            <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)} className="text-sm border-gray-300 rounded-md">
-              <option value="All">All Courses</option>
-              {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            <select value={filterBatch} onChange={e => setFilterBatch(e.target.value)} className="text-sm border-gray-300 rounded-md">
-              <option value="All">All Batches</option>
-              {batches.map(b => <option key={b.id} value={b.id}>{b.batch_name}</option>)}
-            </select>
-          </div>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                <th className="p-4">Student</th>
-                <th className="p-4">Course / Batch</th>
-                <th className="p-4">Fee / Paid / Due</th>
-                <th className="p-4">Installment Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {enrollments.filter(e => {
-                if (filterCourse !== 'All' && e.batch?.course?.id !== filterCourse) return false
-                if (filterBatch !== 'All' && e.batch_id !== filterBatch) return false
-                return true
-              }).map(e => {
-                
-                // Identify next due installment
-                const pendingInsts = (e.installments || []).filter((i: any) => i.paid_amount < i.amount).sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
-                const nextInst = pendingInsts[0]
-                const alarm = nextInst ? isAlarmActive(nextInst.due_date, nextInst.paid_amount, nextInst.amount) : false
-                
-                return (
-                  <tr key={e.id} className={`hover:bg-gray-50 ${alarm ? 'bg-red-50/50' : ''}`}>
-                    <td className="p-4">
-                      <p className="font-medium text-gray-900">{e.student?.name}</p>
-                      <p className="text-sm text-gray-500">{e.student?.phone}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-medium text-gray-900">{e.batch?.course?.family}</p>
-                      <p className="text-sm text-gray-500">{e.batch?.batch_name}</p>
-                    </td>
-                    <td className="p-4 text-sm">
-                      <p>Fee: ৳{e.course_fee}</p>
-                      <p className="text-green-600">Paid: ৳{e.paid_amount}</p>
-                      <p className="text-red-600 font-medium">Due: ৳{e.due_amount}</p>
-                    </td>
-                    <td className="p-4 text-sm">
-                      {nextInst ? (
-                        <div>
-                          <p className={`font-medium ${alarm ? 'text-red-600 flex items-center gap-1' : 'text-orange-600'}`}>
-                            {alarm && <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>}
-                            Next Due: {new Date(nextInst.due_date).toLocaleDateString()}
-                          </p>
-                          <p className="text-gray-500">Amount: ৳{nextInst.amount - nextInst.paid_amount}</p>
-                        </div>
-                      ) : (
-                        <p className="text-green-600 font-medium">Fully Paid / No Dues</p>
-                      )}
-                    </td>
-                    <td className="p-4 text-right">
-                      {/* Action buttons will go here (Pay Installment, etc) */}
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View / Pay</button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
   )

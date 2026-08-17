@@ -18,31 +18,25 @@ export default async function DuesPage() {
     redirect('/dashboard')
   }
 
-  // Fetch enrollments with dues and their pending installments
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select(`
-      id, due_amount, course_fee, paid_amount, payment_method, enrolled_at,
-      students (id, name, phone, guardian_phone),
-      batches (id, batch_name, courses (id, family, name)),
-      installments (id, amount, due_date, status)
-    `)
-    .gt('due_amount', 0)
-    .order('enrolled_at', { ascending: false })
-
-  // Fetch mock services with dues
-  const { data: mocks } = await supabase
-    .from('mock_services')
-    .select('*')
-    .gt('due_amount', 0)
-    .order('created_at', { ascending: false })
-
-  // Fetch registrations with dues
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select('*')
-    .gt('due_amount', 0)
-    .order('created_at', { ascending: false })
+  // Fetch all dues data in parallel
+  const [
+    { data: enrollments },
+    { data: mocks },
+    { data: registrations }
+  ] = await Promise.all([
+    supabase
+      .from('enrollments')
+      .select(`
+        id, due_amount, course_fee, paid_amount, payment_method, enrolled_at,
+        students (id, name, phone, guardian_phone),
+        batches (id, batch_name, courses (id, family, name)),
+        installments (id, amount, due_date, status)
+      `)
+      .gt('due_amount', 0)
+      .order('enrolled_at', { ascending: false }),
+    supabase.from('mock_services').select('*').gt('due_amount', 0).order('created_at', { ascending: false }),
+    supabase.from('registrations').select('*').gt('due_amount', 0).order('created_at', { ascending: false })
+  ])
 
   const dueData = [
     ...(enrollments?.map((e: any) => {

@@ -18,12 +18,13 @@ export default async function WalkinsPage() {
     redirect('/dashboard')
   }
 
-  const { data: walkins } = await supabase
-    .from('walk_ins')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  const { data: courses } = await supabase.from('courses').select('*')
+  const [
+    { data: walkins },
+    { data: courses }
+  ] = await Promise.all([
+    supabase.from('walk_ins').select('*').order('created_at', { ascending: false }),
+    supabase.from('courses').select('*')
+  ])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
