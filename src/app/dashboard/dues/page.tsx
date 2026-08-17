@@ -18,13 +18,14 @@ export default async function DuesPage() {
     redirect('/dashboard')
   }
 
-  // Fetch enrollments with dues
+  // Fetch enrollments with dues and their pending installments
   const { data: enrollments } = await supabase
     .from('enrollments')
     .select(`
       id, due_amount, course_fee, paid_amount, payment_method, enrolled_at,
       students (id, name, phone, guardian_phone),
-      batches (id, batch_name, courses (id, family, name))
+      batches (id, batch_name, courses (id, family, name)),
+      installments (id, amount, due_date, status)
     `)
     .gt('due_amount', 0)
     .order('enrolled_at', { ascending: false })
@@ -44,19 +45,26 @@ export default async function DuesPage() {
     .order('created_at', { ascending: false })
 
   const dueData = [
-    ...(enrollments?.map((e: any) => ({
-      id: e.id,
-      type: 'Enrollment',
-      date: e.enrolled_at,
-      student_name: e.students?.name,
-      phone: e.students?.phone,
-      guardian_phone: e.students?.guardian_phone,
-      item_name: `${e.batches?.courses?.family || ''} - ${e.batches?.batch_name || ''}`,
-      total_fee: e.course_fee,
-      paid_amount: e.paid_amount,
-      due_amount: e.due_amount,
-      payment_method: e.payment_method
-    })) || []),
+    ...(enrollments?.map((e: any) => {
+      // Find the next Due installment
+      const pendingInst = e.installments?.filter((i: any) => i.status === 'Due')
+        .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0]
+
+      return {
+        id: e.id,
+        type: 'Enrollment',
+        date: e.enrolled_at,
+        student_name: e.students?.name,
+        phone: e.students?.phone,
+        guardian_phone: e.students?.guardian_phone,
+        item_name: `${e.batches?.courses?.family || ''} - ${e.batches?.batch_name || ''}`,
+        total_fee: e.course_fee,
+        paid_amount: e.paid_amount,
+        due_amount: e.due_amount,
+        payment_method: e.payment_method,
+        next_installment_date: pendingInst?.due_date || null
+      }
+    }) || []),
     ...(mocks?.map((m: any) => ({
       id: m.id,
       type: 'Mock Service',

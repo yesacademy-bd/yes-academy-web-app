@@ -23,6 +23,8 @@ export default async function LeadsPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  const { data: courses } = await supabase.from('courses').select('*')
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
@@ -30,7 +32,7 @@ export default async function LeadsPage() {
         <p className="text-gray-500 mt-1">Record incoming calls and inquiries.</p>
       </div>
 
-      <LeadClient initialLeads={leads || []} />
+      <LeadClient initialLeads={leads || []} courses={courses || []} />
     </div>
   )
 }

@@ -23,6 +23,8 @@ export default async function WalkinsPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  const { data: courses } = await supabase.from('courses').select('*')
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
@@ -30,7 +32,7 @@ export default async function WalkinsPage() {
         <p className="text-gray-500 mt-1">Record physical walk-in inquiries.</p>
       </div>
 
-      <WalkinClient initialWalkins={walkins || []} />
+      <WalkinClient initialWalkins={walkins || []} courses={courses || []} />
     </div>
   )
 }

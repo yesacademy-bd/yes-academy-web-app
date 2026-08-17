@@ -23,7 +23,7 @@ export default function EnrollmentClient({ students, courses, batches, initialEn
   const [filterBatch, setFilterBatch] = useState('All')
   const [filterCourse, setFilterCourse] = useState('All')
 
-  const filteredBatches = batches.filter(b => b.course_id === selectedCourse)
+  const filteredBatches = batches.filter(b => b.course_id?.toString() === selectedCourse)
 
   const handleEnroll = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

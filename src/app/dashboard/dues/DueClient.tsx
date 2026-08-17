@@ -51,6 +51,7 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                 <th className="p-4 print:p-2 border-r print:border-black">Date</th>
                 <th className="p-4 print:p-2 border-r print:border-black">Student Details</th>
                 <th className="p-4 print:p-2 border-r print:border-black">Item</th>
+                <th className="p-4 print:p-2 border-r print:border-black text-center">Due Alarm</th>
                 <th className="p-4 print:p-2 border-r print:border-black text-right">Fee</th>
                 <th className="p-4 print:p-2 border-r print:border-black text-right">Paid</th>
                 <th className="p-4 print:p-2 border-r print:border-black text-right">Due Amount</th>
@@ -60,10 +61,32 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
             <tbody className="divide-y divide-gray-200 print:divide-black">
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-gray-500 print:text-black">No pending dues across all services. Great job!</td>
+                  <td colSpan={8} className="p-8 text-center text-gray-500 print:text-black">No pending dues across all services. Great job!</td>
                 </tr>
               )}
-              {data.map((item, idx) => (
+              {data.map((item, idx) => {
+                let alarmClass = "bg-gray-100 text-gray-600"
+                let alarmText = "No Installment"
+
+                if (item.next_installment_date) {
+                  const due = new Date(item.next_installment_date)
+                  const now = new Date()
+                  const diffTime = due.getTime() - now.getTime()
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                  
+                  if (diffDays < 0) {
+                    alarmClass = "bg-red-100 text-red-700 animate-pulse"
+                    alarmText = "Overdue!"
+                  } else if (diffDays <= 3) {
+                    alarmClass = "bg-orange-100 text-orange-700 animate-pulse"
+                    alarmText = `Due in ${diffDays} days`
+                  } else {
+                    alarmClass = "bg-green-100 text-green-700"
+                    alarmText = `Due on ${due.toLocaleDateString()}`
+                  }
+                }
+
+                return (
                 <tr key={`${item.id}-${idx}`} className="hover:bg-gray-50 print:hover:bg-white">
                   <td className="p-4 print:p-2 text-sm text-gray-900 print:text-black border-r print:border-black">
                     {new Date(item.date).toLocaleDateString()}
@@ -75,6 +98,11 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                   <td className="p-4 print:p-2 border-r print:border-black">
                     <span className="text-xs font-semibold px-2 py-1 bg-gray-100 rounded text-gray-600 print:bg-transparent print:p-0 block mb-1 w-fit">{item.type}</span>
                     <p className="text-sm text-gray-800 print:text-black">{item.item_name}</p>
+                  </td>
+                  <td className="p-4 print:p-2 text-center border-r print:border-black">
+                    <span className={`text-xs font-bold px-2 py-1 rounded ${alarmClass}`}>
+                      {alarmText}
+                    </span>
                   </td>
                   <td className="p-4 print:p-2 text-sm text-gray-600 print:text-black border-r print:border-black text-right">
                     ৳{item.total_fee.toLocaleString()}
@@ -106,7 +134,8 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                     )}
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -114,41 +143,41 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
 
       {/* Payment Modal */}
       {selectedRecord && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
-                <AlertCircle className="w-6 h-6 text-blue-600" /> Collect Due
+              <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                <AlertCircle className="w-6 h-6 text-blue-500" /> Collect Due
               </h3>
-              <button onClick={() => setSelectedRecord(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+              <button onClick={() => setSelectedRecord(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
             
-            {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div className="mb-4 p-3 bg-red-900/50 border border-red-800 text-red-200 rounded-lg text-sm">{error}</div>}
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600 mb-1">Student: <span className="font-semibold text-gray-900">{selectedRecord.student_name}</span></p>
-              <p className="text-sm text-gray-600 mb-1">Item: <span className="font-semibold text-gray-900">{selectedRecord.item_name}</span></p>
-              <p className="text-sm text-red-600 font-bold">Total Due: ৳{selectedRecord.due_amount.toLocaleString()}</p>
+            <div className="bg-slate-800 rounded-lg p-4 mb-6 border border-slate-700">
+              <p className="text-sm text-slate-300 mb-1">Student: <span className="font-semibold text-white">{selectedRecord.student_name}</span></p>
+              <p className="text-sm text-slate-300 mb-1">Item: <span className="font-semibold text-white">{selectedRecord.item_name}</span></p>
+              <p className="text-sm text-red-400 font-bold">Total Due: ৳{selectedRecord.due_amount.toLocaleString()}</p>
             </div>
 
             <form onSubmit={handlePay} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount (৳)</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Payment Amount (৳)</label>
                 <input 
                   type="number" 
                   required 
                   max={selectedRecord.due_amount}
                   value={payAmount}
                   onChange={e => setPayAmount(e.target.value)}
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                  className="w-full bg-slate-800 border-slate-700 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setSelectedRecord(null)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                <button type="button" onClick={() => setSelectedRecord(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50">
+                <button type="submit" disabled={isSubmitting} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50">
                   {isSubmitting ? 'Processing...' : 'Confirm Payment'}
                 </button>
               </div>

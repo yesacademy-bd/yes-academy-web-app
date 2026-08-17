@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Phone, Calendar } from 'lucide-react'
 import { createLead } from './actions'
 
-export default function LeadClient({ initialLeads }: { initialLeads: any[] }) {
+export default function LeadClient({ initialLeads, courses }: { initialLeads: any[], courses: any[] }) {
   const [leads] = useState(initialLeads)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,12 +49,46 @@ export default function LeadClient({ initialLeads }: { initialLeads: any[] }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Interested Course</label>
-              <input type="text" name="interested_course" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
+              <select name="lead_source" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Select Source...</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Messenger">Messenger</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Direct Call">Direct Call</option>
+                <option value="Physical Marketing">Physical Marketing</option>
+                <option value="Student Ref">Student Reference</option>
+                <option value="Staff Ref">Staff Reference</option>
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Summary / Notes</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Interested Service</label>
+              <select name="interested_course" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Select Service...</option>
+                <optgroup label="Courses">
+                  {courses.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Mock Tests">
+                  <option value="Mock Test - IELTS">Mock Test - IELTS</option>
+                  <option value="Mock Test - PTE">Mock Test - PTE</option>
+                </optgroup>
+                <optgroup label="Exam Registration">
+                  <option value="Exam Registration - IELTS">Exam Registration - IELTS</option>
+                  <option value="Exam Registration - PTE">Exam Registration - PTE</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Lead Call Person</label>
+              <input type="text" name="lead_call_person" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
               <textarea name="summary" rows={3} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
             </div>
 
@@ -78,8 +112,8 @@ export default function LeadClient({ initialLeads }: { initialLeads: any[] }) {
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="p-4">Date</th>
                   <th className="p-4">Student</th>
-                  <th className="p-4">Course</th>
-                  <th className="p-4">Summary</th>
+                  <th className="p-4">Source & Service</th>
+                  <th className="p-4">Staff & Remarks</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -95,8 +129,14 @@ export default function LeadClient({ initialLeads }: { initialLeads: any[] }) {
                       <p className="font-medium text-gray-900">{l.student_name}</p>
                       <p className="text-sm text-gray-500">{l.phone}</p>
                     </td>
-                    <td className="p-4 text-sm text-gray-600">{l.interested_course || '-'}</td>
-                    <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate">{l.summary || '-'}</td>
+                    <td className="p-4">
+                      <span className="text-xs font-semibold px-2 py-1 bg-gray-100 rounded text-gray-600 block mb-1 w-fit">{l.lead_source || 'Unknown'}</span>
+                      <p className="text-sm text-gray-600">{l.interested_course || '-'}</p>
+                    </td>
+                    <td className="p-4">
+                      <p className="text-sm font-medium text-gray-700">{l.lead_call_person || '-'}</p>
+                      <p className="text-xs text-gray-500 max-w-[200px] truncate">{l.summary || '-'}</p>
+                    </td>
                   </tr>
                 ))}
               </tbody>

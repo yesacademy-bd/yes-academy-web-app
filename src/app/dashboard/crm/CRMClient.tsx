@@ -107,6 +107,36 @@ export default function CRMClient({
     return Object.entries(counts).map(([name, data]) => ({ name, ...data }))
   }, [initialLeads, initialWalkins, dateFilterMode, selectedYear, selectedMonth, currentDate])
 
+  const conversionStats = useMemo(() => {
+    const filterByDate = (arr: any[]) => arr.filter(item => {
+      const d = new Date(item.created_at)
+      if (dateFilterMode === 'Month') {
+        return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+      } else if (dateFilterMode === '7Days') {
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        return diff <= 7
+      } else if (dateFilterMode === '15Days') {
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        return diff <= 15
+      }
+      return false
+    })
+
+    const periodLeads = filterByDate(initialLeads)
+    const periodWalkins = filterByDate(initialWalkins)
+
+    let converted = 0
+    periodWalkins.forEach(w => {
+      const match = initialLeads.find(l => l.phone === w.phone || (l.student_name && l.student_name === w.student_name))
+      if (match) converted++
+    })
+
+    const totalLeads = periodLeads.length
+    const rate = totalLeads > 0 ? ((converted / totalLeads) * 100).toFixed(1) : '0.0'
+
+    return { totalLeads, totalWalkins: periodWalkins.length, converted, rate }
+  }, [initialLeads, initialWalkins, dateFilterMode, selectedYear, selectedMonth, currentDate])
+
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i)
 
@@ -213,10 +243,16 @@ export default function CRMClient({
             </div>
           </div>
         ) : (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Lead Call vs Walk-in</h3>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center print:border-black">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-sm font-medium text-gray-500 print:text-black">Lead to Walk-in Conversion</h3>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-gray-900 print:text-black">{conversionStats.rate}%</span>
+              </div>
+            </div>
+            
             {leadWalkinData.length > 0 ? (
-              <div className="h-[60px] w-full">
+              <div className="h-[50px] w-full mb-2 print:hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={leadWalkinData}>
                     <RechartsTooltip cursor={{fill: '#f3f4f6'}} />
@@ -226,11 +262,13 @@ export default function CRMClient({
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-xs text-gray-400">No inquiry data for this period.</p>
+              <p className="text-xs text-gray-400 my-4 print:hidden">No inquiry data for this period.</p>
             )}
-            <div className="flex gap-4 mt-2 text-xs">
-              <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Leads</span>
-              <span className="flex items-center gap-1 text-green-600"><span className="w-2 h-2 rounded-full bg-green-500"></span> Walk-ins</span>
+            
+            <div className="flex justify-between items-center text-xs text-gray-500 print:text-black mt-auto">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 print:hidden"></span> {conversionStats.totalLeads} Leads</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 print:hidden"></span> {conversionStats.totalWalkins} Walk-ins</span>
+              <span className="font-medium">({conversionStats.converted} Converted)</span>
             </div>
           </div>
         )}
@@ -316,30 +354,30 @@ export default function CRMClient({
 
       {/* MODAL: Due Details */}
       {showDueModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 print:hidden">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Students with Pending Dues</h3>
-              <button onClick={() => setShowDueModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+              <h3 className="font-bold text-lg text-white">Students with Pending Dues</h3>
+              <button onClick={() => setShowDueModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-4 overflow-y-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                  <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
                     <th className="p-3">Student</th>
                     <th className="p-3">Item</th>
                     <th className="p-3 text-right">Due Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-slate-700/50">
                   {dueStudents.map((s, idx) => (
                     <tr key={idx}>
                       <td className="p-3">
-                        <p className="text-sm font-medium text-gray-900">{s.student_name}</p>
-                        <p className="text-xs text-gray-500">{s.phone}</p>
+                        <p className="text-sm font-medium text-white">{s.student_name}</p>
+                        <p className="text-xs text-slate-400">{s.phone}</p>
                       </td>
-                      <td className="p-3 text-sm text-gray-600">{s.item_name}</td>
-                      <td className="p-3 text-sm font-bold text-red-600 text-right">৳{s.due_amount.toLocaleString()}</td>
+                      <td className="p-3 text-sm text-slate-300">{s.item_name}</td>
+                      <td className="p-3 text-sm font-bold text-red-400 text-right">৳{s.due_amount.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -351,11 +389,11 @@ export default function CRMClient({
 
       {/* MODAL: Daily Report */}
       {showDailyModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 print:hidden">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Day-wise Summary</h3>
-              <button onClick={() => setShowDailyModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+              <h3 className="font-bold text-lg text-white">Day-wise Summary</h3>
+              <button onClick={() => setShowDailyModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-4 overflow-y-auto">
               {/* Calculate daily stats */}
@@ -373,20 +411,20 @@ export default function CRMClient({
                 return (
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                      <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
                         <th className="p-3">Date</th>
                         <th className="p-3">Transactions</th>
-                        <th className="p-3 text-right text-green-600">Earnings</th>
-                        {activeTab === 'Sales' && <th className="p-3 text-right text-red-600">Dues Added</th>}
+                        <th className="p-3 text-right text-green-400">Earnings</th>
+                        {activeTab === 'Sales' && <th className="p-3 text-right text-red-400">Dues Added</th>}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-700/50">
                       {sortedDays.map(([date, stats], idx) => (
                         <tr key={idx}>
-                          <td className="p-3 text-sm font-medium text-gray-900">{date}</td>
-                          <td className="p-3 text-sm text-gray-600">{stats.count}</td>
-                          <td className="p-3 text-sm font-bold text-green-600 text-right">৳{stats.earnings.toLocaleString()}</td>
-                          {activeTab === 'Sales' && <td className="p-3 text-sm font-bold text-red-600 text-right">৳{stats.dues.toLocaleString()}</td>}
+                          <td className="p-3 text-sm font-medium text-white">{date}</td>
+                          <td className="p-3 text-sm text-slate-300">{stats.count}</td>
+                          <td className="p-3 text-sm font-bold text-green-400 text-right">৳{stats.earnings.toLocaleString()}</td>
+                          {activeTab === 'Sales' && <td className="p-3 text-sm font-bold text-red-400 text-right">৳{stats.dues.toLocaleString()}</td>}
                         </tr>
                       ))}
                     </tbody>
