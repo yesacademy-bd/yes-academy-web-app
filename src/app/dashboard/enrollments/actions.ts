@@ -11,7 +11,10 @@ export async function createEnrollment(formData: FormData) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
 
-  const student_id = formData.get('student_id') as string
+  const name = formData.get('student_name') as string
+  const phone = formData.get('mobile_number') as string
+  const guardian_phone = formData.get('guardian_number') as string
+
   const course_id = formData.get('course_id') as string
   const batch_id = formData.get('batch_id') as string
   const course_fee = parseFloat(formData.get('course_fee') as string) || 0
@@ -19,8 +22,28 @@ export async function createEnrollment(formData: FormData) {
   const payment_method = formData.get('payment_method') as string
   const installment_count = parseInt(formData.get('installment_count') as string) || 0
 
-  if (!student_id || !course_id || !batch_id) {
+  if (!name || !phone || !course_id || !batch_id) {
     return { success: false, message: 'Missing required fields' }
+  }
+
+  // Check if student exists
+  let student_id = ''
+  const { data: existingStudent } = await supabase
+    .from('students')
+    .select('id')
+    .eq('phone', phone)
+    .single()
+
+  if (existingStudent) {
+    student_id = existingStudent.id
+  } else {
+    const { data: newStudent, error: createError } = await supabase
+      .from('students')
+      .insert({ name, phone, guardian_phone })
+      .select('id')
+      .single()
+    if (createError) return { success: false, message: 'Failed to create student: ' + createError.message }
+    student_id = newStudent.id
   }
 
   // 1. Create Enrollment

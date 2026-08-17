@@ -184,7 +184,7 @@ export default function CRMClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black">
           <div className="flex items-center gap-4">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -199,19 +199,38 @@ export default function CRMClient({
           </div>
         </div>
 
-        {activeTab === 'Sales' && (
+        {activeTab === 'Sales' ? (
           <div 
             onClick={() => setShowDueModal(true)}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black"
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden">
-                <TrendingDown className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden">
+              <TrendingDown className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500 print:text-black">Total Due (Click for Details)</p>
+              <h3 className="text-2xl font-bold text-red-600 print:text-black">৳{totalDue.toLocaleString()}</h3>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Lead Call vs Walk-in</h3>
+            {leadWalkinData.length > 0 ? (
+              <div className="h-[60px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={leadWalkinData}>
+                    <RechartsTooltip cursor={{fill: '#f3f4f6'}} />
+                    <Line type="monotone" dataKey="Leads" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="Walkins" stroke="#10b981" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 print:text-black">Total Due (Click for Details)</p>
-                <h3 className="text-2xl font-bold text-red-600 print:text-black">৳{totalDue.toLocaleString()}</h3>
-              </div>
+            ) : (
+              <p className="text-xs text-gray-400">No inquiry data for this period.</p>
+            )}
+            <div className="flex gap-4 mt-2 text-xs">
+              <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Leads</span>
+              <span className="flex items-center gap-1 text-green-600"><span className="w-2 h-2 rounded-full bg-green-500"></span> Walk-ins</span>
             </div>
           </div>
         )}
@@ -226,25 +245,6 @@ export default function CRMClient({
           dateFilterMode={dateFilterMode}
           activeTab={activeTab}
         />
-
-        {activeTab === 'Sales' && leadWalkinData.length > 0 && (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-6">Lead Call vs Walk-in Conversation Graph</h3>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={leadWalkinData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#4b5563'}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#4b5563'}} />
-                  <RechartsTooltip cursor={{fill: '#f3f4f6'}} />
-                  <Legend />
-                  <Line type="monotone" dataKey="Leads" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
-                  <Line type="monotone" dataKey="Walkins" stroke="#10b981" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Unified Table */}

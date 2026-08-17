@@ -60,6 +60,7 @@ export default function EnrollmentManager({
               <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                 <th className="p-4">Name</th>
                 <th className="p-4">Phone</th>
+                <th className="p-4">Guardian Phone</th>
                 <th className="p-4">Fee</th>
                 <th className="p-4">Paid</th>
                 <th className="p-4">Due</th>
@@ -87,11 +88,16 @@ export default function EnrollmentManager({
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="p-4 text-sm font-medium text-gray-900">
-                      {s.name}
-                      <div className="text-xs text-gray-400 font-normal mt-1">{s.guardian_phone ? `G: ${s.guardian_phone}` : ''}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                          {s.name.charAt(0)}
+                        </div>
+                        {s.name}
+                      </div>
                     </td>
-                    <td className="p-4 text-sm text-gray-600">{s.phone || '-'}</td>
-                    <td className="p-4 text-sm text-gray-600">৳{enrollment?.course_fee || 0}</td>
+                    <td className="p-4 text-sm text-gray-500">{s.phone}</td>
+                    <td className="p-4 text-sm text-gray-500">{s.guardian_phone || '-'}</td>
+                    <td className="p-4 text-sm text-gray-900">৳{enrollment?.course_fee || 0}</td>
                     <td className="p-4 text-sm text-gray-600">৳{enrollment?.paid_amount || 0}</td>
                     <td className="p-4 text-sm text-red-600 font-medium">৳{enrollment?.due_amount || 0}</td>
                     <td className="p-4 text-sm text-gray-600">{enrollment?.reference || '-'}</td>

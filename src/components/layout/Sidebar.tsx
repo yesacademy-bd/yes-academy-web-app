@@ -16,13 +16,14 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
+    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
     { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR'] },
+    { name: 'Due Details', href: '/dashboard/dues', icon: Wallet, roles: ['Admin', 'HR'] },
     { name: 'Lead Call Entry', href: '/dashboard/leads', icon: Phone, roles: ['Admin', 'HR'] },
     { name: 'Walk-ins', href: '/dashboard/walkins', icon: UserCheck, roles: ['Admin', 'HR'] },
     { name: 'Mock Services', href: '/dashboard/mocks', icon: FileText, roles: ['Admin', 'HR'] },
     { name: 'Exam Registrations', href: '/dashboard/registrations', icon: ClipboardList, roles: ['Admin', 'HR'] },
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
-    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
     { name: 'CRM (Finance)', href: '/dashboard/crm', icon: Wallet, roles: ['Admin', 'HR'] },
     { name: 'Expenses', href: '/dashboard/expenses', icon: CreditCard, roles: ['Admin', 'HR'] },
     { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },

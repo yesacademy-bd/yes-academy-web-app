@@ -65,13 +65,20 @@ export default function EnrollmentClient({ students, courses, batches, initialEn
         <form onSubmit={handleEnroll} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
-              <select name="student_id" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Select Student...</option>
-                {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>)}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
+              <input type="text" name="student_name" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
-            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <input type="text" name="mobile_number" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Guardian Number</label>
+              <input type="text" name="guardian_number" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
               <select name="course_id" required value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
