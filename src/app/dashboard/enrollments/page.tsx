@@ -50,8 +50,7 @@ export default async function EnrollmentsPage() {
     .select(`
       *,
       student:students(name, phone),
-      course:courses(name, family),
-      batch:batches(batch_name),
+      batch:batches(batch_name, course:courses(id, name, family)),
       installments(*)
     `)
     .order('created_at', { ascending: false })

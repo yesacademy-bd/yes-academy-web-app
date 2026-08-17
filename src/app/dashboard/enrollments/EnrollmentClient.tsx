@@ -203,7 +203,7 @@ export default function EnrollmentClient({ students, courses, batches, teachers,
             </thead>
             <tbody className="divide-y divide-gray-200">
               {enrollments.filter(e => {
-                if (filterCourse !== 'All' && e.course_id !== filterCourse) return false
+                if (filterCourse !== 'All' && e.batch?.course?.id !== filterCourse) return false
                 if (filterBatch !== 'All' && e.batch_id !== filterBatch) return false
                 return true
               }).map(e => {
@@ -220,7 +220,7 @@ export default function EnrollmentClient({ students, courses, batches, teachers,
                       <p className="text-sm text-gray-500">{e.student?.phone}</p>
                     </td>
                     <td className="p-4">
-                      <p className="font-medium text-gray-900">{e.course?.family}</p>
+                      <p className="font-medium text-gray-900">{e.batch?.course?.family}</p>
                       <p className="text-sm text-gray-500">{e.batch?.batch_name}</p>
                     </td>
                     <td className="p-4 text-sm">
