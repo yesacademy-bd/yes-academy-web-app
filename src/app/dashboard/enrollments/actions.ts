@@ -22,7 +22,7 @@ export async function createEnrollment(formData: FormData) {
   const payment_method = formData.get('payment_method') as string
   const installment_count = parseInt(formData.get('installment_count') as string) || 0
 
-  if (!name || !phone || !course_id || !batch_id) {
+  if (!name || !phone || !batch_id) {
     return { success: false, message: 'Missing required fields' }
   }
 

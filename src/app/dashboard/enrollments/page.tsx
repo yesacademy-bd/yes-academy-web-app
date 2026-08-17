@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import EnrollmentClient from './EnrollmentClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EnrollmentsPage() {
   const supabase = await createClient()
 
