@@ -63,6 +63,15 @@ export default function ExpenseClient({ initialExpenses }: { initialExpenses: an
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+              <select name="payment_method" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="Cash">Cash</option>
+                <option value="bKash">bKash</option>
+                <option value="Bank">Bank</option>
+              </select>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea name="description" rows={3} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
             </div>
@@ -90,6 +99,7 @@ export default function ExpenseClient({ initialExpenses }: { initialExpenses: an
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="p-4">Date</th>
                   <th className="p-4">Category</th>
+                  <th className="p-4">Method</th>
                   <th className="p-4">Description</th>
                   <th className="p-4 text-right">Amount</th>
                 </tr>
@@ -97,7 +107,7 @@ export default function ExpenseClient({ initialExpenses }: { initialExpenses: an
               <tbody className="divide-y divide-gray-200">
                 {expenses.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No expenses recorded.</td>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">No expenses recorded.</td>
                   </tr>
                 )}
                 {expenses.map(e => (
@@ -106,6 +116,7 @@ export default function ExpenseClient({ initialExpenses }: { initialExpenses: an
                     <td className="p-4 text-sm text-gray-600">
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">{e.category}</span>
                     </td>
+                    <td className="p-4 text-sm text-gray-600">{e.payment_method || 'Cash'}</td>
                     <td className="p-4 text-sm text-gray-600 truncate max-w-[200px]">{e.description || '-'}</td>
                     <td className="p-4 text-sm font-medium text-red-600 text-right">৳{e.amount}</td>
                   </tr>

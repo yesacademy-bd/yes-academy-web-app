@@ -11,22 +11,24 @@ export async function createExpense(formData: FormData) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
 
-  const amount = parseFloat(formData.get('amount') as string) || 0
-  const date = formData.get('date') as string
+  const amount = parseFloat(formData.get('amount') as string)
   const category = formData.get('category') as string
   const description = formData.get('description') as string
+  const date = formData.get('date') as string
+  const payment_method = formData.get('payment_method') as string || 'Cash'
 
-  if (amount <= 0 || !date || !category) {
-    return { success: false, message: 'Missing required fields' }
+  if (!amount || !category || !date) {
+    return { success: false, message: 'Amount, category, and date are required' }
   }
 
   const { error } = await supabase
     .from('expenses')
     .insert({
       amount,
-      date,
       category,
-      description
+      description,
+      date,
+      payment_method
     })
 
   if (error) return { success: false, message: error.message }

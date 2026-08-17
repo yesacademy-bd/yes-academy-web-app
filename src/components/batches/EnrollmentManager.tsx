@@ -41,48 +41,6 @@ export default function EnrollmentManager({
 
   return (
     <div className="space-y-6 mt-8">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
-        <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Enroll New Student</h3>
-        {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
-        
-        <form onSubmit={handleAddStudent} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-              <input type="text" name="name" required className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input type="text" name="phone" className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Guardian Phone</label>
-              <input type="text" name="guardian_phone" className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
-              <input type="text" name="reference" className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course Fee</label>
-              <input type="number" name="course_fee" defaultValue="0" className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Paid Amount</label>
-              <input type="number" name="paid_amount" defaultValue="0" className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div className="md:col-start-4">
-              <button type="submit" disabled={isSubmitting} className="w-full flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50">
-                <UserPlus className="w-4 h-4" />
-                Enroll
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h3 className="font-semibold text-gray-900">Enrolled Students ({students.length})</h3>

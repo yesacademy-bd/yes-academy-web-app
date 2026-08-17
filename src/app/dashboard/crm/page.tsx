@@ -42,7 +42,8 @@ export default async function CRMPage() {
     total_fee: e.course_fee || 0,
     paid_amount: e.paid_amount || 0,
     due_amount: e.due_amount || 0,
-    payment_method: e.payment_method || 'Cash'
+    payment_method: e.payment_method || 'Cash',
+    reference: e.reference || 'None'
   })) || []
 
   const mocks = mocksData?.map((m: any) => ({
@@ -81,10 +82,13 @@ export default async function CRMPage() {
     total_fee: 0,
     paid_amount: ex.amount || 0,
     due_amount: 0,
-    payment_method: 'N/A'
+    payment_method: ex.payment_method || 'Cash'
   })) || []
 
   const unifiedData = [...enrollments, ...mocks, ...registrations, ...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  const { data: leads } = await supabase.from('lead_calls').select('*')
+  const { data: walkins } = await supabase.from('walk_ins').select('*')
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -95,7 +99,11 @@ export default async function CRMPage() {
         </div>
       </div>
       
-      <CRMClient initialData={unifiedData} />
+      <CRMClient 
+        initialData={unifiedData} 
+        initialLeads={leads || []}
+        initialWalkins={walkins || []}
+      />
     </div>
   )
 }
