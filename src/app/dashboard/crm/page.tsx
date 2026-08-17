@@ -22,35 +22,80 @@ export default async function CRMPage() {
   const { data: enrollmentsData } = await supabase
     .from('enrollments')
     .select(`
-      id, enrolled_at, course_fee, paid_amount, due_amount, reference, last_modified_date,
+      id, enrolled_at, course_fee, paid_amount, due_amount, payment_method, reference, last_modified_date,
       students (id, name, phone),
       batches (id, batch_name, courses (id, family, name))
     `)
     .order('enrolled_at', { ascending: false })
 
+  const { data: mocksData } = await supabase.from('mock_services').select('*')
+  const { data: registrationsData } = await supabase.from('registrations').select('*')
+  const { data: expensesData } = await supabase.from('expenses').select('*')
+
   const enrollments = enrollmentsData?.map((e: any) => ({
     id: e.id,
-    enrolled_at: e.enrolled_at,
-    course_fee: e.course_fee || 0,
+    type: 'Enrollment',
+    date: e.enrolled_at,
+    student_name: e.students?.name,
+    phone: e.students?.phone,
+    item_name: `${e.batches?.courses?.family || ''} - ${e.batches?.batch_name || ''}`,
+    total_fee: e.course_fee || 0,
     paid_amount: e.paid_amount || 0,
     due_amount: e.due_amount || 0,
-    reference: e.reference,
-    last_modified_date: e.last_modified_date,
-    student: e.students,
-    batch: e.batches,
-    course: e.batches?.courses
+    payment_method: e.payment_method || 'Cash'
   })) || []
+
+  const mocks = mocksData?.map((m: any) => ({
+    id: m.id,
+    type: 'Mock Service',
+    date: m.created_at,
+    student_name: m.student_name,
+    phone: m.phone,
+    item_name: m.mock_type,
+    total_fee: m.amount || 0,
+    paid_amount: m.paid_amount || 0,
+    due_amount: m.due_amount || 0,
+    payment_method: m.payment_method || 'Cash'
+  })) || []
+
+  const registrations = registrationsData?.map((r: any) => ({
+    id: r.id,
+    type: 'Exam Registration',
+    date: r.created_at,
+    student_name: r.student_name,
+    phone: r.phone,
+    item_name: r.exam_type,
+    total_fee: r.amount || 0,
+    paid_amount: r.paid_amount || 0,
+    due_amount: r.due_amount || 0,
+    payment_method: r.payment_method || 'Cash'
+  })) || []
+
+  const expenses = expensesData?.map((ex: any) => ({
+    id: ex.id,
+    type: 'Expense',
+    date: ex.date, // Date field from expenses table
+    student_name: '-',
+    phone: '-',
+    item_name: `${ex.category}: ${ex.description || ''}`,
+    total_fee: 0,
+    paid_amount: ex.amount || 0,
+    due_amount: 0,
+    payment_method: 'N/A'
+  })) || []
+
+  const unifiedData = [...enrollments, ...mocks, ...registrations, ...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 print:text-black">Student Enrollment CRM</h1>
-          <p className="text-gray-500 print:text-black mt-1">Analytics, Admissions, and Financial tracking.</p>
+          <h1 className="text-3xl font-bold text-gray-900">CRM (Finance)</h1>
+          <p className="text-gray-500 mt-1">Unified Financial Dashboard & Reports.</p>
         </div>
       </div>
       
-      <CRMClient initialData={enrollments} />
+      <CRMClient initialData={unifiedData} />
     </div>
   )
 }
