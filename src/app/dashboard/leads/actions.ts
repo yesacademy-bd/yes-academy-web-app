@@ -39,3 +39,22 @@ export async function createLead(formData: FormData) {
   revalidatePath('/dashboard/leads')
   return { success: true }
 }
+
+export async function deleteLead(id: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: 'Unauthorized' }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
+
+  const { error } = await supabase
+    .from('lead_calls')
+    .delete()
+    .eq('id', id)
+
+  if (error) return { success: false, message: error.message }
+
+  revalidatePath('/dashboard/leads')
+  return { success: true }
+}

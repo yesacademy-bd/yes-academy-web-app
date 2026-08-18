@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { UserCheck, Calendar } from 'lucide-react'
-import { createWalkIn } from './actions'
+import { UserCheck, Calendar, Trash2, Info } from 'lucide-react'
+import { createWalkIn, deleteWalkIn } from './actions'
 
 export default function WalkinClient({ initialWalkins, courses }: { initialWalkins: any[], courses: any[] }) {
   const [walkins] = useState(initialWalkins)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedWalkin, setSelectedWalkin] = useState<any>(null)
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -22,6 +23,16 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
     } else {
       setError(res.message || 'Failed to add walk-in')
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this walk-in?')) return
+    const res = await deleteWalkIn(id)
+    if (res.success) {
+      window.location.reload()
+    } else {
+      alert(res.message || 'Failed to delete walk-in')
     }
   }
 
@@ -136,6 +147,7 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
                   <th className="p-4">Student</th>
                   <th className="p-4">Source & Service</th>
                   <th className="p-4">Staff & Remarks</th>
+                  <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -159,6 +171,22 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
                       <p className="text-sm font-medium text-gray-700">{w.lead_call_person || '-'}</p>
                       <p className="text-xs text-gray-500 max-w-[200px] truncate">{w.summary || '-'}</p>
                     </td>
+                    <td className="p-4 text-center space-x-2">
+                      <button
+                        onClick={() => setSelectedWalkin(w)}
+                        className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                        title="View Details"
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(w.id)}
+                        className="inline-flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Delete Walk-in"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -167,6 +195,26 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
         </div>
 
       </div>
+
+      {selectedWalkin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Walk-in Details</h3>
+            <div className="space-y-3 text-sm">
+              <p><strong>Student:</strong> {selectedWalkin.student_name}</p>
+              <p><strong>Phone:</strong> {selectedWalkin.phone}</p>
+              <p><strong>Interested Course:</strong> {selectedWalkin.interested_course || '-'}</p>
+              <p><strong>Last Qualification:</strong> {selectedWalkin.last_qualification || '-'}</p>
+              <p><strong>Qualification Year:</strong> {selectedWalkin.last_qualification_year || '-'}</p>
+              <p><strong>CGPA:</strong> {selectedWalkin.cgpa || '-'}</p>
+              <p><strong>Interested Country:</strong> {selectedWalkin.interested_country || '-'}</p>
+              <p><strong>Interested Intake:</strong> {selectedWalkin.interested_intake || '-'}</p>
+            </div>
+            <button onClick={() => setSelectedWalkin(null)} className="mt-6 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Close</button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

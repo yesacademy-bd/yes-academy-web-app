@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Phone, Calendar } from 'lucide-react'
-import { createLead } from './actions'
+import { Phone, Calendar, Trash2 } from 'lucide-react'
+import { createLead, deleteLead } from './actions'
 
 export default function LeadClient({ initialLeads, courses }: { initialLeads: any[], courses: any[] }) {
   const [leads] = useState(initialLeads)
@@ -22,6 +22,16 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
     } else {
       setError(res.message || 'Failed to add lead')
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this lead?')) return
+    const res = await deleteLead(id)
+    if (res.success) {
+      window.location.reload()
+    } else {
+      alert(res.message || 'Failed to delete lead')
     }
   }
 
@@ -114,6 +124,7 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
                   <th className="p-4">Student</th>
                   <th className="p-4">Source & Service</th>
                   <th className="p-4">Staff & Remarks</th>
+                  <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -136,6 +147,15 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
                     <td className="p-4">
                       <p className="text-sm font-medium text-gray-700">{l.lead_call_person || '-'}</p>
                       <p className="text-xs text-gray-500 max-w-[200px] truncate">{l.summary || '-'}</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleDelete(l.id)}
+                        className="inline-flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Delete Lead"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
