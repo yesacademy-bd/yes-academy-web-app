@@ -131,12 +131,12 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
                     </td>
                     <td className="p-4 text-sm text-gray-600 font-medium">{r.exam_type}</td>
                     <td className="p-4 text-sm text-right">
-                      <p>Fee: ৳{r.amount}</p>
+                      <p>Fee: ৳{r.registration_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{r.due_amount}</p>
                     </td>
                     <td className="p-4 text-center space-x-2">
                       <a
-                        href={`https://wa.me/${r.phone}?text=${encodeURIComponent(`Hello ${r.student_name}, this is a confirmation for your ${r.exam_type}. Your exam is scheduled on ${new Date(r.exam_date).toLocaleDateString()}. Fee: ৳${r.registration_fee || r.amount}, Paid: ৳${r.paid_amount || 0}, Due: ৳${r.due_amount}.`)}`}
+                        href={`https://wa.me/${r.phone}?text=${encodeURIComponent(`Hello ${r.student_name}, this is a confirmation for your ${r.exam_type}. Your exam is scheduled on ${new Date(r.exam_date).toLocaleDateString()}. Fee: ৳${r.registration_fee}, Paid: ৳${r.paid_amount || 0}, Due: ৳${r.due_amount}.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"

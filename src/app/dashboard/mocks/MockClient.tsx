@@ -130,14 +130,14 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                       <p className="font-medium text-gray-900">{m.student_name}</p>
                       <p className="text-sm text-gray-500">{m.phone}</p>
                     </td>
-                    <td className="p-4 text-sm text-gray-600 font-medium">{m.mock_type}</td>
+                    <td className="p-4 text-sm text-gray-600 font-medium">{m.service_type || m.mock_type}</td>
                     <td className="p-4 text-sm text-right">
-                      <p>Fee: ৳{m.amount}</p>
+                      <p>Fee: ৳{m.course_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
                     </td>
                     <td className="p-4 text-center space-x-2">
                       <a
-                        href={`https://wa.me/${m.phone}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}. Fee: ৳${m.course_fee || m.amount}, Paid: ৳${m.paid_amount || 0}, Due: ৳${m.due_amount}.`)}`}
+                        href={`https://wa.me/${m.phone}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.service_type || m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}. Fee: ৳${m.course_fee}, Paid: ৳${m.paid_amount || 0}, Due: ৳${m.due_amount}.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
