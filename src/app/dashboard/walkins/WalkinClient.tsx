@@ -9,6 +9,9 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedWalkin, setSelectedWalkin] = useState<any>(null)
+  const [filterHandledBy, setFilterHandledBy] = useState('')
+
+  const filteredWalkins = walkins.filter(w => !filterHandledBy || (w.lead_call_person || '').toLowerCase().includes(filterHandledBy.toLowerCase()))
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -133,10 +136,17 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
 
         {/* List */}
         <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-500" /> Walk-in History
             </h3>
+            <input 
+              type="text" 
+              placeholder="Filter by Handled By..." 
+              value={filterHandledBy} 
+              onChange={e => setFilterHandledBy(e.target.value)}
+              className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 w-full sm:w-auto"
+            />
           </div>
           
           <div className="overflow-x-auto">
@@ -144,33 +154,26 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="p-4">Date</th>
-                  <th className="p-4">Student</th>
-                  <th className="p-4">Source & Service</th>
-                  <th className="p-4">Staff & Remarks</th>
+                  <th className="p-4">Name</th>
+                  <th className="p-4">Phone Number</th>
+                  <th className="p-4">Interested Service</th>
+                  <th className="p-4">Remarks</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {walkins.length === 0 && (
+                {filteredWalkins.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No walk-ins recorded.</td>
+                    <td colSpan={6} className="p-8 text-center text-gray-500">No walk-ins match your criteria.</td>
                   </tr>
                 )}
-                {walkins.map(w => (
+                {filteredWalkins.map(w => (
                   <tr key={w.id} className="hover:bg-gray-50">
                     <td className="p-4 text-sm text-gray-500">{new Date(w.created_at).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <p className="font-medium text-gray-900">{w.student_name}</p>
-                      <p className="text-sm text-gray-500">{w.phone}</p>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-xs font-semibold px-2 py-1 bg-gray-100 rounded text-gray-600 block mb-1 w-fit">{w.lead_source || 'Unknown'}</span>
-                      <p className="text-sm text-gray-600">{w.interested_course || '-'}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm font-medium text-gray-700">{w.lead_call_person || '-'}</p>
-                      <p className="text-xs text-gray-500 max-w-[200px] truncate">{w.summary || '-'}</p>
-                    </td>
+                    <td className="p-4 font-medium text-gray-900">{w.student_name}</td>
+                    <td className="p-4 text-sm text-gray-500">{w.phone}</td>
+                    <td className="p-4 text-sm text-gray-600">{w.interested_course || '-'}</td>
+                    <td className="p-4 text-xs text-gray-500 max-w-[200px] truncate">{w.summary || '-'}</td>
                     <td className="p-4 text-center space-x-2">
                       <button
                         onClick={() => setSelectedWalkin(w)}
@@ -201,12 +204,11 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
           <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">Walk-in Details</h3>
             <div className="space-y-3 text-sm">
-              <p><strong>Student:</strong> {selectedWalkin.student_name}</p>
-              <p><strong>Phone:</strong> {selectedWalkin.phone}</p>
-              <p><strong>Interested Course:</strong> {selectedWalkin.interested_course || '-'}</p>
+              <p><strong>Walk-in Handled By:</strong> {selectedWalkin.lead_call_person || '-'}</p>
+              <p><strong>Lead Source:</strong> {selectedWalkin.source || selectedWalkin.lead_source || '-'}</p>
               <p><strong>Last Qualification:</strong> {selectedWalkin.last_qualification || '-'}</p>
               <p><strong>Qualification Year:</strong> {selectedWalkin.last_qualification_year || '-'}</p>
-              <p><strong>CGPA:</strong> {selectedWalkin.cgpa || '-'}</p>
+              <p><strong>CGPA / GPA:</strong> {selectedWalkin.cgpa || '-'}</p>
               <p><strong>Interested Country:</strong> {selectedWalkin.interested_country || '-'}</p>
               <p><strong>Interested Intake:</strong> {selectedWalkin.interested_intake || '-'}</p>
             </div>
