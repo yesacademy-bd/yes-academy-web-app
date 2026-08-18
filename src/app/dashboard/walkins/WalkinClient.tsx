@@ -174,20 +174,20 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
                     <td className="p-4 text-sm text-gray-500">{w.phone}</td>
                     <td className="p-4 text-sm text-gray-600">{w.interested_course || '-'}</td>
                     <td className="p-4 text-xs text-gray-500 max-w-[200px] truncate">{w.summary || '-'}</td>
-                    <td className="p-4 text-center space-x-2">
+                    <td className="p-4 text-center space-x-2 whitespace-nowrap">
                       <button
                         onClick={() => setSelectedWalkin(w)}
-                        className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs font-semibold shadow-sm"
                         title="View Details"
                       >
-                        <Info className="w-4 h-4" />
+                        Details
                       </button>
                       <button
                         onClick={() => handleDelete(w.id)}
-                        className="inline-flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        className="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-xs font-semibold shadow-sm"
                         title="Delete Walk-in"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -200,19 +200,47 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
       </div>
 
       {selectedWalkin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4">Walk-in Details</h3>
-            <div className="space-y-3 text-sm">
-              <p><strong>Walk-in Handled By:</strong> {selectedWalkin.lead_call_person || '-'}</p>
-              <p><strong>Lead Source:</strong> {selectedWalkin.source || selectedWalkin.lead_source || '-'}</p>
-              <p><strong>Last Qualification:</strong> {selectedWalkin.last_qualification || '-'}</p>
-              <p><strong>Qualification Year:</strong> {selectedWalkin.last_qualification_year || '-'}</p>
-              <p><strong>CGPA / GPA:</strong> {selectedWalkin.cgpa || '-'}</p>
-              <p><strong>Interested Country:</strong> {selectedWalkin.interested_country || '-'}</p>
-              <p><strong>Interested Intake:</strong> {selectedWalkin.interested_intake || '-'}</p>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border border-gray-100 text-gray-800">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Walk-in Details</h3>
+            
+            <div className="space-y-4 text-base">
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Handled By</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.lead_call_person || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Lead Source</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.source || selectedWalkin.lead_source || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Last Qual.</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.last_qualification || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Qual. Year</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.last_qualification_year || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">CGPA / GPA</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.cgpa || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Country</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.interested_country || '-'}</span>
+              </div>
+              <div className="grid grid-cols-3 border-b border-gray-50 pb-2">
+                <span className="text-gray-500 font-medium">Intake</span>
+                <span className="col-span-2 font-semibold text-gray-900">{selectedWalkin.interested_intake || '-'}</span>
+              </div>
             </div>
-            <button onClick={() => setSelectedWalkin(null)} className="mt-6 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Close</button>
+
+            <button 
+              onClick={() => setSelectedWalkin(null)} 
+              className="mt-8 w-full bg-gray-900 hover:bg-black text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+            >
+              Close Details
+            </button>
           </div>
         </div>
       )}
