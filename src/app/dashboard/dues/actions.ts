@@ -14,6 +14,7 @@ export async function updateDuePayment(formData: FormData) {
   const id = formData.get('id') as string
   const type = formData.get('type') as string
   const payAmount = parseFloat(formData.get('pay_amount') as string) || 0
+  const paymentMethod = formData.get('payment_method') as string || 'Cash'
 
   if (!id || !type || payAmount <= 0) {
     return { success: false, message: 'Invalid payment details' }
@@ -23,6 +24,7 @@ export async function updateDuePayment(formData: FormData) {
   if (type === 'Enrollment') table = 'enrollments'
   else if (type === 'Mock Service') table = 'mock_services'
   else if (type === 'Registration') table = 'registrations'
+  else if (type === 'Exam Registration') table = 'registrations' // Ensure matching works
 
   if (!table) return { success: false, message: 'Invalid record type' }
 
@@ -48,7 +50,38 @@ export async function updateDuePayment(formData: FormData) {
 
   if (updateErr) return { success: false, message: updateErr.message }
 
+  // Log to payment history
+  const { error: historyErr } = await supabase
+    .from('payment_history')
+    .insert({
+      record_id: id,
+      record_type: type,
+      amount_paid: payAmount,
+      payment_method: paymentMethod
+    })
+
+  if (historyErr) {
+    console.error('Failed to log payment history:', historyErr)
+    // We don't fail the transaction, but we log the error
+  }
+
   revalidatePath('/dashboard/dues')
   revalidatePath('/dashboard/crm')
   return { success: true }
+}
+
+export async function fetchPaymentHistory(recordId: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: 'Unauthorized' }
+
+  const { data, error } = await supabase
+    .from('payment_history')
+    .select('*')
+    .eq('record_id', recordId)
+    .order('payment_date', { ascending: false })
+
+  if (error) return { success: false, message: error.message }
+  return { success: true, data }
 }

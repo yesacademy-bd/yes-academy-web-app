@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Printer, AlertCircle, X, Receipt } from 'lucide-react'
-import { updateDuePayment } from './actions'
+import { updateDuePayment, fetchPaymentHistory } from './actions'
 import Link from 'next/link'
 
 export default function DueClient({ initialData }: { initialData: any[] }) {
@@ -10,8 +10,26 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
   
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
   const [payAmount, setPayAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('Cash')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Payment History state
+  const [showDetailsFor, setShowDetailsFor] = useState<any>(null)
+  const [paymentHistoryData, setPaymentHistoryData] = useState<any[]>([])
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+
+  const loadDetails = async (record: any) => {
+    setShowDetailsFor(record)
+    setIsLoadingDetails(true)
+    const res = await fetchPaymentHistory(record.id)
+    if (res.success) {
+      setPaymentHistoryData(res.data)
+    } else {
+      setPaymentHistoryData([])
+    }
+    setIsLoadingDetails(false)
+  }
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,6 +40,7 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
     formData.append('id', selectedRecord.id)
     formData.append('type', selectedRecord.type)
     formData.append('pay_amount', payAmount)
+    formData.append('payment_method', paymentMethod)
     
     const res = await updateDuePayment(formData)
     
@@ -115,6 +134,12 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                   </td>
                   <td className="p-4 print:hidden text-right space-x-2 whitespace-nowrap">
                     <button 
+                      onClick={() => loadDetails(item)}
+                      className="px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded text-sm font-medium transition-colors inline-flex items-center gap-1"
+                    >
+                      Details
+                    </button>
+                    <button 
                       onClick={() => {
                         setSelectedRecord(item)
                         setPayAmount(item.due_amount.toString())
@@ -173,6 +198,19 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Payment Method</label>
+                <select 
+                  value={paymentMethod}
+                  onChange={e => setPaymentMethod(e.target.value)}
+                  className="w-full bg-slate-800 border-slate-700 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Bkash">Bkash</option>
+                </select>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setSelectedRecord(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                   Cancel
@@ -182,6 +220,54 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetailsFor && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Payment Details - {showDetailsFor.student_name}</h3>
+              <button onClick={() => setShowDetailsFor(null)} className="text-gray-400 hover:text-gray-900"><X className="w-5 h-5"/></button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto">
+              <div className="mb-4 space-y-1 text-sm text-gray-600">
+                <p><strong>Item:</strong> {showDetailsFor.item_name}</p>
+                <p><strong>Total Fee:</strong> ৳{showDetailsFor.total_fee.toLocaleString()}</p>
+                <p><strong>Total Paid:</strong> <span className="text-green-600 font-medium"> ৳{showDetailsFor.paid_amount.toLocaleString()}</span></p>
+                <p><strong>Remaining Due:</strong> <span className="text-red-600 font-medium"> ৳{showDetailsFor.due_amount.toLocaleString()}</span></p>
+              </div>
+
+              <h4 className="font-semibold text-gray-900 mb-2 border-b pb-1">Payment History</h4>
+              
+              {isLoadingDetails ? (
+                <div className="text-center py-8 text-gray-500">Loading history...</div>
+              ) : paymentHistoryData.length > 0 ? (
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase">
+                    <tr>
+                      <th className="px-4 py-2">Date</th>
+                      <th className="px-4 py-2">Method</th>
+                      <th className="px-4 py-2 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {paymentHistoryData.map(h => (
+                      <tr key={h.id}>
+                        <td className="px-4 py-2">{new Date(h.payment_date).toLocaleString()}</td>
+                        <td className="px-4 py-2">{h.payment_method}</td>
+                        <td className="px-4 py-2 text-right font-medium text-green-600"> ৳{h.amount_paid.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">No payment history found.</div>
+              )}
+            </div>
           </div>
         </div>
       )}

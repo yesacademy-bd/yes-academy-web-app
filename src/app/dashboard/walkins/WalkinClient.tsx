@@ -59,6 +59,7 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
                 <option value="Physical Marketing">Physical Marketing</option>
                 <option value="Student Ref">Student Reference</option>
                 <option value="Staff Ref">Staff Reference</option>
+                <option value="Direct Visit">Direct Visit</option>
               </select>
             </div>
 

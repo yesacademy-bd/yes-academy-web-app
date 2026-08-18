@@ -22,7 +22,7 @@ export default function CRMClient({
   const [activeTab, setActiveTab] = useState<'Sales' | 'Expenses' | 'Conversion'>('Sales')
   
   // Filters
-  const [dateFilterMode, setDateFilterMode] = useState<'Month' | '7Days' | '15Days'>('Month')
+  const [dateFilterMode, setDateFilterMode] = useState<'Today' | 'Month' | '7Days' | '15Days'>('Month')
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth())
   const [filterMethod, setFilterMethod] = useState('All')
@@ -30,7 +30,7 @@ export default function CRMClient({
   
   // Modals
   const [showDueModal, setShowDueModal] = useState(false)
-  const [showDailyModal, setShowDailyModal] = useState(false)
+
 
   // Top 3 References
   const topReferences = useMemo(() => {
@@ -56,7 +56,9 @@ export default function CRMClient({
 
       // 2. Date filter
       const d = new Date(item.date)
-      if (dateFilterMode === 'Month') {
+      if (dateFilterMode === 'Today') {
+        if (d.getFullYear() !== currentDate.getFullYear() || d.getMonth() !== currentDate.getMonth() || d.getDate() !== currentDate.getDate()) return false
+      } else if (dateFilterMode === 'Month') {
         if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false
       } else if (dateFilterMode === '7Days') {
         const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
@@ -89,7 +91,9 @@ export default function CRMClient({
         const d = new Date(item.created_at)
         let include = false
         
-        if (dateFilterMode === 'Month') {
+        if (dateFilterMode === 'Today') {
+          include = d.getFullYear() === currentDate.getFullYear() && d.getMonth() === currentDate.getMonth() && d.getDate() === currentDate.getDate()
+        } else if (dateFilterMode === 'Month') {
           include = d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
         } else if (dateFilterMode === '7Days') {
           const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
@@ -116,7 +120,9 @@ export default function CRMClient({
   const conversionStats = useMemo(() => {
     const filterByDate = (arr: any[]) => arr.filter(item => {
       const d = new Date(item.created_at)
-      if (dateFilterMode === 'Month') {
+      if (dateFilterMode === 'Today') {
+        return d.getFullYear() === currentDate.getFullYear() && d.getMonth() === currentDate.getMonth() && d.getDate() === currentDate.getDate()
+      } else if (dateFilterMode === 'Month') {
         return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
       } else if (dateFilterMode === '7Days') {
         const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
@@ -133,7 +139,15 @@ export default function CRMClient({
 
     let converted = 0
     periodWalkins.forEach(w => {
-      const match = initialLeads.find(l => l.phone === w.phone || (l.student_name && l.student_name === w.student_name))
+      const match = initialLeads.find(l => {
+        if (l.phone && w.phone && l.phone === w.phone) return true;
+        if (l.student_name && w.student_name) {
+          const lName = l.student_name.toLowerCase().trim();
+          const wName = w.student_name.toLowerCase().trim();
+          if (lName === wName || lName.includes(wName) || wName.includes(lName)) return true;
+        }
+        return false;
+      })
       if (match) converted++
     })
 
@@ -176,6 +190,7 @@ export default function CRMClient({
         <div className="flex flex-wrap gap-4 items-center">
           
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button onClick={() => setDateFilterMode('Today')} className={`px-3 py-1 text-sm font-medium rounded-md ${dateFilterMode === 'Today' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Today</button>
             <button onClick={() => setDateFilterMode('Month')} className={`px-3 py-1 text-sm font-medium rounded-md ${dateFilterMode === 'Month' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Month</button>
             <button onClick={() => setDateFilterMode('7Days')} className={`px-3 py-1 text-sm font-medium rounded-md ${dateFilterMode === '7Days' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>7 Days</button>
             <button onClick={() => setDateFilterMode('15Days')} className={`px-3 py-1 text-sm font-medium rounded-md ${dateFilterMode === '15Days' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>15 Days</button>
@@ -216,9 +231,7 @@ export default function CRMClient({
         </div>
         
         <div className="flex gap-2">
-          <button onClick={() => setShowDailyModal(true)} className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium transition-colors">
-            <CalendarDays className="w-4 h-4" /> Day-wise Data
-          </button>
+
           <button onClick={() => window.print()} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
@@ -412,54 +425,7 @@ export default function CRMClient({
         </div>
       )}
 
-      {/* MODAL: Daily Report */}
-      {showDailyModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-              <h3 className="font-bold text-lg text-white">Day-wise Summary</h3>
-              <button onClick={() => setShowDailyModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
-            </div>
-            <div className="p-4 overflow-y-auto">
-              {/* Calculate daily stats */}
-              {(() => {
-                const dailyStats: Record<string, { earnings: number, dues: number, count: number }> = {}
-                filteredData.forEach(item => {
-                  const dateStr = new Date(item.date).toLocaleDateString()
-                  if (!dailyStats[dateStr]) dailyStats[dateStr] = { earnings: 0, dues: 0, count: 0 }
-                  dailyStats[dateStr].earnings += item.paid_amount
-                  dailyStats[dateStr].dues += item.due_amount || 0
-                  dailyStats[dateStr].count += 1
-                })
-                const sortedDays = Object.entries(dailyStats).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
 
-                return (
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
-                        <th className="p-3">Date</th>
-                        <th className="p-3">Transactions</th>
-                        <th className="p-3 text-right text-green-400">Earnings</th>
-                        {activeTab === 'Sales' && <th className="p-3 text-right text-red-400">Dues Added</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-700/50">
-                      {sortedDays.map(([date, stats], idx) => (
-                        <tr key={idx}>
-                          <td className="p-3 text-sm font-medium text-white">{date}</td>
-                          <td className="p-3 text-sm text-slate-300">{stats.count}</td>
-                          <td className="p-3 text-sm font-bold text-green-400 text-right">৳{stats.earnings.toLocaleString()}</td>
-                          {activeTab === 'Sales' && <td className="p-3 text-sm font-bold text-red-400 text-right">৳{stats.dues.toLocaleString()}</td>}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   )
