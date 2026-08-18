@@ -29,7 +29,7 @@ export default function CRMClient({
   const [selectedRef, setSelectedRef] = useState<string | null>(null)
   
   // Modals
-  const [dueModalType, setDueModalType] = useState<'Overall' | 'CurrentMonth' | 'PreviousMonth' | null>(null)
+  const [dueModalType, setDueModalType] = useState<'Overall' | 'CurrentMonth' | 'PreviousMonth' | 'Filtered' | null>(null)
 
 
   // Top 3 References
@@ -106,9 +106,13 @@ export default function CRMClient({
       PreviousMonth: {
         total: previousMonth.reduce((sum, e) => sum + (e.due_amount || 0), 0),
         students: previousMonth
+      },
+      Filtered: {
+        total: filteredData.filter(e => e.due_amount > 0 && e.type !== 'Expense').reduce((sum, e) => sum + (e.due_amount || 0), 0),
+        students: filteredData.filter(e => e.due_amount > 0 && e.type !== 'Expense')
       }
     }
-  }, [initialData])
+  }, [initialData, filteredData])
 
   // Lead vs Walk-in Data
   const leadWalkinData = useMemo(() => {
@@ -304,7 +308,7 @@ export default function CRMClient({
           </div>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 ${activeTab === 'Sales' ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-4 mb-6`}>
+        <div className={`grid grid-cols-1 ${activeTab === 'Sales' ? (dateFilterMode !== 'Month' ? 'md:grid-cols-5' : 'md:grid-cols-4') : 'md:grid-cols-2'} gap-4 mb-6`}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black flex flex-col justify-center">
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden shrink-0 ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -321,6 +325,23 @@ export default function CRMClient({
 
           {activeTab === 'Sales' && (
             <>
+              {dateFilterMode !== 'Month' && (
+                <div 
+                  onClick={() => setDueModalType('Filtered')}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-purple-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center print:hidden shrink-0">
+                    <TrendingDown className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 print:text-black">
+                      {dateFilterMode === 'Today' ? 'Today Due' : dateFilterMode === '7Days' ? '7 Days Dues' : '15 Days Dues'} (Click for Details)
+                    </p>
+                    <h3 className="text-xl font-bold text-purple-600 print:text-black">৳{dueStats.Filtered.total.toLocaleString()}</h3>
+                  </div>
+                </div>
+              )}
+
               <div 
                 onClick={() => setDueModalType('Overall')}
                 className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
@@ -451,7 +472,13 @@ export default function CRMClient({
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
             <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-              <h3 className="font-bold text-lg text-white">Students with Pending Dues ({dueModalType.replace('Month', ' Month')})</h3>
+              <h3 className="font-bold text-lg text-white">
+                Students with Pending Dues ({
+                  dueModalType === 'Filtered' ? (
+                    dateFilterMode === 'Today' ? 'Today' : dateFilterMode === '7Days' ? '7 Days' : '15 Days'
+                  ) : dueModalType.replace('Month', ' Month')
+                })
+              </h3>
               <button onClick={() => setDueModalType(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-4 overflow-y-auto">
