@@ -17,6 +17,7 @@ export async function createRegistration(formData: FormData) {
   const amount = parseFloat(formData.get('amount') as string) || 0
   const paid_amount = parseFloat(formData.get('paid_amount') as string) || 0
   const payment_method = formData.get('payment_method') as string
+  const exam_date = formData.get('exam_date') as string
 
   if (!student_name || !phone || !exam_type) {
     return { success: false, message: 'Name, Phone, and Exam Type are required' }
@@ -30,7 +31,8 @@ export async function createRegistration(formData: FormData) {
       exam_type,
       amount,
       paid_amount,
-      payment_method
+      payment_method,
+      exam_date
     })
 
   if (error) return { success: false, message: error.message }

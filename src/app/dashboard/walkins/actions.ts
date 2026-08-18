@@ -17,6 +17,11 @@ export async function createWalkIn(formData: FormData) {
   const summary = formData.get('summary') as string
   const lead_source = formData.get('lead_source') as string
   const lead_call_person = formData.get('lead_call_person') as string
+  const last_qualification = formData.get('last_qualification') as string
+  const last_qualification_year = formData.get('last_qualification_year') as string
+  const cgpa = formData.get('cgpa') as string
+  const interested_country = formData.get('interested_country') as string
+  const interested_intake = formData.get('interested_intake') as string
 
   if (!student_name || !phone) {
     return { success: false, message: 'Name and Phone are required' }
@@ -30,7 +35,12 @@ export async function createWalkIn(formData: FormData) {
       interested_course,
       summary,
       lead_source,
-      lead_call_person
+      lead_call_person,
+      last_qualification,
+      last_qualification_year,
+      cgpa,
+      interested_country,
+      interested_intake
     })
 
   if (error) return { success: false, message: error.message }

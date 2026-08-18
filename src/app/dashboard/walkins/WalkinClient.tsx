@@ -84,6 +84,27 @@ export default function WalkinClient({ initialWalkins, courses }: { initialWalki
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Last Qualification</label>
+              <input type="text" name="last_qualification" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Last Qualification Year</label>
+              <input type="text" name="last_qualification_year" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CGPA / GPA</label>
+              <input type="text" name="cgpa" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Interested Country</label>
+              <input type="text" name="interested_country" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Interested Intake</label>
+              <input type="text" name="interested_intake" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Walk-in Handled By</label>
               <input type="text" name="lead_call_person" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
