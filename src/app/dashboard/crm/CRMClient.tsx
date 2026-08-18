@@ -29,7 +29,7 @@ export default function CRMClient({
   const [selectedRef, setSelectedRef] = useState<string | null>(null)
   
   // Modals
-  const [showDueModal, setShowDueModal] = useState(false)
+  const [dueModalType, setDueModalType] = useState<'Overall' | 'CurrentMonth' | 'PreviousMonth' | null>(null)
 
 
   // Top 3 References
@@ -79,8 +79,36 @@ export default function CRMClient({
   }, [initialData, selectedYear, selectedMonth, dateFilterMode, activeTab, filterMethod, selectedRef, currentDate])
 
   const totalAmount = useMemo(() => filteredData.reduce((sum, e) => sum + e.paid_amount, 0), [filteredData])
-  const totalDue = useMemo(() => filteredData.reduce((sum, e) => sum + (e.due_amount || 0), 0), [filteredData])
-  const dueStudents = useMemo(() => filteredData.filter(e => e.due_amount > 0), [filteredData])
+  
+  const dueStats = useMemo(() => {
+    const overall = initialData.filter(e => e.due_amount > 0 && e.type !== 'Expense')
+    const currentMonthDate = new Date()
+    const currentMonth = overall.filter(e => {
+      const d = new Date(e.date)
+      return d.getFullYear() === currentMonthDate.getFullYear() && d.getMonth() === currentMonthDate.getMonth()
+    })
+    
+    const previousMonthDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1)
+    const previousMonth = overall.filter(e => {
+      const d = new Date(e.date)
+      return d.getFullYear() === previousMonthDate.getFullYear() && d.getMonth() === previousMonthDate.getMonth()
+    })
+
+    return {
+      Overall: {
+        total: overall.reduce((sum, e) => sum + (e.due_amount || 0), 0),
+        students: overall
+      },
+      CurrentMonth: {
+        total: currentMonth.reduce((sum, e) => sum + (e.due_amount || 0), 0),
+        students: currentMonth
+      },
+      PreviousMonth: {
+        total: previousMonth.reduce((sum, e) => sum + (e.due_amount || 0), 0),
+        students: previousMonth
+      }
+    }
+  }, [initialData])
 
   // Lead vs Walk-in Data
   const leadWalkinData = useMemo(() => {
@@ -276,34 +304,62 @@ export default function CRMClient({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black">
+        <div className={`grid grid-cols-1 ${activeTab === 'Sales' ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-4 mb-6`}>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black flex flex-col justify-center">
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden shrink-0 ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
                 {activeTab === 'Sales' ? <TrendingUp className="w-6 h-6 text-green-600" /> : <TrendingDown className="w-6 h-6 text-red-600" />}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 print:text-black">
+                <p className="text-xs font-medium text-gray-500 print:text-black">
                   {activeTab === 'Sales' ? 'Total Sales Amount' : 'Total Expense Amount'}
                 </p>
-                <h3 className="text-2xl font-bold text-gray-900 print:text-black">৳ {totalAmount.toLocaleString()}</h3>
+                <h3 className="text-xl font-bold text-gray-900 print:text-black">৳{totalAmount.toLocaleString()}</h3>
               </div>
             </div>
           </div>
 
           {activeTab === 'Sales' && (
-            <div 
-              onClick={() => setShowDueModal(true)}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
-            >
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden">
-                <TrendingDown className="w-6 h-6 text-red-600" />
+            <>
+              <div 
+                onClick={() => setDueModalType('Overall')}
+                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-red-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center print:hidden shrink-0">
+                  <TrendingDown className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 print:text-black">Total Due</p>
+                  <h3 className="text-xl font-bold text-red-600 print:text-black">৳{dueStats.Overall.total.toLocaleString()}</h3>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 print:text-black">Total Due (Click for Details)</p>
-                <h3 className="text-2xl font-bold text-red-600 print:text-black">৳ {totalDue.toLocaleString()}</h3>
+
+              <div 
+                onClick={() => setDueModalType('CurrentMonth')}
+                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-orange-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center print:hidden shrink-0">
+                  <CalendarDays className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 print:text-black">Current Month Due</p>
+                  <h3 className="text-xl font-bold text-orange-600 print:text-black">৳{dueStats.CurrentMonth.total.toLocaleString()}</h3>
+                </div>
               </div>
-            </div>
+
+              <div 
+                onClick={() => setDueModalType('PreviousMonth')}
+                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:border-amber-300 cursor-pointer transition-colors print:border-black flex items-center gap-4"
+              >
+                <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center print:hidden shrink-0">
+                  <CalendarDays className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 print:text-black">Previous Month Due</p>
+                  <h3 className="text-xl font-bold text-amber-600 print:text-black">৳{dueStats.PreviousMonth.total.toLocaleString()}</h3>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -391,35 +447,39 @@ export default function CRMClient({
       )}
 
       {/* MODAL: Due Details */}
-      {showDueModal && (
+      {dueModalType && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
             <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-              <h3 className="font-bold text-lg text-white">Students with Pending Dues</h3>
-              <button onClick={() => setShowDueModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+              <h3 className="font-bold text-lg text-white">Students with Pending Dues ({dueModalType.replace('Month', ' Month')})</h3>
+              <button onClick={() => setDueModalType(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-4 overflow-y-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
-                    <th className="p-3">Student</th>
-                    <th className="p-3">Item</th>
-                    <th className="p-3 text-right">Due Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {dueStudents.map((s, idx) => (
-                    <tr key={idx}>
-                      <td className="p-3">
-                        <p className="text-sm font-medium text-white">{s.student_name}</p>
-                        <p className="text-xs text-slate-400">{s.phone}</p>
-                      </td>
-                      <td className="p-3 text-sm text-slate-300">{s.item_name}</td>
-                      <td className="p-3 text-sm font-bold text-red-400 text-right">৳{s.due_amount.toLocaleString()}</td>
+              {dueStats[dueModalType].students.length === 0 ? (
+                <div className="text-center py-8 text-slate-400">No due students found for this period.</div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
+                      <th className="p-3">Student</th>
+                      <th className="p-3">Item</th>
+                      <th className="p-3 text-right">Due Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/50">
+                    {dueStats[dueModalType].students.map((s, idx) => (
+                      <tr key={idx}>
+                        <td className="p-3">
+                          <p className="text-sm font-medium text-white">{s.student_name}</p>
+                          <p className="text-xs text-slate-400">{s.phone}</p>
+                        </td>
+                        <td className="p-3 text-sm text-slate-300">{s.item_name}</td>
+                        <td className="p-3 text-sm font-bold text-red-400 text-right">৳{s.due_amount.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
