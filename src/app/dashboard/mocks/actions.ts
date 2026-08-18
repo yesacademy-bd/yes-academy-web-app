@@ -28,8 +28,8 @@ export async function createMockService(formData: FormData) {
     .insert({
       student_name,
       phone,
-      mock_type,
-      amount,
+      service_type: mock_type,
+      course_fee: amount,
       paid_amount,
       payment_method,
       exam_date

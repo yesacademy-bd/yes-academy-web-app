@@ -30,6 +30,7 @@ export async function createWalkIn(formData: FormData) {
   const { error } = await supabase
     .from('walk_ins')
     .insert({
+      date: new Date().toISOString().split('T')[0],
       student_name,
       phone,
       interested_course,

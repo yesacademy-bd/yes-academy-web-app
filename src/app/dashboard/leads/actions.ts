@@ -25,6 +25,7 @@ export async function createLead(formData: FormData) {
   const { error } = await supabase
     .from('lead_calls')
     .insert({
+      date: new Date().toISOString().split('T')[0],
       student_name,
       phone,
       interested_course,

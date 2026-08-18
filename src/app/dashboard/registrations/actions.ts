@@ -29,7 +29,7 @@ export async function createRegistration(formData: FormData) {
       student_name,
       phone,
       exam_type,
-      amount,
+      registration_fee: amount,
       paid_amount,
       payment_method,
       exam_date
