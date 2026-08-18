@@ -30,7 +30,7 @@ export async function createLead(formData: FormData) {
       phone,
       interested_course,
       summary,
-      lead_source,
+      source: lead_source,
       lead_call_person
     })
 

@@ -35,7 +35,7 @@ export async function createWalkIn(formData: FormData) {
       phone,
       interested_course,
       summary,
-      lead_source,
+      source: lead_source,
       lead_call_person,
       last_qualification,
       last_qualification_year,
