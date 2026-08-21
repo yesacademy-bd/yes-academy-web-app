@@ -179,16 +179,14 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
                       <p className="text-red-600 font-medium">Due: ৳{r.due_amount}</p>
                     </td>
                     <td className="p-4 text-center space-x-2">
-                      {r.email && (
-                        <button
-                          onClick={() => handleSendEmail(r)}
-                          disabled={emailingId === r.id}
-                          className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-                          title="Send Confirmation Email"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleSendEmail(r)}
+                        disabled={!r.email || emailingId === r.id}
+                        className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${!r.email ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50'}`}
+                        title={r.email ? "Send Confirmation Email" : "No email address provided"}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      </button>
                       <a
                         href={`https://wa.me/${formatPhone(r.phone)}?text=${encodeURIComponent(`Hello ${r.student_name}, this is a confirmation for your ${r.exam_type}. Your exam is scheduled on ${new Date(r.exam_date).toLocaleDateString()}${r.exam_time ? ` at ${r.exam_time}` : ''}${r.exam_venue ? ` at ${r.exam_venue}` : ''}. Fee: ৳${r.registration_fee}, Paid: ৳${r.paid_amount || 0}, Due: ৳${r.due_amount}.`)}`}
                         target="_blank"
