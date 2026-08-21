@@ -1,13 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Calendar, Trash2 } from 'lucide-react'
-import { createMockService, deleteMockService } from './actions'
+import { FileText, Calendar, Trash2, Mail } from 'lucide-react'
+import { createMockService, deleteMockService, sendConfirmationEmail } from './actions'
+
+const formatPhone = (phone: string) => {
+  const cleaned = phone.replace(/\D/g, '')
+  if (cleaned.startsWith('01') && cleaned.length === 11) return `88${cleaned}`
+  return cleaned
+}
 
 export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
   const [mocks] = useState(initialMocks)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [emailingId, setEmailingId] = useState<string | null>(null)
+
+  const handleSendEmail = async (m: any) => {
+    setEmailingId(m.id)
+    const res = await sendConfirmationEmail(m, 'Mock Service')
+    if (res.success) {
+      alert('Email sent successfully!')
+    } else {
+      alert(res.message || 'Failed to send email.')
+    }
+    setEmailingId(null)
+  }
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -59,6 +77,11 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Email (Optional)</label>
+              <input type="email" name="email" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mock Type</label>
               <select name="mock_type" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="IELTS Mock">IELTS Mock</option>
@@ -67,9 +90,20 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
               </select>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
+                <input type="date" name="exam_date" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Time (Optional)</label>
+                <input type="time" name="exam_time" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
-              <input type="date" name="exam_date" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Venue (Optional)</label>
+              <input type="text" name="exam_venue" placeholder="e.g. Room 101" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -112,7 +146,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="p-4">Date</th>
                   <th className="p-4">Student</th>
-                  <th className="p-4">Mock Type</th>
+                  <th className="p-4">Exam Details</th>
                   <th className="p-4 text-right">Fee / Due</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
@@ -120,7 +154,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
               <tbody className="divide-y divide-gray-200">
                 {mocks.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No mock services recorded.</td>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">No mock services recorded.</td>
                   </tr>
                 )}
                 {mocks.map(m => (
@@ -129,15 +163,35 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                     <td className="p-4">
                       <p className="font-medium text-gray-900">{m.student_name}</p>
                       <p className="text-sm text-gray-500">{m.phone}</p>
+                      {m.email && <p className="text-xs text-gray-400">{m.email}</p>}
                     </td>
-                    <td className="p-4 text-sm text-gray-600 font-medium">{m.service_type || m.mock_type}</td>
+                    <td className="p-4">
+                      <p className="text-sm text-gray-600 font-medium">{m.service_type || m.mock_type}</p>
+                      {(m.exam_time || m.exam_venue) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {m.exam_time && <span>🕒 {m.exam_time}</span>}
+                          {m.exam_time && m.exam_venue && <span className="mx-1">|</span>}
+                          {m.exam_venue && <span>📍 {m.exam_venue}</span>}
+                        </p>
+                      )}
+                    </td>
                     <td className="p-4 text-sm text-right">
                       <p>Fee: ৳{m.course_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
                     </td>
                     <td className="p-4 text-center space-x-2">
+                      {m.email && (
+                        <button
+                          onClick={() => handleSendEmail(m)}
+                          disabled={emailingId === m.id}
+                          className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                          title="Send Confirmation Email"
+                        >
+                          <Mail className="w-5 h-5" />
+                        </button>
+                      )}
                       <a
-                        href={`https://wa.me/${m.phone}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.service_type || m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}. Fee: ৳${m.course_fee}, Paid: ৳${m.paid_amount || 0}, Due: ৳${m.due_amount}.`)}`}
+                        href={`https://wa.me/${formatPhone(m.phone)}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.service_type || m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}${m.exam_time ? ` at ${m.exam_time}` : ''}${m.exam_venue ? ` at ${m.exam_venue}` : ''}. Fee: ৳${m.course_fee}, Paid: ৳${m.paid_amount || 0}, Due: ৳${m.due_amount}.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"

@@ -1,13 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Calendar, Trash2 } from 'lucide-react'
-import { createRegistration, deleteRegistration } from './actions'
+import { ClipboardList, Calendar, Trash2, Mail } from 'lucide-react'
+import { createRegistration, deleteRegistration, sendConfirmationEmail } from './actions'
+
+const formatPhone = (phone: string) => {
+  const cleaned = phone.replace(/\D/g, '')
+  if (cleaned.startsWith('01') && cleaned.length === 11) return `88${cleaned}`
+  return cleaned
+}
 
 export default function RegistrationClient({ initialRegistrations }: { initialRegistrations: any[] }) {
   const [registrations] = useState(initialRegistrations)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [emailingId, setEmailingId] = useState<string | null>(null)
+
+  const handleSendEmail = async (r: any) => {
+    setEmailingId(r.id)
+    const res = await sendConfirmationEmail(r, 'Exam Registration')
+    if (res.success) {
+      alert('Email sent successfully!')
+    } else {
+      alert(res.message || 'Failed to send email.')
+    }
+    setEmailingId(null)
+  }
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -59,6 +77,11 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Email (Optional)</label>
+              <input type="email" name="email" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
               <select name="exam_type" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="IELTS Registration">IELTS Registration</option>
@@ -66,9 +89,20 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
               </select>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
+                <input type="date" name="exam_date" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Time (Optional)</label>
+                <input type="time" name="exam_time" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
-              <input type="date" name="exam_date" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Venue (Optional)</label>
+              <input type="text" name="exam_venue" placeholder="e.g. Room 101" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -111,7 +145,7 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="p-4">Date</th>
                   <th className="p-4">Student</th>
-                  <th className="p-4">Exam Type</th>
+                  <th className="p-4">Exam Details</th>
                   <th className="p-4 text-right">Fee / Due</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
@@ -119,7 +153,7 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
               <tbody className="divide-y divide-gray-200">
                 {registrations.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No exam registrations recorded.</td>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">No exam registrations recorded.</td>
                   </tr>
                 )}
                 {registrations.map(r => (
@@ -128,15 +162,35 @@ export default function RegistrationClient({ initialRegistrations }: { initialRe
                     <td className="p-4">
                       <p className="font-medium text-gray-900">{r.student_name}</p>
                       <p className="text-sm text-gray-500">{r.phone}</p>
+                      {r.email && <p className="text-xs text-gray-400">{r.email}</p>}
                     </td>
-                    <td className="p-4 text-sm text-gray-600 font-medium">{r.exam_type}</td>
+                    <td className="p-4">
+                      <p className="text-sm text-gray-600 font-medium">{r.exam_type}</p>
+                      {(r.exam_time || r.exam_venue) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {r.exam_time && <span>🕒 {r.exam_time}</span>}
+                          {r.exam_time && r.exam_venue && <span className="mx-1">|</span>}
+                          {r.exam_venue && <span>📍 {r.exam_venue}</span>}
+                        </p>
+                      )}
+                    </td>
                     <td className="p-4 text-sm text-right">
                       <p>Fee: ৳{r.registration_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{r.due_amount}</p>
                     </td>
                     <td className="p-4 text-center space-x-2">
+                      {r.email && (
+                        <button
+                          onClick={() => handleSendEmail(r)}
+                          disabled={emailingId === r.id}
+                          className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                          title="Send Confirmation Email"
+                        >
+                          <Mail className="w-5 h-5" />
+                        </button>
+                      )}
                       <a
-                        href={`https://wa.me/${r.phone}?text=${encodeURIComponent(`Hello ${r.student_name}, this is a confirmation for your ${r.exam_type}. Your exam is scheduled on ${new Date(r.exam_date).toLocaleDateString()}. Fee: ৳${r.registration_fee}, Paid: ৳${r.paid_amount || 0}, Due: ৳${r.due_amount}.`)}`}
+                        href={`https://wa.me/${formatPhone(r.phone)}?text=${encodeURIComponent(`Hello ${r.student_name}, this is a confirmation for your ${r.exam_type}. Your exam is scheduled on ${new Date(r.exam_date).toLocaleDateString()}${r.exam_time ? ` at ${r.exam_time}` : ''}${r.exam_venue ? ` at ${r.exam_venue}` : ''}. Fee: ৳${r.registration_fee}, Paid: ৳${r.paid_amount || 0}, Due: ৳${r.due_amount}.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
