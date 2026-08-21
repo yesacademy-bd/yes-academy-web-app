@@ -1,0 +1,1 @@
+﻿ALTER TABLE public.mock_services ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS exam_time time, ADD COLUMN IF NOT EXISTS exam_venue text; ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS exam_time time, ADD COLUMN IF NOT EXISTS exam_venue text;
