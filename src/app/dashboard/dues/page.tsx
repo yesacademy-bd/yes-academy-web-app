@@ -46,6 +46,8 @@ export default async function DuesPage() {
 
       return {
         id: e.id,
+        student_id: e.students?.id,
+        batch_id: e.batches?.id,
         type: 'Enrollment',
         date: e.enrolled_at,
         student_name: e.students?.name,

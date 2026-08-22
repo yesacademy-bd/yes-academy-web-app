@@ -14,6 +14,7 @@ export default function EnrollmentManager({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [portalFilter, setPortalFilter] = useState<'All' | 'Yes' | 'No'>('All')
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const handleAddStudent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -116,36 +117,41 @@ export default function EnrollmentManager({
                       </select>
                     </td>
                     <td className="p-4 text-right flex items-center justify-end">
-                      <div className="relative group">
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900">
+                      <div className="relative">
+                        <button onClick={() => setOpenMenuId(openMenuId === s.id ? null : s.id)} className="p-2 hover:bg-[#ffffff33] rounded-full transition-colors text-white">
                           <MoreVertical className="w-5 h-5" />
                         </button>
-                        <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
+                        {openMenuId === s.id && (
+                        <div className="absolute right-0 top-full mt-1 w-64 bg-[#1e3a8a] border border-[#93c5fd] rounded-lg shadow-2xl z-[9999] py-1 overflow-hidden">
                           <button onClick={() => {
+                            setOpenMenuId(null);
                             const url = `/invoice?studentId=${s.id}&batchId=${batchId}`
                             window.open(url, '_blank', 'width=800,height=800')
-                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3b82f6] !text-white" style={{ WebkitTextFillColor: 'white' }}>
                             Print Invoice
                           </button>
                           
                           <button onClick={() => {
+                            setOpenMenuId(null);
                             const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
                             window.open(`mailto:${s.email || ''}?subject=Enrollment Confirmation&body=${encodeURIComponent(text)}`)
-                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3b82f6] !text-white" style={{ WebkitTextFillColor: 'white' }}>
                             Email Enrollment Confirmation
                           </button>
 
                           <button onClick={() => {
+                            setOpenMenuId(null);
                             const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
                             window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(text)}`, '_blank')
-                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3b82f6] !text-white" style={{ WebkitTextFillColor: 'white' }}>
                             WhatsApp Enrollment Confirmation
                           </button>
 
-                          <button onClick={() => handleRemove(s.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100 mt-1">
+                          <button onClick={() => { setOpenMenuId(null); handleRemove(s.id); }} className="w-full text-left px-4 py-2 text-sm text-[#fca5a5] hover:bg-[#ef4444] hover:text-white border-t border-[#93c5fd] mt-1" style={{ WebkitTextFillColor: 'currentColor' }}>
                             Delete Option
                           </button>
                         </div>
+                        )}
                       </div>
                     </td>
                   </tr>

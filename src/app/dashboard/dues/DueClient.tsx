@@ -150,7 +150,7 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                     </button>
                     {item.type === 'Enrollment' && (
                       <Link 
-                        href={`/invoice?id=${item.id}`}
+                        href={`/invoice?studentId=${item.student_id}&batchId=${item.batch_id}`}
                         target="_blank"
                         className="px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded text-sm font-medium transition-colors inline-flex items-center gap-1"
                       >
@@ -226,10 +226,37 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
 
       {/* Details Modal (Invoice Design) */}
       {showDetailsFor && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-black">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Payment Details</h3>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden due-invoice-safe">
+          <style dangerouslySetInnerHTML={{ __html: `
+            .due-invoice-safe .bg-white, .due-invoice-safe .bg-gray-50, .due-invoice-safe .bg-gray-100 {
+              background-color: white !important;
+              backdrop-filter: none !important;
+              -webkit-backdrop-filter: none !important;
+              box-shadow: none !important;
+            }
+            .due-invoice-safe * {
+              color: black !important;
+              -webkit-text-fill-color: black !important;
+            }
+            .due-invoice-safe h1, .due-invoice-safe h2, .due-invoice-safe h3, .due-invoice-safe h4 {
+              background: none !important;
+              -webkit-text-fill-color: black !important;
+            }
+            .due-invoice-safe table th {
+              background-color: transparent !important;
+              color: black !important;
+              border-bottom: 1px solid black !important;
+            }
+            .due-invoice-safe table td {
+              border-color: black !important;
+            }
+            .due-invoice-safe .bg-blue-100, .due-invoice-safe .bg-green-100 {
+              background-color: #f3f4f6 !important; /* Force a light bg if needed, or we just let it be overridden but text is black */
+            }
+          `}} />
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-black" style={{ backgroundColor: 'white' }}>
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50" style={{ backgroundColor: '#f9fafb' }}>
+              <h3 className="font-bold text-lg text-gray-900" style={{ background: 'none', WebkitTextFillColor: 'black' }}>Payment Details</h3>
               <div className="flex items-center gap-2">
                 <button onClick={() => {
                   const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
