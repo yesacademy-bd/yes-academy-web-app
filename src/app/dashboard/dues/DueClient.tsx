@@ -230,13 +230,31 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
               <h3 className="font-bold text-lg text-[#111827]">Payment Details</h3>
               <div className="flex items-center gap-2">
                 <button onClick={() => {
-                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
+                  const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
+                  const breakdown = []
+                  if (showDetailsFor.paid_amount > sumHistory) {
+                    breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                  }
+                  [...paymentHistoryData].reverse().forEach((h: any) => {
+                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                  })
+
+                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\n\nPayments Breakdown:\n${breakdown.map(b => `${b.label}: ৳${b.amount}`).join('\n')}\n--------------------\nTotal Amount Paid: ৳${showDetailsFor.paid_amount}\n\nAmount Due: ৳${showDetailsFor.due_amount}\n\nThank you!`
                   window.open(`mailto:${showDetailsFor.email || ''}?subject=Payment Update&body=${encodeURIComponent(text)}`)
                 }} className="px-3 py-1.5 bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe] rounded text-sm font-semibold transition-colors">
                   Email
                 </button>
                 <button onClick={() => {
-                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
+                  const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
+                  const breakdown = []
+                  if (showDetailsFor.paid_amount > sumHistory) {
+                    breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                  }
+                  [...paymentHistoryData].reverse().forEach((h: any) => {
+                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                  })
+
+                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\n\nPayments Breakdown:\n${breakdown.map(b => `${b.label}: ৳${b.amount}`).join('\n')}\n--------------------\nTotal Amount Paid: ৳${showDetailsFor.paid_amount}\n\nAmount Due: ৳${showDetailsFor.due_amount}\n\nThank you!`
                   window.open(`https://wa.me/${showDetailsFor.phone}?text=${encodeURIComponent(text)}`, '_blank')
                 }} className="px-3 py-1.5 bg-[#dcfce7] text-[#15803d] hover:bg-[#bbf7d0] rounded text-sm font-semibold transition-colors">
                   WhatsApp
@@ -317,16 +335,39 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                   )}
                 </div>
                 
-                <div className="w-64 space-y-3 text-sm flex-shrink-0 text-[#000000]">
-                  <div className="flex justify-between">
+                <div className="w-64 space-y-2 text-sm flex-shrink-0 text-[#000000]">
+                  <div className="flex justify-between font-bold border-b border-[#000000] pb-2 mb-2">
                     <span>Total Fee</span>
                     <span>৳{showDetailsFor.total_fee.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between font-medium">
-                    <span>Amount Paid</span>
+                  
+                  {(() => {
+                    const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
+                    const breakdown = []
+                    if (showDetailsFor.paid_amount > sumHistory) {
+                      breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                    }
+                    [...paymentHistoryData].reverse().forEach((h: any) => {
+                      breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                    })
+                    
+                    return (
+                      <>
+                        {breakdown.map((b, i) => (
+                          <div key={i} className="flex justify-between text-[#4b5563]">
+                            <span>{b.label}</span>
+                            <span>৳{b.amount.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </>
+                    )
+                  })()}
+
+                  <div className="flex justify-between font-bold border-t border-[#000000] pt-2 mt-2">
+                    <span>Total Amount Paid</span>
                     <span>- ৳{showDetailsFor.paid_amount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between border-t border-[#000000] pt-3 font-bold text-lg">
+                  <div className="flex justify-between border-t border-[#000000] pt-2 mt-2 font-bold text-lg">
                     <span>Amount Due</span>
                     <span className="text-[#dc2626]">৳{showDetailsFor.due_amount.toLocaleString()}</span>
                   </div>

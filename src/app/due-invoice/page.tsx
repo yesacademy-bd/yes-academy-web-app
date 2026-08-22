@@ -66,6 +66,22 @@ export default async function DueInvoicePage({ searchParams }: { searchParams: P
 
   if (!data) return <div>Record not found</div>
 
+  const { data: paymentHistoryData } = await supabase
+    .from('payment_history')
+    .select('*')
+    .eq('record_id', id)
+    .order('payment_date', { ascending: false })
+
+  const history = paymentHistoryData || []
+  const sumHistory = history.reduce((s: any, h: any) => s + h.amount_paid, 0)
+  const breakdown: any[] = []
+  if (data.paid_amount > sumHistory) {
+    breakdown.push({ label: 'Initial Payment', amount: data.paid_amount - sumHistory })
+  }
+  [...history].reverse().forEach((h: any) => {
+    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+  })
+
   const d = new Date(data.date)
   const dateStr = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
   const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).format(d)
@@ -199,18 +215,26 @@ export default async function DueInvoicePage({ searchParams }: { searchParams: P
 
         {/* Totals */}
         <div className="flex justify-end">
-          <div className="w-64 space-y-3 text-sm">
-            <div className="flex justify-between">
+          <div className="w-64 space-y-2 text-sm text-black">
+            <div className="flex justify-between font-bold border-b border-black pb-2 mb-2">
               <span>Total Fee</span>
-              <span>৳{data.total_fee}</span>
+              <span>৳{data.total_fee.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between font-medium">
-              <span>Amount Paid</span>
-              <span>- ৳{data.paid_amount}</span>
+            
+            {breakdown.map((b, i) => (
+              <div key={i} className="flex justify-between text-gray-700">
+                <span>{b.label}</span>
+                <span>৳{b.amount.toLocaleString()}</span>
+              </div>
+            ))}
+
+            <div className="flex justify-between font-bold border-t border-black pt-2 mt-2">
+              <span>Total Amount Paid</span>
+              <span>- ৳{data.paid_amount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between border-t border-black pt-3 font-bold text-lg">
+            <div className="flex justify-between border-t border-black pt-2 mt-2 font-bold text-lg">
               <span>Amount Due</span>
-              <span>৳{data.due_amount}</span>
+              <span>৳{data.due_amount.toLocaleString()}</span>
             </div>
           </div>
         </div>
