@@ -131,17 +131,92 @@ export default function EnrollmentManager({
                             Print Invoice
                           </button>
                           
-                          <button onClick={() => {
+                          <button onClick={async (e) => {
                             setOpenMenuId(null);
-                            const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
-                            window.open(`mailto:${s.email || ''}?subject=Enrollment Confirmation&body=${encodeURIComponent(text)}`)
+                            
+                            const sumHistory = s.enrollment_data?.payment_history?.reduce((s: any, h: any) => s + h.amount_paid, 0) || 0
+                            const breakdown: any[] = []
+                            if (s.enrollment_data?.paid_amount > sumHistory) {
+                              breakdown.push({ label: `Initial Payment (${s.enrollment_data?.payment_method || 'Cash'})`, amount: s.enrollment_data?.paid_amount - sumHistory })
+                            }
+                            [...(s.enrollment_data?.payment_history || [])].reverse().forEach((h: any) => {
+                              breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
+                            })
+                            
+                            const instHtml = (s.enrollment_data?.installments?.length || 0) > 0 ? `
+                              <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Installment Plan</h3>
+                                ${s.enrollment_data.installments.map((inst: any) => `
+                                  <div style="display: flex; justify-content: space-between; color: #555; font-size: 0.9em; margin-bottom: 5px;">
+                                    <span>Inst ${inst.installment_number} (${new Date(inst.due_date).toLocaleDateString('en-GB')} - ${inst.status})</span>
+                                    <span>৳${inst.amount}</span>
+                                  </div>
+                                `).join('')}
+                              </div>
+                            ` : ''
+
+                            const html = `
+                              <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                                <h2 style="color: #2563eb;">YES Academy - Enrollment Confirmation</h2>
+                                <p>Dear <strong>${s.name}</strong>,</p>
+                                <p>This is your enrollment confirmation for <strong>${s.enrollment_data?.reference || 'our course'}</strong>.</p>
+                                
+                                <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                  <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Payment Summary</h3>
+                                  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <span><strong>Total Fee:</strong></span>
+                                    <span>৳${s.enrollment_data?.course_fee}</span>
+                                  </div>
+                                  ${breakdown.map(b => `
+                                    <div style="display: flex; justify-content: space-between; color: #555; font-size: 0.9em; margin-bottom: 5px;">
+                                      <span>${b.label}</span>
+                                      <span>৳${b.amount}</span>
+                                    </div>
+                                  `).join('')}
+                                  <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px;">
+                                    <span><strong>Total Amount Paid:</strong></span>
+                                    <span>- ৳${s.enrollment_data?.paid_amount}</span>
+                                  </div>
+                                  <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px; color: #dc2626; font-size: 1.1em;">
+                                    <span><strong>Amount Due:</strong></span>
+                                    <span><strong>৳${s.enrollment_data?.due_amount}</strong></span>
+                                  </div>
+                                </div>
+                                ${instHtml}
+                                <p>Thank you for choosing YES Academy.</p>
+                              </div>
+                            `
+
+                            if (!s.email) {
+                              alert('No email address found for this student.')
+                              return
+                            }
+                            
+                            const btn = e.currentTarget
+                            btn.innerText = 'Sending...'
+                            const { sendDirectEmail } = await import('@/app/dashboard/email-actions')
+                            const res = await sendDirectEmail(s.email, 'YES Academy - Enrollment Confirmation', html)
+                            btn.innerText = 'Email Enrollment Confirmation'
+                            
+                            if (res.success) alert('Email sent successfully!')
+                            else alert(res.message || 'Failed to send email.')
                           }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3b82f6] !text-white" style={{ WebkitTextFillColor: 'white' }}>
                             Email Enrollment Confirmation
                           </button>
 
                           <button onClick={() => {
                             setOpenMenuId(null);
-                            const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
+                            
+                            const sumHistory = s.enrollment_data?.payment_history?.reduce((s: any, h: any) => s + h.amount_paid, 0) || 0
+                            const breakdown: any[] = []
+                            if (s.enrollment_data?.paid_amount > sumHistory) {
+                              breakdown.push({ label: `Initial Payment (${s.enrollment_data?.payment_method || 'Cash'})`, amount: s.enrollment_data?.paid_amount - sumHistory })
+                            }
+                            [...(s.enrollment_data?.payment_history || [])].reverse().forEach((h: any) => {
+                              breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
+                            })
+                            
+                            const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\n\nPayments Breakdown:\n${breakdown.map(b => `${b.label}: ৳${b.amount}`).join('\n')}\n--------------------\nTotal Amount Paid: ৳${s.enrollment_data?.paid_amount}\n\nAmount Due: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString('en-GB')} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
                             window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(text)}`, '_blank')
                           }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3b82f6] !text-white" style={{ WebkitTextFillColor: 'white' }}>
                             WhatsApp Enrollment Confirmation

@@ -229,29 +229,71 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
             <div className="p-4 border-b border-[#e5e7eb] flex justify-between items-center bg-[#f9fafb]">
               <h3 className="font-bold text-lg text-[#111827]">Payment Details</h3>
               <div className="flex items-center gap-2">
-                <button onClick={() => {
+                <button onClick={async () => {
                   const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
-                  const breakdown = []
+                  const breakdown: any[] = []
                   if (showDetailsFor.paid_amount > sumHistory) {
-                    breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                    breakdown.push({ label: `Initial Payment (${showDetailsFor.payment_method || 'Cash'})`, amount: showDetailsFor.paid_amount - sumHistory })
                   }
                   [...paymentHistoryData].reverse().forEach((h: any) => {
-                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
                   })
 
-                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\n\nPayments Breakdown:\n${breakdown.map(b => `${b.label}: ৳${b.amount}`).join('\n')}\n--------------------\nTotal Amount Paid: ৳${showDetailsFor.paid_amount}\n\nAmount Due: ৳${showDetailsFor.due_amount}\n\nThank you!`
-                  window.open(`mailto:${showDetailsFor.email || ''}?subject=Payment Update&body=${encodeURIComponent(text)}`)
-                }} className="px-3 py-1.5 bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe] rounded text-sm font-semibold transition-colors">
+                  const html = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                      <h2 style="color: #2563eb;">YES Academy - Payment Update</h2>
+                      <p>Dear <strong>${showDetailsFor.student_name}</strong>,</p>
+                      <p>This is a payment update for your <strong>${showDetailsFor.item_name}</strong>.</p>
+                      
+                      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Payment Summary</h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                          <span><strong>Total Fee:</strong></span>
+                          <span>৳${showDetailsFor.total_fee}</span>
+                        </div>
+                        ${breakdown.map(b => `
+                          <div style="display: flex; justify-content: space-between; color: #555; font-size: 0.9em; margin-bottom: 5px;">
+                            <span>${b.label}</span>
+                            <span>৳${b.amount}</span>
+                          </div>
+                        `).join('')}
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px;">
+                          <span><strong>Total Amount Paid:</strong></span>
+                          <span>- ৳${showDetailsFor.paid_amount}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px; color: #dc2626; font-size: 1.1em;">
+                          <span><strong>Amount Due:</strong></span>
+                          <span><strong>৳${showDetailsFor.due_amount}</strong></span>
+                        </div>
+                      </div>
+                      <p>Thank you for choosing YES Academy.</p>
+                    </div>
+                  `
+                  
+                  if (!showDetailsFor.email) {
+                    alert('No email address found for this record.')
+                    return
+                  }
+                  
+                  const btn = document.getElementById('due-email-btn')
+                  if (btn) btn.innerText = 'Sending...'
+                  const { sendDirectEmail } = await import('@/app/dashboard/email-actions')
+                  const res = await sendDirectEmail(showDetailsFor.email, 'YES Academy - Payment Update', html)
+                  if (btn) btn.innerText = 'Email'
+                  
+                  if (res.success) alert('Email sent successfully!')
+                  else alert(res.message || 'Failed to send email.')
+                }} id="due-email-btn" className="px-3 py-1.5 bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe] rounded text-sm font-semibold transition-colors">
                   Email
                 </button>
                 <button onClick={() => {
                   const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
-                  const breakdown = []
+                  const breakdown: any[] = []
                   if (showDetailsFor.paid_amount > sumHistory) {
-                    breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                    breakdown.push({ label: `Initial Payment (${showDetailsFor.payment_method || 'Cash'})`, amount: showDetailsFor.paid_amount - sumHistory })
                   }
                   [...paymentHistoryData].reverse().forEach((h: any) => {
-                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
                   })
 
                   const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\n\nPayments Breakdown:\n${breakdown.map(b => `${b.label}: ৳${b.amount}`).join('\n')}\n--------------------\nTotal Amount Paid: ৳${showDetailsFor.paid_amount}\n\nAmount Due: ৳${showDetailsFor.due_amount}\n\nThank you!`
@@ -345,10 +387,10 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                     const sumHistory = paymentHistoryData.reduce((s: any, h: any) => s + h.amount_paid, 0)
                     const breakdown = []
                     if (showDetailsFor.paid_amount > sumHistory) {
-                      breakdown.push({ label: 'Initial Payment', amount: showDetailsFor.paid_amount - sumHistory })
+                      breakdown.push({ label: `Initial Payment (${showDetailsFor.payment_method || 'Cash'})`, amount: showDetailsFor.paid_amount - sumHistory })
                     }
                     [...paymentHistoryData].reverse().forEach((h: any) => {
-                      breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+                      breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
                     })
                     
                     return (

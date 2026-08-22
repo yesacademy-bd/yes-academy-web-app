@@ -26,6 +26,23 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
   const enrollment = enrollmentRes.data
   const course = batch.courses
 
+  const [historyRes, installmentsRes] = await Promise.all([
+    supabase.from('payment_history').select('*').eq('record_id', enrollment.id).order('payment_date', { ascending: false }),
+    supabase.from('installments').select('*').eq('enrollment_id', enrollment.id).order('installment_number', { ascending: true })
+  ])
+
+  const history = historyRes.data || []
+  const installments = installmentsRes.data || []
+
+  const sumHistory = history.reduce((s: any, h: any) => s + h.amount_paid, 0)
+  const breakdown: any[] = []
+  if (enrollment.paid_amount > sumHistory) {
+    breakdown.push({ label: `Initial Payment (${enrollment.payment_method || 'Cash'})`, amount: enrollment.paid_amount - sumHistory })
+  }
+  [...history].reverse().forEach((h: any) => {
+    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
+  })
+
   let displayCourseName = `${course.family} - ${course.name}`
   if (displayCourseName === 'PTE - PTE') displayCourseName = 'PTE - PTE Academic'
   if (displayCourseName === 'Grammar - Basic Grammar') displayCourseName = 'Grammar - Basic Grammar to Advance'
@@ -163,22 +180,57 @@ export default async function InvoicePage({ searchParams }: { searchParams: Prom
         </table>
 
         {/* Totals */}
-        <div className="flex justify-end">
-          <div className="w-64 space-y-3 text-sm">
-            <div className="flex justify-between">
+        <div className="flex justify-end mb-8">
+          <div className="w-64 space-y-2 text-sm text-black">
+            <div className="flex justify-between font-bold border-b border-black pb-2 mb-2">
               <span>Total Course Fee</span>
-              <span>৳{enrollment.course_fee}</span>
+              <span>৳{enrollment.course_fee.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between font-medium">
-              <span>Amount Paid</span>
-              <span>- ৳{enrollment.paid_amount}</span>
+            
+            {breakdown.map((b, i) => (
+              <div key={i} className="flex justify-between text-gray-700">
+                <span>{b.label}</span>
+                <span>৳{b.amount.toLocaleString()}</span>
+              </div>
+            ))}
+
+            <div className="flex justify-between font-bold border-t border-black pt-2 mt-2">
+              <span>Total Amount Paid</span>
+              <span>- ৳{enrollment.paid_amount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between border-t border-black pt-3 font-bold text-lg">
+            <div className="flex justify-between border-t border-black pt-2 mt-2 font-bold text-lg">
               <span>Amount Due</span>
-              <span>৳{enrollment.due_amount}</span>
+              <span>৳{enrollment.due_amount.toLocaleString()}</span>
             </div>
           </div>
         </div>
+
+        {/* Installments Table */}
+        {installments.length > 0 && (
+          <div className="mb-8">
+            <h4 className="font-bold text-sm uppercase border-b border-black pb-1 mb-2">Installment Plan</h4>
+            <table className="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr className="border-b border-black/20 text-gray-700">
+                  <th className="py-2 px-1">Installment</th>
+                  <th className="py-2 px-1">Due Date</th>
+                  <th className="py-2 px-1">Status</th>
+                  <th className="py-2 px-1 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/10">
+                {installments.map((inst: any) => (
+                  <tr key={inst.id}>
+                    <td className="py-2 px-1">Inst {inst.installment_number}</td>
+                    <td className="py-2 px-1">{new Date(inst.due_date).toLocaleDateString('en-GB')}</td>
+                    <td className="py-2 px-1">{inst.status}</td>
+                    <td className="py-2 px-1 text-right">৳{inst.amount.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-black text-center text-sm">

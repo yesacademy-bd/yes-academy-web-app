@@ -42,10 +42,11 @@ export async function updateDuePayment(formData: FormData) {
   }
 
   const newPaidAmount = record.paid_amount + payAmount
+  const newDueAmount = record.due_amount - payAmount
 
   const { error: updateErr } = await supabase
     .from(table)
-    .update({ paid_amount: newPaidAmount })
+    .update({ paid_amount: newPaidAmount, due_amount: newDueAmount })
     .eq('id', id)
 
   if (updateErr) return { success: false, message: updateErr.message }

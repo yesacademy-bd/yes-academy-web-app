@@ -26,6 +26,13 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
     supabase.from('enrollments').select('*, students(*), installments(*)').eq('batch_id', id)
   ])
 
+  const enrollmentIds = enrollmentsRes?.data?.map((e: any) => e.id) || []
+  const { data: paymentHistoryData } = await supabase
+    .from('payment_history')
+    .select('*')
+    .in('record_id', enrollmentIds)
+    .order('payment_date', { ascending: false })
+
   const students = enrollmentsRes?.data?.map((e: any) => ({
     ...e.students,
     enrollment_data: {
@@ -34,7 +41,9 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
       paid_amount: e.paid_amount,
       due_amount: e.due_amount,
       reference: e.reference,
-      installments: e.installments || []
+      payment_method: e.payment_method,
+      installments: e.installments || [],
+      payment_history: paymentHistoryData?.filter((h: any) => h.record_id === e.id) || []
     }
   })).filter((s: any) => s.id) || []
 
