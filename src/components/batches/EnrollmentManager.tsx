@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { enrollStudent, removeEnrollment, updatePortalAssigned } from '@/app/dashboard/admin/batches/enroll-actions'
-import { Trash2, UserPlus } from 'lucide-react'
+import { Trash2, UserPlus, MoreVertical } from 'lucide-react'
 
 export default function EnrollmentManager({ 
   batchId, 
@@ -115,17 +115,38 @@ export default function EnrollmentManager({
                         <option value="Yes">Yes</option>
                       </select>
                     </td>
-                    <td className="p-4 text-right flex items-center justify-end gap-2">
-                      <button onClick={() => {
-                        // Print Invoice
-                        const url = `/invoice?studentId=${s.id}&batchId=${batchId}`
-                        window.open(url, '_blank', 'width=800,height=800')
-                      }} className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 bg-blue-50 rounded transition-colors">
-                        Print Invoice
-                      </button>
-                      <button onClick={() => handleRemove(s.id)} className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors" title="Remove">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <td className="p-4 text-right flex items-center justify-end">
+                      <div className="relative group">
+                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900">
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                        <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
+                          <button onClick={() => {
+                            const url = `/invoice?studentId=${s.id}&batchId=${batchId}`
+                            window.open(url, '_blank', 'width=800,height=800')
+                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            Print Invoice
+                          </button>
+                          
+                          <button onClick={() => {
+                            const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
+                            window.open(`mailto:${s.email || ''}?subject=Enrollment Confirmation&body=${encodeURIComponent(text)}`)
+                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            Email Enrollment Confirmation
+                          </button>
+
+                          <button onClick={() => {
+                            const text = `Hello ${s.name},\n\nThis is your enrollment confirmation for ${s.enrollment_data?.reference || 'our course'}.\nTotal Fee: ৳${s.enrollment_data?.course_fee}\nPaid: ৳${s.enrollment_data?.paid_amount}\nDue: ৳${s.enrollment_data?.due_amount}\n\nInstallments:\n${s.enrollment_data?.installments?.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') || 'No installments'}\n\nThank you!`
+                            window.open(`https://wa.me/${s.phone}?text=${encodeURIComponent(text)}`, '_blank')
+                          }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            WhatsApp Enrollment Confirmation
+                          </button>
+
+                          <button onClick={() => handleRemove(s.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100 mt-1">
+                            Delete Option
+                          </button>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 )

@@ -224,49 +224,117 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* Details Modal (Invoice Design) */}
       {showDetailsFor && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-              <h3 className="font-bold text-lg text-white">Payment Details - {showDetailsFor.student_name}</h3>
-              <button onClick={() => setShowDetailsFor(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-black">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Payment Details</h3>
+              <div className="flex items-center gap-2">
+                <button onClick={() => {
+                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
+                  window.open(`mailto:${showDetailsFor.email || ''}?subject=Payment Update&body=${encodeURIComponent(text)}`)
+                }} className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-sm font-semibold transition-colors">
+                  Email
+                </button>
+                <button onClick={() => {
+                  const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
+                  window.open(`https://wa.me/${showDetailsFor.phone}?text=${encodeURIComponent(text)}`, '_blank')
+                }} className="px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded text-sm font-semibold transition-colors">
+                  WhatsApp
+                </button>
+                <button onClick={() => setShowDetailsFor(null)} className="p-1 text-gray-400 hover:text-gray-900"><X className="w-6 h-6"/></button>
+              </div>
             </div>
             
-            <div className="p-4 overflow-y-auto">
-              <div className="mb-4 space-y-1 text-sm text-slate-300">
-                <p><strong>Item:</strong> <span className="text-white">{showDetailsFor.item_name}</span></p>
-                <p><strong>Total Fee:</strong> <span className="text-white">৳{showDetailsFor.total_fee.toLocaleString()}</span></p>
-                <p><strong>Total Paid:</strong> <span className="text-green-400 font-medium">৳{showDetailsFor.paid_amount.toLocaleString()}</span></p>
-                <p><strong>Remaining Due:</strong> <span className="text-red-400 font-medium">৳{showDetailsFor.due_amount.toLocaleString()}</span></p>
+            <div className="p-8 overflow-y-auto font-sans">
+              {/* Invoice Header */}
+              <div className="text-center mb-8">
+                <div className="text-3xl font-black tracking-tight text-black">YES ACADEMY</div>
+                <div className="mt-4 inline-block border border-black px-4 py-1 font-bold tracking-widest text-sm text-black uppercase">
+                  {showDetailsFor.type} DETAILS
+                </div>
+              </div>
+              
+              <hr className="border-t border-gray-300 mb-8" />
+
+              <div className="flex justify-between items-start mb-8 text-sm">
+                <div>
+                  <p className="mb-1 text-gray-600">Student Info:</p>
+                  <p className="font-bold text-lg text-black">{showDetailsFor.student_name}</p>
+                  <p>Phone: {showDetailsFor.phone}</p>
+                  {showDetailsFor.email && <p>Email: {showDetailsFor.email}</p>}
+                </div>
+                <div className="text-right">
+                  <p className="mb-1 text-gray-600">Record Details:</p>
+                  <p className="font-medium">Date: {new Date(showDetailsFor.date).toLocaleDateString()}</p>
+                </div>
               </div>
 
-              <h4 className="font-semibold text-white mb-2 border-b border-slate-700 pb-1">Payment History</h4>
-              
-              {isLoadingDetails ? (
-                <div className="text-center py-8 text-slate-400">Loading history...</div>
-              ) : paymentHistoryData.length > 0 ? (
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-800/50 text-slate-400 uppercase text-xs">
-                    <tr>
-                      <th className="px-4 py-2 border-b border-slate-700">Date</th>
-                      <th className="px-4 py-2 border-b border-slate-700">Method</th>
-                      <th className="px-4 py-2 text-right border-b border-slate-700">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700/50 text-slate-300">
-                    {paymentHistoryData.map(h => (
-                      <tr key={h.id}>
-                        <td className="px-4 py-2">{new Date(h.payment_date).toLocaleString()}</td>
-                        <td className="px-4 py-2">{h.payment_method}</td>
-                        <td className="px-4 py-2 text-right font-bold text-green-400">৳{h.amount_paid.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-center py-8 text-slate-400 bg-slate-800/30 rounded-lg border border-slate-700/50">No payment history found.</div>
-              )}
+              <table className="w-full mb-8 border-collapse">
+                <thead>
+                  <tr className="border-y border-black text-left text-sm uppercase tracking-wider font-bold">
+                    <th className="py-2 px-1">Description</th>
+                    <th className="py-2 px-1 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  <tr>
+                    <td className="py-4 px-1">
+                      <p className="font-bold text-base">{showDetailsFor.item_name}</p>
+                    </td>
+                    <td className="py-4 px-1 text-right font-medium">
+                      ৳{showDetailsFor.total_fee.toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="flex justify-between items-start mb-8">
+                <div className="flex-1 mr-8">
+                  <h4 className="font-bold text-sm uppercase border-b border-black pb-1 mb-2">Payment History</h4>
+                  {isLoadingDetails ? (
+                    <div className="text-gray-500 text-sm">Loading history...</div>
+                  ) : paymentHistoryData.length > 0 ? (
+                    <table className="w-full text-sm text-left">
+                      <thead>
+                        <tr className="text-gray-500">
+                          <th className="py-1">Date</th>
+                          <th className="py-1">Method</th>
+                          <th className="py-1 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {paymentHistoryData.map(h => (
+                          <tr key={h.id}>
+                            <td className="py-1">{new Date(h.payment_date).toLocaleDateString()}</td>
+                            <td className="py-1">{h.payment_method}</td>
+                            <td className="py-1 text-right text-green-600 font-medium">৳{h.amount_paid.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-gray-500 text-sm">No payment history found.</div>
+                  )}
+                </div>
+                
+                <div className="w-64 space-y-3 text-sm flex-shrink-0">
+                  <div className="flex justify-between">
+                    <span>Total Fee</span>
+                    <span>৳{showDetailsFor.total_fee.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-medium">
+                    <span>Amount Paid</span>
+                    <span>- ৳{showDetailsFor.paid_amount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-black pt-3 font-bold text-lg">
+                    <span>Amount Due</span>
+                    <span className="text-red-600">৳{showDetailsFor.due_amount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

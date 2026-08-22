@@ -14,6 +14,7 @@ export async function createEnrollment(formData: FormData) {
   const name = formData.get('student_name') as string
   const phone = formData.get('mobile_number') as string
   const guardian_phone = formData.get('guardian_number') as string
+  const email = formData.get('student_email') as string
 
   const course_id = formData.get('course_id') as string
   const batch_id = formData.get('batch_id') as string
@@ -36,10 +37,14 @@ export async function createEnrollment(formData: FormData) {
 
   if (existingStudent) {
     student_id = existingStudent.id
+    // Update email if provided
+    if (email) {
+      await supabase.from('students').update({ email }).eq('id', student_id)
+    }
   } else {
     const { data: newStudent, error: createError } = await supabase
       .from('students')
-      .insert({ name, phone, guardian_phone })
+      .insert({ name, phone, guardian_phone, email })
       .select('id')
       .single()
     if (createError) return { success: false, message: 'Failed to create student: ' + createError.message }

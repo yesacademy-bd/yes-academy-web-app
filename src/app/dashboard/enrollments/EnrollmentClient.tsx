@@ -64,7 +64,7 @@ export default function EnrollmentClient({ students, courses, batches, teachers 
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
         <form onSubmit={handleEnroll} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
               <input type="text" name="student_name" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
@@ -76,6 +76,10 @@ export default function EnrollmentClient({ students, courses, batches, teachers 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Guardian Number</label>
               <input type="text" name="guardian_number" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" name="student_email" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
           </div>
           

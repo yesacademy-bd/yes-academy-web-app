@@ -28,7 +28,7 @@ export default async function DuesPage() {
       .from('enrollments')
       .select(`
         id, due_amount, course_fee, paid_amount, payment_method, enrolled_at,
-        students (id, name, phone, guardian_phone),
+        students (id, name, phone, guardian_phone, email),
         batches (id, batch_name, courses (id, family, name)),
         installments (id, amount, due_date, status)
       `)
@@ -51,12 +51,14 @@ export default async function DuesPage() {
         student_name: e.students?.name,
         phone: e.students?.phone,
         guardian_phone: e.students?.guardian_phone,
+        email: e.students?.email,
         item_name: `${e.batches?.courses?.family || ''} - ${e.batches?.batch_name || ''}`,
         total_fee: e.course_fee,
         paid_amount: e.paid_amount,
         due_amount: e.due_amount,
         payment_method: e.payment_method,
-        next_installment_date: pendingInst?.due_date || null
+        next_installment_date: pendingInst?.due_date || null,
+        installments: e.installments || []
       }
     }) || []),
     ...(mocks?.map((m: any) => ({
