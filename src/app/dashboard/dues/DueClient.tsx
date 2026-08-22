@@ -148,15 +148,13 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                     >
                       Pay Due
                     </button>
-                    {item.type === 'Enrollment' && (
-                      <Link 
-                        href={`/invoice?studentId=${item.student_id}&batchId=${item.batch_id}`}
-                        target="_blank"
-                        className="px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded text-sm font-medium transition-colors inline-flex items-center gap-1"
-                      >
-                        <Receipt className="w-4 h-4"/> Invoice
-                      </Link>
-                    )}
+                    <Link 
+                      href={`/due-invoice?id=${item.id}&type=${item.type}`}
+                      target="_blank"
+                      className="px-3 py-1 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 rounded text-sm font-medium transition-colors inline-flex items-center gap-1"
+                    >
+                      <Receipt className="w-4 h-4"/> Invoice
+                    </Link>
                   </td>
                 </tr>
                 )
@@ -226,91 +224,64 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
 
       {/* Details Modal (Invoice Design) */}
       {showDetailsFor && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden due-invoice-safe">
-          <style dangerouslySetInnerHTML={{ __html: `
-            .due-invoice-safe .bg-white, .due-invoice-safe .bg-gray-50, .due-invoice-safe .bg-gray-100 {
-              background-color: white !important;
-              backdrop-filter: none !important;
-              -webkit-backdrop-filter: none !important;
-              box-shadow: none !important;
-            }
-            .due-invoice-safe * {
-              color: black !important;
-              -webkit-text-fill-color: black !important;
-            }
-            .due-invoice-safe h1, .due-invoice-safe h2, .due-invoice-safe h3, .due-invoice-safe h4 {
-              background: none !important;
-              -webkit-text-fill-color: black !important;
-            }
-            .due-invoice-safe table th {
-              background-color: transparent !important;
-              color: black !important;
-              border-bottom: 1px solid black !important;
-            }
-            .due-invoice-safe table td {
-              border-color: black !important;
-            }
-            .due-invoice-safe .bg-blue-100, .due-invoice-safe .bg-green-100 {
-              background-color: #f3f4f6 !important; /* Force a light bg if needed, or we just let it be overridden but text is black */
-            }
-          `}} />
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-black" style={{ backgroundColor: 'white' }}>
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50" style={{ backgroundColor: '#f9fafb' }}>
-              <h3 className="font-bold text-lg text-gray-900" style={{ background: 'none', WebkitTextFillColor: 'black' }}>Payment Details</h3>
+        <div className="fixed inset-0 bg-[#00000099] flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-[#ffffff] rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden text-[#000000]">
+            <div className="p-4 border-b border-[#e5e7eb] flex justify-between items-center bg-[#f9fafb]">
+              <h3 className="font-bold text-lg text-[#111827]">Payment Details</h3>
               <div className="flex items-center gap-2">
                 <button onClick={() => {
                   const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
                   window.open(`mailto:${showDetailsFor.email || ''}?subject=Payment Update&body=${encodeURIComponent(text)}`)
-                }} className="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-sm font-semibold transition-colors">
+                }} className="px-3 py-1.5 bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe] rounded text-sm font-semibold transition-colors">
                   Email
                 </button>
                 <button onClick={() => {
                   const text = `Hello ${showDetailsFor.student_name},\n\nThis is a payment update for ${showDetailsFor.item_name}.\nTotal Fee: ৳${showDetailsFor.total_fee}\nPaid: ৳${showDetailsFor.paid_amount}\nDue: ৳${showDetailsFor.due_amount}\n\n${showDetailsFor.installments ? 'Installments:\n' + showDetailsFor.installments.map((inst: any) => `Inst ${inst.installment_number}: ৳${inst.amount} Due: ${new Date(inst.due_date).toLocaleDateString()} (${inst.status})`).join('\n') : ''}\nThank you!`
                   window.open(`https://wa.me/${showDetailsFor.phone}?text=${encodeURIComponent(text)}`, '_blank')
-                }} className="px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded text-sm font-semibold transition-colors">
+                }} className="px-3 py-1.5 bg-[#dcfce7] text-[#15803d] hover:bg-[#bbf7d0] rounded text-sm font-semibold transition-colors">
                   WhatsApp
                 </button>
-                <button onClick={() => setShowDetailsFor(null)} className="p-1 text-gray-400 hover:text-gray-900"><X className="w-6 h-6"/></button>
+                <button onClick={() => setShowDetailsFor(null)} className="p-1 text-[#9ca3af] hover:text-[#111827]"><X className="w-6 h-6"/></button>
               </div>
             </div>
             
             <div className="p-8 overflow-y-auto font-sans">
               {/* Invoice Header */}
               <div className="text-center mb-8">
-                <div className="text-3xl font-black tracking-tight text-black">YES ACADEMY</div>
-                <div className="mt-4 inline-block border border-black px-4 py-1 font-bold tracking-widest text-sm text-black uppercase">
+                <div className="text-3xl font-black tracking-tight text-[#000000]">YES ACADEMY</div>
+                <div className="mt-4 inline-block border border-[#000000] px-4 py-1 font-bold tracking-widest text-sm text-[#000000] uppercase">
                   {showDetailsFor.type} DETAILS
                 </div>
               </div>
               
-              <hr className="border-t border-gray-300 mb-8" />
+              <hr className="border-t border-[#d1d5db] mb-8" />
 
               <div className="flex justify-between items-start mb-8 text-sm">
                 <div>
-                  <p className="mb-1 text-gray-600">Student Info:</p>
-                  <p className="font-bold text-lg text-black">{showDetailsFor.student_name}</p>
+                  <p className="mb-1 text-[#4b5563]">Student Info:</p>
+                  <p className="font-bold text-lg text-[#000000]">{showDetailsFor.student_name}</p>
                   <p>Phone: {showDetailsFor.phone}</p>
                   {showDetailsFor.email && <p>Email: {showDetailsFor.email}</p>}
                 </div>
                 <div className="text-right">
-                  <p className="mb-1 text-gray-600">Record Details:</p>
+                  <p className="mb-1 text-[#4b5563]">Record Details:</p>
                   <p className="font-medium">Date: {new Date(showDetailsFor.date).toLocaleDateString()}</p>
                 </div>
               </div>
 
               <table className="w-full mb-8 border-collapse">
                 <thead>
-                  <tr className="border-y border-black text-left text-sm uppercase tracking-wider font-bold">
-                    <th className="py-2 px-1">Description</th>
-                    <th className="py-2 px-1 text-right">Amount</th>
+                  <tr className="border-y border-[#000000] text-left text-sm uppercase tracking-wider font-bold">
+                    <th className="py-2 px-1 text-[#000000] bg-transparent">Description</th>
+                    <th className="py-2 px-1 text-right text-[#000000] bg-transparent">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-[#e5e7eb]">
                   <tr>
-                    <td className="py-4 px-1">
-                      <p className="font-bold text-base">{showDetailsFor.item_name}</p>
+                    <td className="py-4 px-1 bg-transparent">
+                      <p className="font-bold text-base text-[#000000]">{showDetailsFor.item_name}</p>
                     </td>
-                    <td className="py-4 px-1 text-right font-medium">
+                    <td className="py-4 px-1 text-right font-medium text-[#000000] bg-transparent">
                       ৳{showDetailsFor.total_fee.toLocaleString()}
                     </td>
                   </tr>
@@ -319,34 +290,34 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
 
               <div className="flex justify-between items-start mb-8">
                 <div className="flex-1 mr-8">
-                  <h4 className="font-bold text-sm uppercase border-b border-black pb-1 mb-2">Payment History</h4>
+                  <h4 className="font-bold text-sm uppercase border-b border-[#000000] pb-1 mb-2 text-[#000000] bg-transparent">Payment History</h4>
                   {isLoadingDetails ? (
-                    <div className="text-gray-500 text-sm">Loading history...</div>
+                    <div className="text-[#6b7280] text-sm">Loading history...</div>
                   ) : paymentHistoryData.length > 0 ? (
                     <table className="w-full text-sm text-left">
                       <thead>
-                        <tr className="text-gray-500">
-                          <th className="py-1">Date</th>
-                          <th className="py-1">Method</th>
-                          <th className="py-1 text-right">Amount</th>
+                        <tr className="text-[#6b7280]">
+                          <th className="py-1 bg-transparent text-[#6b7280]">Date</th>
+                          <th className="py-1 bg-transparent text-[#6b7280]">Method</th>
+                          <th className="py-1 text-right bg-transparent text-[#6b7280]">Amount</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-[#f3f4f6]">
                         {paymentHistoryData.map(h => (
                           <tr key={h.id}>
-                            <td className="py-1">{new Date(h.payment_date).toLocaleDateString()}</td>
-                            <td className="py-1">{h.payment_method}</td>
-                            <td className="py-1 text-right text-green-600 font-medium">৳{h.amount_paid.toLocaleString()}</td>
+                            <td className="py-1 bg-transparent text-[#000000]">{new Date(h.payment_date).toLocaleDateString()}</td>
+                            <td className="py-1 bg-transparent text-[#000000]">{h.payment_method}</td>
+                            <td className="py-1 text-right text-[#16a34a] font-medium bg-transparent">৳{h.amount_paid.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   ) : (
-                    <div className="text-gray-500 text-sm">No payment history found.</div>
+                    <div className="text-[#6b7280] text-sm">No payment history found.</div>
                   )}
                 </div>
                 
-                <div className="w-64 space-y-3 text-sm flex-shrink-0">
+                <div className="w-64 space-y-3 text-sm flex-shrink-0 text-[#000000]">
                   <div className="flex justify-between">
                     <span>Total Fee</span>
                     <span>৳{showDetailsFor.total_fee.toLocaleString()}</span>
@@ -355,9 +326,9 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
                     <span>Amount Paid</span>
                     <span>- ৳{showDetailsFor.paid_amount.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between border-t border-black pt-3 font-bold text-lg">
+                  <div className="flex justify-between border-t border-[#000000] pt-3 font-bold text-lg">
                     <span>Amount Due</span>
-                    <span className="text-red-600">৳{showDetailsFor.due_amount.toLocaleString()}</span>
+                    <span className="text-[#dc2626]">৳{showDetailsFor.due_amount.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
