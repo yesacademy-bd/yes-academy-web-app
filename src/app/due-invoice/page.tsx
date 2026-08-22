@@ -76,10 +76,10 @@ export default async function DueInvoicePage({ searchParams }: { searchParams: P
   const sumHistory = history.reduce((s: any, h: any) => s + h.amount_paid, 0)
   const breakdown: any[] = []
   if (data.paid_amount > sumHistory) {
-    breakdown.push({ label: 'Initial Payment', amount: data.paid_amount - sumHistory })
+    breakdown.push({ label: `Initial Payment (${data.payment_method || 'Cash'})`, amount: data.paid_amount - sumHistory })
   }
   [...history].reverse().forEach((h: any) => {
-    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment`, amount: h.amount_paid })
+    breakdown.push({ label: `Stage ${breakdown.length + 1} Payment (${h.payment_method})`, amount: h.amount_paid })
   })
 
   const d = new Date(data.date)
