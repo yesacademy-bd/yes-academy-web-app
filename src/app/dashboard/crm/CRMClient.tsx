@@ -241,25 +241,25 @@ export default function CRMClient({
     }
   }, [initialData, initialLeads, initialWalkins, dateFilterMode, selectedYear, selectedMonth, currentDate])
 
+  const handlePrint = () => {
+    const printData = {
+      tab: activeTab,
+      dateStr: new Date().toLocaleDateString('en-GB'),
+      timeStr: new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).format(new Date()),
+      filteredData: activeTab === 'Sales' || activeTab === 'Expenses' ? filteredData : null,
+      totalAmount: activeTab === 'Sales' || activeTab === 'Expenses' ? totalAmount : null,
+      conversion: activeTab === 'Conversion' ? conversionStats : null,
+      reference: activeTab === 'Reference' ? referenceStats : null,
+      filterContext: dateFilterMode === 'Month' 
+        ? `${months[selectedMonth]} ${selectedYear}` 
+        : dateFilterMode === 'Today' ? 'Today' : dateFilterMode === '7Days' ? 'Last 7 Days' : 'Last 15 Days'
+    }
+    sessionStorage.setItem('crmPrintData', JSON.stringify(printData))
+    window.open('/invoice/crm', '_blank')
+  }
+
   return (
     <div className="space-y-6">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          body, html { background: white !important; background-color: white !important; }
-          h1, h2, h3, h4, h5, h6, p, span, div, td, th {
-            color: black !important;
-            -webkit-text-fill-color: black !important;
-            text-fill-color: black !important;
-            background-image: none !important;
-            background: transparent !important;
-          }
-          /* Force standard borders for tables on print */
-          table, th, td, .border { border-color: black !important; }
-          /* Ensure header layout is clean */
-          .print\\:hidden { display: none !important; }
-        }
-      `}} />
       
       {/* Top Level Tabs */}
       <div className="flex gap-4 border-b border-gray-200 print:hidden overflow-x-auto whitespace-nowrap">
@@ -311,12 +311,17 @@ export default function CRMClient({
             </>
           )}
 
-          <select value={filterMethod} onChange={e => setFilterMethod(e.target.value)} className="border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <option value="All">All Payment Methods</option>
-            <option value="Cash">Cash</option>
-            <option value="bKash">bKash</option>
-            <option value="Bank">Bank</option>
-          </select>
+          {activeTab !== 'Conversion' && activeTab !== 'Reference' && (
+            <div className="flex items-center gap-2 border-l pl-4">
+              <Filter className="w-4 h-4 text-gray-400" />
+              <select value={filterMethod} onChange={e => setFilterMethod(e.target.value)} className="border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="All">All Methods</option>
+                <option value="Cash">Cash</option>
+                <option value="bKash">bKash</option>
+                <option value="Bank">Bank</option>
+              </select>
+            </div>
+          )}
 
           {activeTab === 'Sales' && topReferences.length > 0 && (
             <div className="flex items-center gap-2 border-l pl-4">
@@ -336,7 +341,7 @@ export default function CRMClient({
         
         <div className="flex gap-2">
 
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+          <button onClick={handlePrint} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
         </div>
