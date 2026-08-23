@@ -57,7 +57,7 @@ export default function DueClient({ initialData }: { initialData: any[] }) {
       
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center print:hidden">
         <h3 className="font-semibold text-gray-900">Total Pending Dues: <span className="text-red-600">৳{data.reduce((s, e) => s + e.due_amount, 0).toLocaleString()}</span></h3>
-        <button onClick={() => window.print()} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+        <button onClick={() => window.open('/invoice/dues', '_blank')} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
           <Printer className="w-4 h-4" /> Print Report
         </button>
       </div>

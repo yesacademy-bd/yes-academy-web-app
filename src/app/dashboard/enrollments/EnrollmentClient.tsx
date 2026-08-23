@@ -128,6 +128,11 @@ export default function EnrollmentClient({ students, courses, batches, teachers 
                 <option value="Bank">Bank</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reference (Optional)</label>
+              <input type="text" name="reference" placeholder="e.g. John Doe, Facebook" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Installment Plan</label>

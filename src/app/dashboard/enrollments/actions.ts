@@ -22,6 +22,7 @@ export async function createEnrollment(formData: FormData) {
   const paid_amount = parseFloat(formData.get('paid_amount') as string) || 0
   const payment_method = formData.get('payment_method') as string
   const installment_count = parseInt(formData.get('installment_count') as string) || 0
+  const reference = formData.get('reference') as string || 'None'
 
   if (!name || !phone || !batch_id) {
     return { success: false, message: 'Missing required fields' }
@@ -59,7 +60,8 @@ export async function createEnrollment(formData: FormData) {
       batch_id,
       course_fee,
       paid_amount,
-      payment_method
+      payment_method,
+      reference
     })
     .select('id')
     .single()

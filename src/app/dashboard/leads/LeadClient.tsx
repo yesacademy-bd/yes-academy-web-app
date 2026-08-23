@@ -6,6 +6,7 @@ import { createLead, deleteLead } from './actions'
 
 export default function LeadClient({ initialLeads, courses }: { initialLeads: any[], courses: any[] }) {
   const [leads] = useState(initialLeads)
+  const [filterPerson, setFilterPerson] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,6 +35,10 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
       alert(res.message || 'Failed to delete lead')
     }
   }
+
+  const filteredLeads = leads.filter(l => 
+    filterPerson ? (l.lead_call_person || '').toLowerCase().includes(filterPerson.toLowerCase()) : true
+  )
 
   return (
     <div className="space-y-6">
@@ -114,6 +119,13 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-500" /> Call History
             </h3>
+            <input 
+              type="text" 
+              placeholder="Filter by Person..." 
+              value={filterPerson}
+              onChange={(e) => setFilterPerson(e.target.value)}
+              className="border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            />
           </div>
           
           <div className="overflow-x-auto">
@@ -128,12 +140,12 @@ export default function LeadClient({ initialLeads, courses }: { initialLeads: an
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {leads.length === 0 && (
+                {filteredLeads.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No leads recorded.</td>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">No leads recorded.</td>
                   </tr>
                 )}
-                {leads.map(l => (
+                {filteredLeads.map(l => (
                   <tr key={l.id} className="hover:bg-gray-50">
                     <td className="p-4 text-sm text-gray-500">{new Date(l.created_at).toLocaleDateString()}</td>
                     <td className="p-4">

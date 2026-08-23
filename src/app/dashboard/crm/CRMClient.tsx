@@ -19,7 +19,7 @@ export default function CRMClient({
   const currentDate = new Date()
   
   // Toggles
-  const [activeTab, setActiveTab] = useState<'Sales' | 'Expenses' | 'Conversion'>('Sales')
+  const [activeTab, setActiveTab] = useState<'Sales' | 'Expenses' | 'Conversion' | 'Reference'>('Sales')
   
   // Filters
   const [dateFilterMode, setDateFilterMode] = useState<'Today' | 'Month' | '7Days' | '15Days'>('Month')
@@ -30,6 +30,9 @@ export default function CRMClient({
   
   // Modals
   const [dueModalType, setDueModalType] = useState<'Overall' | 'CurrentMonth' | 'PreviousMonth' | 'Filtered' | null>(null)
+  const [showConversionModal, setShowConversionModal] = useState(false)
+  const [referenceModalData, setReferenceModalData] = useState<{ title: string, students: any[] } | null>(null)
+
 
 
   // Top 3 References
@@ -52,7 +55,7 @@ export default function CRMClient({
       // 1. Tab filter
       if (activeTab === 'Sales' && item.type === 'Expense') return false
       if (activeTab === 'Expenses' && item.type !== 'Expense') return false
-      if (activeTab === 'Conversion') return false // Unified Data not used for conversion
+      if (activeTab === 'Conversion' || activeTab === 'Reference') return false // Unified Data not used for conversion/reference
 
       // 2. Date filter
       const d = new Date(item.date)
@@ -170,6 +173,7 @@ export default function CRMClient({
     const periodWalkins = filterByDate(initialWalkins)
 
     let converted = 0
+    const convertedRecords: any[] = []
     periodWalkins.forEach(w => {
       const match = initialLeads.find(l => {
         if (l.phone && w.phone && l.phone === w.phone) return true;
@@ -180,17 +184,62 @@ export default function CRMClient({
         }
         return false;
       })
-      if (match) converted++
+      if (match) {
+        converted++
+        convertedRecords.push({ walkin: w, lead: match })
+      }
     })
 
     const totalLeads = periodLeads.length
     const rate = totalLeads > 0 ? ((converted / totalLeads) * 100).toFixed(1) : '0.0'
 
-    return { totalLeads, totalWalkins: periodWalkins.length, converted, rate }
+    return { totalLeads, totalWalkins: periodWalkins.length, converted, rate, convertedRecords }
   }, [initialLeads, initialWalkins, dateFilterMode, selectedYear, selectedMonth, currentDate])
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i)
+
+  const referenceStats = useMemo(() => {
+    const filterByDate = (arr: any[], dateField: string) => arr.filter(item => {
+      const d = new Date(item[dateField])
+      if (dateFilterMode === 'Today') {
+        return d.getFullYear() === currentDate.getFullYear() && d.getMonth() === currentDate.getMonth() && d.getDate() === currentDate.getDate()
+      } else if (dateFilterMode === 'Month') {
+        return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth
+      } else if (dateFilterMode === '7Days') {
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        return diff <= 7
+      } else if (dateFilterMode === '15Days') {
+        const diff = Math.ceil(Math.abs(currentDate.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+        return diff <= 15
+      }
+      return false
+    })
+
+    const periodEnrollments = filterByDate(initialData.filter(i => i.type === 'Enrollment'), 'date')
+    const periodLeads = filterByDate(initialLeads, 'created_at')
+    const periodWalkins = filterByDate(initialWalkins, 'created_at')
+
+    const aggregate = (data: any[], field: string) => {
+      const grouped: Record<string, any[]> = {}
+      data.forEach(item => {
+        const val = item[field] || 'None'
+        if (val !== 'None') {
+          if (!grouped[val]) grouped[val] = []
+          grouped[val].push(item)
+        }
+      })
+      return Object.entries(grouped)
+        .map(([name, items]) => ({ name, items, count: items.length }))
+        .sort((a, b) => b.count - a.count)
+    }
+
+    return {
+      Admission: aggregate(periodEnrollments, 'reference'),
+      LeadPerson: aggregate(periodLeads, 'lead_call_person'),
+      WalkinHandledBy: aggregate(periodWalkins, 'lead_call_person')
+    }
+  }, [initialData, initialLeads, initialWalkins, dateFilterMode, selectedYear, selectedMonth, currentDate])
 
   return (
     <div className="space-y-6">
@@ -214,6 +263,12 @@ export default function CRMClient({
           className={`pb-4 px-2 font-medium text-lg border-b-2 transition-colors ${activeTab === 'Conversion' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           Walk-in vs Lead Call
+        </button>
+        <button 
+          onClick={() => { setActiveTab('Reference'); setFilterMethod('All'); setSelectedRef(null); }}
+          className={`pb-4 px-2 font-medium text-lg border-b-2 transition-colors ${activeTab === 'Reference' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Reference Data
         </button>
       </div>
 
@@ -278,7 +333,9 @@ export default function CRMClient({
               <h3 className="text-sm font-medium text-gray-500 print:text-black">Lead to Walk-in Conversion Overview</h3>
               <div className="text-right">
                 <p className="text-xs text-gray-500 mb-1">Conversion Rate</p>
-                <span className="text-3xl font-bold text-gray-900 print:text-black">{conversionStats.rate}%</span>
+                <button onClick={() => setShowConversionModal(true)} className="text-3xl font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors print:text-black print:no-underline">
+                  {conversionStats.rate}%
+                </button>
               </div>
             </div>
             
@@ -307,8 +364,51 @@ export default function CRMClient({
             </div>
           </div>
         </div>
-      ) : (
-        <div className={`grid grid-cols-1 ${activeTab === 'Sales' ? (dateFilterMode !== 'Month' ? 'md:grid-cols-5' : 'md:grid-cols-4') : 'md:grid-cols-2'} gap-4 mb-6`}>
+        ) : activeTab === 'Reference' ? (
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Admission Reference */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-gray-50"><h3 className="font-semibold text-gray-900">Admission References</h3></div>
+              <div className="p-4 max-h-[400px] overflow-y-auto space-y-2">
+                {referenceStats.Admission.length === 0 ? <p className="text-sm text-gray-500 text-center py-4">No data</p> : referenceStats.Admission.map((ref, idx) => (
+                  <div key={idx} onClick={() => setReferenceModalData({ title: `Admission Reference: ${ref.name}`, students: ref.items })} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                    <span className="font-medium text-gray-800">{ref.name}</span>
+                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">{ref.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lead Call Person */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-gray-50"><h3 className="font-semibold text-gray-900">Lead Calls By Staff</h3></div>
+              <div className="p-4 max-h-[400px] overflow-y-auto space-y-2">
+                {referenceStats.LeadPerson.length === 0 ? <p className="text-sm text-gray-500 text-center py-4">No data</p> : referenceStats.LeadPerson.map((ref, idx) => (
+                  <div key={idx} onClick={() => setReferenceModalData({ title: `Leads By: ${ref.name}`, students: ref.items })} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                    <span className="font-medium text-gray-800">{ref.name}</span>
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">{ref.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Walk-in Handled By */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-gray-50"><h3 className="font-semibold text-gray-900">Walk-ins Handled By</h3></div>
+              <div className="p-4 max-h-[400px] overflow-y-auto space-y-2">
+                {referenceStats.WalkinHandledBy.length === 0 ? <p className="text-sm text-gray-500 text-center py-4">No data</p> : referenceStats.WalkinHandledBy.map((ref, idx) => (
+                  <div key={idx} onClick={() => setReferenceModalData({ title: `Walk-ins Handled By: ${ref.name}`, students: ref.items })} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                    <span className="font-medium text-gray-800">{ref.name}</span>
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">{ref.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 ${activeTab === 'Sales' ? (dateFilterMode !== 'Month' ? 'md:grid-cols-5' : 'md:grid-cols-4') : 'md:grid-cols-2'} gap-4 mb-6`}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 print:border-black flex flex-col justify-center">
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center print:hidden shrink-0 ${activeTab === 'Sales' ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -467,7 +567,99 @@ export default function CRMClient({
       </div>
       )}
 
-      {/* MODAL: Due Details */}
+      {/* MODAL: Conversion Details */}
+      {showConversionModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+              <h3 className="font-bold text-lg text-white">Converted Students</h3>
+              <button onClick={() => setShowConversionModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              {conversionStats.convertedRecords.length === 0 ? (
+                <div className="text-center py-8 text-slate-400">No conversions found for this period.</div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
+                      <th className="p-3">Student Details</th>
+                      <th className="p-3">Course/Service</th>
+                      <th className="p-3">Lead Call By</th>
+                      <th className="p-3">Walk-in Attended By</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/50">
+                    {conversionStats.convertedRecords.map((r, idx) => (
+                      <tr key={idx} className="hover:bg-slate-800/50">
+                        <td className="p-3">
+                          <p className="text-sm font-medium text-white">{r.walkin.student_name}</p>
+                          <p className="text-xs text-slate-400">{r.walkin.phone}</p>
+                        </td>
+                        <td className="p-3">
+                          <p className="text-sm text-slate-300">{r.walkin.interested_course || r.lead.interested_course || '-'}</p>
+                        </td>
+                        <td className="p-3 text-sm text-slate-300 font-medium">
+                          {r.lead.lead_call_person || '-'}
+                        </td>
+                        <td className="p-3 text-sm text-slate-300 font-medium">
+                          {r.walkin.lead_call_person || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Reference Details */}
+      {referenceModalData && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+              <h3 className="font-bold text-lg text-white">{referenceModalData.title}</h3>
+              <button onClick={() => setReferenceModalData(null)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-800/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-300 font-semibold">
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Student Details</th>
+                    <th className="p-3">Info</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/50">
+                  {referenceModalData.students.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-slate-800/50">
+                      <td className="p-3 text-sm text-slate-400">
+                        {new Date(r.date || r.created_at || r.enrolled_at).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">
+                        <p className="text-sm font-medium text-white">{r.student_name || r.name}</p>
+                        <p className="text-xs text-slate-400">{r.phone}</p>
+                      </td>
+                      <td className="p-3 text-sm text-slate-300">
+                        {r.type === 'Enrollment' ? (
+                          <>
+                            <p><strong>Course:</strong> {r.item_name}</p>
+                            <p className="text-xs text-green-400">Paid: ৳{(r.paid_amount || 0).toLocaleString()} | <span className="text-red-400">Due: ৳{(r.due_amount || 0).toLocaleString()}</span></p>
+                          </>
+                        ) : (
+                          <p><strong>Service:</strong> {r.interested_course || r.course || '-'}</p>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {dueModalType && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] print:hidden">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
