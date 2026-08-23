@@ -243,6 +243,23 @@ export default function CRMClient({
 
   return (
     <div className="space-y-6">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body, html { background: white !important; background-color: white !important; }
+          h1, h2, h3, h4, h5, h6, p, span, div, td, th {
+            color: black !important;
+            -webkit-text-fill-color: black !important;
+            text-fill-color: black !important;
+            background-image: none !important;
+            background: transparent !important;
+          }
+          /* Force standard borders for tables on print */
+          table, th, td, .border { border-color: black !important; }
+          /* Ensure header layout is clean */
+          .print\\:hidden { display: none !important; }
+        }
+      `}} />
       
       {/* Top Level Tabs */}
       <div className="flex gap-4 border-b border-gray-200 print:hidden overflow-x-auto whitespace-nowrap">
