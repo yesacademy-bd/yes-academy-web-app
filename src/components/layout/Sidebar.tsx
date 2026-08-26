@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, Key, LogOut, UserPlus, Phone, UserCheck, FileText, ClipboardList, Wallet, CreditCard, Menu, Shield } from 'lucide-react'
 import { logout } from '@/app/login/actions'
 
@@ -14,6 +14,7 @@ type SidebarProps = {
 
 export default function Sidebar({ role, displayName, email }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Load saved state on mount
@@ -31,9 +32,9 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
   }
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR'] },
-    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR'] },
-    { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR'] },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR', 'BDM'] },
+    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR', 'BDM'] },
+    { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR', 'BDM'] },
     { name: 'Due Details', href: '/dashboard/dues', icon: Wallet, roles: ['HR'] },
     { name: 'Lead Call Entry', href: '/dashboard/leads', icon: Phone, roles: ['HR'] },
     { name: 'Walk-ins', href: '/dashboard/walkins', icon: UserCheck, roles: ['HR'] },
@@ -42,11 +43,11 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
     { name: 'CRM (Finance)', href: '/dashboard/crm', icon: Wallet, roles: ['HR'] },
     { name: 'Expenses', href: '/dashboard/expenses', icon: CreditCard, roles: ['HR'] },
-    { name: 'User Management', href: '/dashboard/hr/users', icon: Shield, roles: ['HR'] },
-    { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
-    { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
-    { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR'] },
-    { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR'] },
+    { name: 'User Management', href: '/dashboard/hr/users', icon: Shield, roles: ['HR', 'BDM'] },
+    { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR', 'BDM'] },
+    { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR', 'BDM'] },
+    { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR', 'BDM'] },
+    { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR', 'BDM'] },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
   ]
 
@@ -71,10 +72,23 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
             ? pathname === '/dashboard' 
             : pathname.startsWith(item.href)
 
+          const handleNavClick = (e: React.MouseEvent) => {
+            if (item.name === 'User Management') {
+              e.preventDefault()
+              const pin = window.prompt("Enter PIN to access User Management:")
+              if (pin === '6482') {
+                router.push(item.href)
+              } else if (pin !== null) {
+                alert("Incorrect PIN.")
+              }
+            }
+          }
+
           return (
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleNavClick}
               title={isCollapsed ? item.name : undefined}
               className={`flex items-center gap-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                 isCollapsed ? 'justify-center px-0' : 'px-3'
