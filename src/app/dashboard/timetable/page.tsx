@@ -11,7 +11,7 @@ export default async function TimetablePage() {
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   const isFaculty = profile?.role === 'Faculty'
-  const isHR = profile?.role === 'HR'
+  const isHR = ['HR', 'BDM'].includes(profile?.role || '')
 
   // Fetch Rooms
   const { data: rooms } = await supabase.from('rooms').select('*').order('name')

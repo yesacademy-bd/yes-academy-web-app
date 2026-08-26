@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'HR') {
+  if (!['HR', 'BDM'].includes(profile?.role || '')) {
     return <div className="text-red-500 font-medium p-8">Access Denied. HR only.</div>
   }
 

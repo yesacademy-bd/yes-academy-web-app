@@ -10,7 +10,7 @@ async function verifyHR() {
   if (!user) throw new Error('Unauthorized')
   
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'HR' && profile?.role !== 'Admin') {
+  if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
     throw new Error('Forbidden: Only HR or Admin can manage users.')
   }
   return user

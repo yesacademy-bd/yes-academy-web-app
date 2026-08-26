@@ -89,7 +89,7 @@ export async function deleteBatch(id: string) {
     if (!user) throw new Error('Unauthorized')
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'HR') {
+    if (!['HR', 'BDM'].includes(profile?.role || '')) {
       throw new Error('Only HR can delete batches')
     }
 

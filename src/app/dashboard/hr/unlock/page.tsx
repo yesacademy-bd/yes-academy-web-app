@@ -9,7 +9,7 @@ export default async function UnlockCenterPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'HR') {
+  if (!['HR', 'BDM'].includes(profile?.role || '')) {
     return <div className="p-8 text-red-500 font-bold">Access Denied. HR only.</div>
   }
 

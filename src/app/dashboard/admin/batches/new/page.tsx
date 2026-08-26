@@ -12,7 +12,7 @@ export default async function NewBatchPage() {
 
   // Check Admin role
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!['Admin', 'HR'].includes(profile?.role || '')) return <div className="text-red-500">Admin or HR only</div>
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return <div className="text-red-500">Admin or HR only</div>
 
   // Fetch reference data for dropdowns
   const [coursesRes, teachersRes, roomsRes, settingsRes] = await Promise.all([

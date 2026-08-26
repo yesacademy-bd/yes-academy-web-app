@@ -10,7 +10,7 @@ export default function BatchList({ batches, userRole }: { batches: any[], userR
 
   // Determine available tabs based on role
   const tabs = ['Active', 'Upcoming']
-  if (userRole === 'HR') {
+  if (['HR', 'BDM'].includes(userRole)) {
     tabs.push('Completed')
   }
 
@@ -25,7 +25,7 @@ export default function BatchList({ batches, userRole }: { batches: any[], userR
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Batch Manager</h1>
-        {['HR', 'Admin'].includes(userRole) && (
+        {['HR', 'Admin', 'BDM'].includes(userRole) && (
           <Link href="/dashboard/admin/batches/new" className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm">
             <Plus className="w-4 h-4" />
             Create New Batch
@@ -105,7 +105,7 @@ export default function BatchList({ batches, userRole }: { batches: any[], userR
                     <Link href={`/dashboard/faculty/batches/${batch.id}`} className="text-gray-600 hover:text-gray-900 text-sm font-medium mr-4">
                       Attendance
                     </Link>
-                    {['HR', 'Admin'].includes(userRole) && (
+                    {['HR', 'Admin', 'BDM'].includes(userRole) && (
                       <Link href={`/dashboard/admin/batches/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                         Manage
                       </Link>

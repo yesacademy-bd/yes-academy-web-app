@@ -9,7 +9,7 @@ export async function createEnrollment(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!['Admin', 'HR'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
 
   const name = formData.get('student_name') as string
   const phone = formData.get('mobile_number') as string

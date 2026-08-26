@@ -9,7 +9,7 @@ export default async function FacultyBatchesPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  const isHR = profile?.role === 'HR'
+  const isHR = ['HR', 'BDM'].includes(profile?.role || '')
 
   let query = supabase
     .from('batches')

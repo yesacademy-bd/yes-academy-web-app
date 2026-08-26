@@ -245,7 +245,7 @@ export default async function DashboardPage() {
 
         {/* Alerts Sidebar */}
         <div className="space-y-6">
-          {role === 'HR' && (
+          {['HR', 'BDM'].includes(role) && (
             <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600" />

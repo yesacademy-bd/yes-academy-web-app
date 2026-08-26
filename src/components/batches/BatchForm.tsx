@@ -327,7 +327,7 @@ export default function BatchForm({
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
         <div>
-          {initialData && userRole === 'HR' && (
+          {initialData && ['HR', 'BDM'].includes(userRole) && (
             <button 
               type="button" 
               onClick={handleDelete}

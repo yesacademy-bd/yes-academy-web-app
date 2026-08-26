@@ -14,7 +14,7 @@ export default async function LeadsPage() {
     .eq('id', user.id)
     .single()
 
-  if (!['Admin', 'HR'].includes(profile?.role || '')) {
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) {
     redirect('/dashboard')
   }
 

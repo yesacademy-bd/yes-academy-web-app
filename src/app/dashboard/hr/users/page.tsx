@@ -10,7 +10,7 @@ export default async function UserManagementPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'HR' && profile?.role !== 'Admin') {
+  if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
     return <div className="p-10 text-red-500 font-bold">Access Denied</div>
   }
 

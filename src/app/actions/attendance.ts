@@ -115,7 +115,7 @@ export async function unlockClassSession(batchId: string, classNum: number, dura
 
     // Verify HR/Admin
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (!['HR', 'Admin'].includes(profile?.role || '')) {
+    if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
       throw new Error('Only HR or Admin can unlock sessions')
     }
 
@@ -156,7 +156,7 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
 
     // Verify HR/Admin
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (!['HR', 'Admin'].includes(profile?.role || '')) {
+    if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
       throw new Error('Only HR or Admin can unlock sessions')
     }
 

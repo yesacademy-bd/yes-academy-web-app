@@ -19,7 +19,7 @@ export default async function BatchManagerPage() {
   
   const role = profile?.role || 'Admin'
 
-  if (!['Admin', 'HR'].includes(role)) {
+  if (!['Admin', 'HR', 'BDM'].includes(role)) {
     return <div className="text-red-500 font-medium">Access Denied.</div>
   }
 

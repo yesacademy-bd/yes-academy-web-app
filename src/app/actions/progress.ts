@@ -30,7 +30,7 @@ export async function updateStudentProgress(enrollmentId: string, batchId: strin
     const { data: batch } = await supabase.from('batches').select('teacher_id, monitor_teacher_id').eq('id', batchId).single()
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 
-    const isAuthorized = profile?.role === 'Admin' || profile?.role === 'HR' || batch?.teacher_id === user.id || batch?.monitor_teacher_id === user.id
+    const isAuthorized = profile?.role === 'Admin' || ['HR', 'BDM'].includes(profile?.role || '') || batch?.teacher_id === user.id || batch?.monitor_teacher_id === user.id
     if (!isAuthorized) throw new Error('Not authorized to update student progress')
 
     // Allowed fields to prevent injection

@@ -14,7 +14,7 @@ export default async function HolidaysPage() {
     .eq('id', user.id)
     .single()
 
-  if (!['HR', 'Admin'].includes(profile?.role || '')) {
+  if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
     return <div className="p-8 text-red-500">Access Denied. HR or Admin only.</div>
   }
 

@@ -95,7 +95,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
                   <td className="p-4">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                       u.role === 'Admin' ? 'bg-purple-100 text-purple-700' :
-                      u.role === 'HR' ? 'bg-orange-100 text-orange-700' :
+                      ['HR', 'BDM'].includes(u.role) ? 'bg-orange-100 text-orange-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>
                       {u.role}

@@ -11,7 +11,7 @@ export default async function ArchiveBatchDetailPage({ params }: { params: Promi
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'HR' && profile?.role !== 'Admin') {
+  if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
     return <div className="text-red-500 font-bold p-8">Access Denied.</div>
   }
 
