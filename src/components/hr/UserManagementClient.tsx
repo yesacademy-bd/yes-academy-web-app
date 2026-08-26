@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Trash2, Ban, CheckCircle, ShieldAlert, Key } from 'lucide-react'
+import { Plus, Trash2, Ban, CheckCircle, ShieldAlert, Key, Eye, EyeOff } from 'lucide-react'
 import { createStaffUser, deleteStaffUser, toggleUserSuspension } from '@/app/actions/users'
 
 export default function UserManagementClient({ initialUsers, currentUserId }: { initialUsers: any[], currentUserId: string }) {
@@ -10,6 +10,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
   const [showAddModal, setShowAddModal] = useState(false)
   const [formData, setFormData] = useState({ email: '', password: '', name: '', role: 'Faculty' })
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +25,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
     if (res.success) {
       alert('User created successfully. Refresh to see changes.')
       setShowAddModal(false)
+      setShowPassword(false)
       setFormData({ email: '', password: '', name: '', role: 'Faculty' })
     } else {
       alert(res.message)
@@ -147,7 +149,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
               <h3 className="font-bold text-lg text-white" style={{ WebkitTextFillColor: 'white' }}>Create New User</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => { setShowAddModal(false); setShowPassword(false); }} className="text-slate-400 hover:text-white transition-colors">
                 <span className="text-xl leading-none">&times;</span>
               </button>
             </div>
@@ -162,7 +164,12 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
-                <input required type="password" minLength={6} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                <div className="relative">
+                  <input required type={showPassword ? "text" : "password"} minLength={6} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-3 py-2 pr-10 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Role</label>
@@ -174,7 +181,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
               </div>
               
               <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-medium transition-colors">
+                <button type="button" onClick={() => { setShowAddModal(false); setShowPassword(false); }} className="flex-1 px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-medium transition-colors">
                   Cancel
                 </button>
                 <button type="submit" disabled={loading} className="flex-1 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors disabled:opacity-50">
