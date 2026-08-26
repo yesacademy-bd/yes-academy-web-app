@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, Key, LogOut, UserPlus, Phone, UserCheck, FileText, ClipboardList, Wallet, CreditCard, Menu } from 'lucide-react'
+import { LayoutDashboard, Users, Calendar, Settings, Archive, BookOpen, Key, LogOut, UserPlus, Phone, UserCheck, FileText, ClipboardList, Wallet, CreditCard, Menu, Shield } from 'lucide-react'
 import { logout } from '@/app/login/actions'
 
 type SidebarProps = {
@@ -42,6 +42,7 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
     { name: 'CRM (Finance)', href: '/dashboard/crm', icon: Wallet, roles: ['HR'] },
     { name: 'Expenses', href: '/dashboard/expenses', icon: CreditCard, roles: ['HR'] },
+    { name: 'User Management', href: '/dashboard/hr/users', icon: Shield, roles: ['HR'] },
     { name: 'Unlock Tool', href: '/dashboard/hr/unlock', icon: Key, roles: ['HR'] },
     { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar, roles: ['HR'] },
     { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR'] },
