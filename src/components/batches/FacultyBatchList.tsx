@@ -7,6 +7,7 @@ import { BookOpen, Users, Clock, Search } from 'lucide-react'
 export default function FacultyBatchList({ batches, isHR }: { batches: any[], isHR: boolean }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [teacherFilter, setTeacherFilter] = useState('')
+  const [statusTab, setStatusTab] = useState<'Active' | 'Upcoming' | 'Completed'>('Active')
 
   // Unique teachers for filter dropdown
   const teachers = Array.from(new Set(batches.map(b => b.profiles?.display_name).filter(Boolean))).sort()
@@ -14,7 +15,8 @@ export default function FacultyBatchList({ batches, isHR }: { batches: any[], is
   const filteredBatches = batches.filter(batch => {
     const matchesSearch = batch.batch_name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesTeacher = teacherFilter ? batch.profiles?.display_name === teacherFilter : true
-    return matchesSearch && matchesTeacher
+    const matchesStatus = batch.status === statusTab
+    return matchesSearch && matchesTeacher && matchesStatus
   })
 
   return (
@@ -46,6 +48,28 @@ export default function FacultyBatchList({ batches, isHR }: { batches: any[], is
             </select>
           )}
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-gray-200 overflow-x-auto whitespace-nowrap">
+        <button 
+          onClick={() => setStatusTab('Active')}
+          className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${statusTab === 'Active' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Active Batches
+        </button>
+        <button 
+          onClick={() => setStatusTab('Upcoming')}
+          className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${statusTab === 'Upcoming' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Upcoming Batches
+        </button>
+        <button 
+          onClick={() => setStatusTab('Completed')}
+          className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${statusTab === 'Completed' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Completed Batches
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

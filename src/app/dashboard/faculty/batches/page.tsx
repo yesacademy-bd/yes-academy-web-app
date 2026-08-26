@@ -24,7 +24,6 @@ export default async function FacultyBatchesPage() {
       rooms ( name ),
       profiles!batches_teacher_id_fkey ( display_name )
     `)
-    .in('status', ['Active', 'Upcoming'])
     .order('start_date', { ascending: false })
 
   if (!isHR) {
