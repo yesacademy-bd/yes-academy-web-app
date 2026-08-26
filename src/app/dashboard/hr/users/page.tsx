@@ -36,6 +36,11 @@ export default async function UserManagementPage() {
         is_banned: au?.banned_until ? new Date(au.banned_until) > new Date() : false
       }
     })
+
+    // If BDM, filter out HR users
+    if (profile?.role === 'BDM') {
+      usersList = usersList.filter(u => u.role !== 'HR')
+    }
   } catch (err: any) {
     if (err.message?.includes('SUPABASE_SERVICE_ROLE_KEY')) {
       envError = err.message
@@ -59,7 +64,7 @@ export default async function UserManagementPage() {
           <p className="mt-2 text-sm opacity-90">To enable User Management, please go to your Vercel Dashboard, navigate to Environment Variables, and add your <code>SUPABASE_SERVICE_ROLE_KEY</code>.</p>
         </div>
       ) : (
-        <UserManagementClient initialUsers={usersList} currentUserId={user.id} />
+        <UserManagementClient initialUsers={usersList} currentUserId={user.id} currentUserRole={profile?.role} />
       )}
     </div>
   )

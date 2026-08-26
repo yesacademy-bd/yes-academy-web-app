@@ -13,18 +13,22 @@ async function verifyHR() {
   if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
     throw new Error('Forbidden: Only HR or Admin can manage users.')
   }
-  return user
+  return { user, profile }
 }
 
 export async function createStaffUser(prevState: any, formData: FormData) {
   try {
-    await verifyHR()
+    const { profile } = await verifyHR()
     const adminClient = createAdminClient()
     
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const name = formData.get('name') as string
     const role = formData.get('role') as string
+    
+    if (profile?.role === 'BDM' && role === 'HR') {
+      return { success: false, message: 'BDM cannot create HR users.' }
+    }
     
     // 1. Create in Auth
     const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
@@ -59,8 +63,15 @@ export async function createStaffUser(prevState: any, formData: FormData) {
 
 export async function deleteStaffUser(userId: string) {
   try {
-    await verifyHR()
+    const { profile } = await verifyHR()
     const adminClient = createAdminClient()
+    
+    if (profile?.role === 'BDM') {
+      const { data: targetProfile } = await adminClient.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'HR') {
+        return { success: false, message: 'BDM cannot delete HR users.' }
+      }
+    }
     
     const { error } = await adminClient.auth.admin.deleteUser(userId)
     
@@ -80,8 +91,15 @@ export async function deleteStaffUser(userId: string) {
 
 export async function toggleUserSuspension(userId: string, suspend: boolean) {
   try {
-    await verifyHR()
+    const { profile } = await verifyHR()
     const adminClient = createAdminClient()
+
+    if (profile?.role === 'BDM') {
+      const { data: targetProfile } = await adminClient.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'HR') {
+        return { success: false, message: 'BDM cannot suspend HR users.' }
+      }
+    }
     
     const { error } = await adminClient.auth.admin.updateUserById(userId, {
       ban_duration: suspend ? '876000h' : 'none' // roughly 100 years

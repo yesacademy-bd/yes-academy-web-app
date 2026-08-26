@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Plus, Trash2, Ban, CheckCircle, ShieldAlert, Key, Eye, EyeOff } from 'lucide-react'
 import { createStaffUser, deleteStaffUser, toggleUserSuspension } from '@/app/actions/users'
 
-export default function UserManagementClient({ initialUsers, currentUserId }: { initialUsers: any[], currentUserId: string }) {
+export default function UserManagementClient({ initialUsers, currentUserId, currentUserRole }: { initialUsers: any[], currentUserId: string, currentUserRole?: string }) {
   const [users, setUsers] = useState(initialUsers)
   const [isPending, startTransition] = useTransition()
   const [showAddModal, setShowAddModal] = useState(false)
@@ -176,7 +176,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
                 <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                   <option value="Faculty">Faculty</option>
                   <option value="Admin">Admin</option>
-                  <option value="HR">HR</option>
+                  {currentUserRole !== 'BDM' && <option value="HR">HR</option>}
                   <option value="BDM">BDM</option>
                 </select>
               </div>
