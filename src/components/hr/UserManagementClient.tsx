@@ -177,6 +177,7 @@ export default function UserManagementClient({ initialUsers, currentUserId }: { 
                   <option value="Faculty">Faculty</option>
                   <option value="Admin">Admin</option>
                   <option value="HR">HR</option>
+                  <option value="BDM">BDM</option>
                 </select>
               </div>
               
