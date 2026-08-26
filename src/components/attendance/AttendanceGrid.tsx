@@ -32,8 +32,6 @@ export default function AttendanceGrid({
   const totalClasses = batch.total_classes + batch.additional_classes
   const classNumbers = Array.from({ length: totalClasses }, (_, i) => i + 1)
   
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
-  
   const [activeClassNum, setActiveClassNum] = useState<number | null>(
     sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 1
   )
@@ -242,13 +240,7 @@ export default function AttendanceGrid({
             return (
               <div key={student.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
                 <div>
-                  <h4 
-                    className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors inline-block"
-                    onClick={() => setSelectedStudent(student)}
-                    title="Click to view/edit Progress & Details"
-                  >
-                    {student.name}
-                  </h4>
+                  <h4 className="font-semibold text-gray-900">{student.name}</h4>
                   <p className="text-xs text-gray-500 mt-1">
                     Phone: {student.phone} | Attn: {stats.percentage}% ({stats.present}/{stats.total})
                   </p>
@@ -290,14 +282,6 @@ export default function AttendanceGrid({
         <div className="p-2 bg-blue-50 text-blue-600 text-xs font-medium text-center flex justify-center items-center gap-2">
           <Loader2 className="w-3 h-3 animate-spin" /> Saving changes...
         </div>
-      )}
-
-      {selectedStudent && (
-        <StudentProgressModal 
-          isOpen={!!selectedStudent} 
-          onClose={() => setSelectedStudent(null)} 
-          student={selectedStudent} 
-        />
       )}
     </div>
   )

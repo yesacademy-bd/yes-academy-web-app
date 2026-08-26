@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import { getStudentProgress, updateStudentProgress } from '@/app/actions/progress'
+import { getStudentProgress, updateStudentProgressDetails } from '@/app/actions/progress'
 import { Loader2 } from 'lucide-react'
 
 export default function StudentProgressModal({ 
@@ -60,7 +60,7 @@ export default function StudentProgressModal({
         writing: writing ? parseFloat(writing) : null,
       }
       
-      const res = await updateStudentProgress(student.enrollment_id, updates)
+      const res = await updateStudentProgressDetails(student.enrollment_id, updates)
       if (res.success) {
         alert('Student progress updated successfully!')
         onClose()
