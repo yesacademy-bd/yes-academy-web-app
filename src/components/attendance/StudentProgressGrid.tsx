@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { updateStudentProgress } from '@/app/actions/progress'
-import { Save } from 'lucide-react'
 import StudentProgressModal from './StudentProgressModal'
 
 type Enrollment = {
@@ -38,56 +36,19 @@ export default function StudentProgressGrid({
   initialScores: ExamScore[]
   attendanceMap: Record<string, { present: number, total: number }>
 }) {
-  const [scores, setScores] = useState<ExamScore[]>(initialScores)
-  const [savingField, setSavingField] = useState<string | null>(null)
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
-
-  const handleScoreChange = async (enrollmentId: string, field: keyof ExamScore, val: string) => {
-    const value = val === '' ? null : Number(val)
-    
-    // Optimistic update
-    setScores(prev => {
-      const existing = prev.find(s => s.enrollment_id === enrollmentId)
-      if (existing) {
-        return prev.map(s => s.enrollment_id === enrollmentId ? { ...s, [field]: value } : s)
-      } else {
-        return [...prev, {
-          id: 'temp-' + Date.now(),
-          enrollment_id: enrollmentId,
-          speaking: null, writing: null, reading: null, listening: null,
-          weekly_practice_hours: null, mock_test_score: null,
-          [field]: value
-        }]
-      }
-    })
-
-    setSavingField(`${enrollmentId}-${field}`)
-    await updateStudentProgress(enrollmentId, batchId, field, value)
-    setSavingField(null)
-  }
-
-  const getScore = (enrollmentId: string, field: keyof ExamScore) => {
-    const score = scores.find(s => s.enrollment_id === enrollmentId)
-    return score ? score[field] : ''
-  }
 
   return (
     <>
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
-              <th className="p-3 whitespace-nowrap sticky left-0 bg-gray-50 z-10 shadow-[1px_0_0_0_#e5e7eb]">Student</th>
-              <th className="p-3 whitespace-nowrap text-center">Attendance %</th>
-              <th className="p-3 whitespace-nowrap text-center">Practice Hrs/Wk</th>
-              <th className="p-3 whitespace-nowrap text-center">Mock Test</th>
-              <th className="p-3 whitespace-nowrap text-center">Speaking</th>
-              <th className="p-3 whitespace-nowrap text-center">Listening</th>
-              <th className="p-3 whitespace-nowrap text-center">Reading</th>
-              <th className="p-3 whitespace-nowrap text-center">Writing</th>
-            </tr>
-          </thead>
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                <th className="p-3 whitespace-nowrap sticky left-0 bg-gray-50 z-10 shadow-[1px_0_0_0_#e5e7eb]">Student</th>
+                <th className="p-3 whitespace-nowrap text-center">Attendance %</th>
+              </tr>
+            </thead>
           <tbody className="divide-y divide-gray-200">
             {enrollments.map((e) => {
               const att = attendanceMap[e.student_id]
@@ -110,30 +71,12 @@ export default function StudentProgressGrid({
                     </span>
                   </td>
                   
-                  {/* Inputs */}
-                  {['weekly_practice_hours', 'mock_test_score', 'speaking', 'listening', 'reading', 'writing'].map(field => (
-                    <td key={field} className="p-2 text-center">
-                      <div className="relative inline-block w-20">
-                        <input
-                          type="number"
-                          step="0.5"
-                          value={getScore(e.id, field as keyof ExamScore) as string | number}
-                          onChange={(ev) => handleScoreChange(e.id, field as keyof ExamScore, ev.target.value)}
-                          className={`w-full px-2 py-1 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition-colors
-                            ${savingField === `${e.id}-${field}` ? 'bg-blue-50 border-blue-200' : 'border-gray-300'}`}
-                        />
-                        {savingField === `${e.id}-${field}` && (
-                          <Save className="w-3 h-3 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2 animate-pulse" />
-                        )}
-                      </div>
-                    </td>
-                  ))}
                 </tr>
               )
             })}
             {enrollments.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-gray-500">
+                <td colSpan={2} className="p-8 text-center text-gray-500">
                   No students enrolled in this batch.
                 </td>
               </tr>
