@@ -56,7 +56,7 @@ export default async function AttendanceRegisterPage({
     student_id: e.student_id,
     students: Array.isArray(e.students) ? e.students[0] : e.students
   }))
-  const students = enrollments.map(e => e.students).filter(Boolean) || []
+  const students = enrollments.map(e => e.students ? { ...e.students, enrollment_id: e.id } : null).filter(Boolean) || []
 
   // Fetch exam scores
   const enrollmentIds = enrollments.map(e => e.id)
