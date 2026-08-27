@@ -40,7 +40,7 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     { name: 'Walk-ins', href: '/dashboard/walkins', icon: UserCheck, roles: ['HR'] },
     { name: 'Mock Services', href: '/dashboard/mocks', icon: FileText, roles: ['HR'] },
     { name: 'Exam Registrations', href: '/dashboard/registrations', icon: ClipboardList, roles: ['HR'] },
-    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR'] },
+    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR', 'BDM'] },
     { name: 'CRM (Finance)', href: '/dashboard/crm', icon: Wallet, roles: ['HR'] },
     { name: 'Expenses', href: '/dashboard/expenses', icon: CreditCard, roles: ['HR'] },
     { name: 'User Management', href: '/dashboard/hr/users', icon: Shield, roles: ['HR', 'BDM'] },
