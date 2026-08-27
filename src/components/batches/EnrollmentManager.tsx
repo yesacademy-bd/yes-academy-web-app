@@ -262,9 +262,8 @@ export default function EnrollmentManager({
               const form = new FormData(e.currentTarget);
               const fee = Number(form.get('course_fee'));
               const paid = Number(form.get('paid_amount'));
-              const due = Number(form.get('due_amount'));
               
-              const res = await updateEnrollmentPayment(editingPayment.enrollment.id, fee, paid, due, batchId);
+              const res = await updateEnrollmentPayment(editingPayment.enrollment.id, fee, paid, batchId);
               if (res.success) {
                 setEditingPayment(null);
               } else {
@@ -280,8 +279,9 @@ export default function EnrollmentManager({
                 <input type="number" name="paid_amount" defaultValue={editingPayment.enrollment.paid_amount} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Due Amount</label>
-                <input type="number" name="due_amount" defaultValue={editingPayment.enrollment.due_amount} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+                <label className="block text-sm font-medium text-slate-300 mb-1">Due Amount (Auto-calculated)</label>
+                <input type="number" defaultValue={editingPayment.enrollment.due_amount} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 text-slate-400 rounded-lg outline-none cursor-not-allowed" disabled />
+                <p className="text-xs text-slate-500 mt-1">Due amount will update automatically when you save.</p>
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setEditingPayment(null)} className="px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg">Cancel</button>

@@ -93,7 +93,7 @@ export async function updatePortalAssigned(enrollmentId: string, assigned: boole
   return { success: true }
 }
 
-export async function updateEnrollmentPayment(enrollmentId: string, courseFee: number, paidAmount: number, dueAmount: number, batchId: string) {
+export async function updateEnrollmentPayment(enrollmentId: string, courseFee: number, paidAmount: number, batchId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false }
@@ -102,8 +102,7 @@ export async function updateEnrollmentPayment(enrollmentId: string, courseFee: n
   
   const { error } = await supabase.from('enrollments').update({ 
     course_fee: courseFee,
-    paid_amount: paidAmount,
-    due_amount: dueAmount
+    paid_amount: paidAmount
   }).eq('id', enrollmentId)
   
   if (error) return { success: false, message: error.message }
