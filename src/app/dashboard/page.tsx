@@ -37,13 +37,15 @@ export default async function DashboardPage() {
   const completedBatches = allBatches.filter(b => b.status === 'Completed')
 
   // Calculate "Today's Batches" based on current day of week
+  const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+  const now = new Date(tzDateStr)
+  
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const todayName = daysOfWeek[new Date().getDay()]
+  const todayName = daysOfWeek[now.getDay()]
   
   const todaysBatches = activeBatches.filter(b => b.schedule_days.includes(todayName))
 
-  // Calculate "Live Now" batches based on current server time
-  const now = new Date()
+  // Calculate "Live Now" batches based on current Dhaka time
   const currentHours = now.getHours()
   const currentMinutes = now.getMinutes()
   const currentTime = currentHours * 60 + currentMinutes

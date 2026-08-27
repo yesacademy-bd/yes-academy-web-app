@@ -94,18 +94,24 @@ export default function BatchForm({
       if (course) {
         const start = new Date(startDate)
         let monthsToAdd = 0
+        let daysToAdd = 0
         
         if (course.family === 'PTE') {
-           if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
-           else monthsToAdd = 2
+          if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
+          else monthsToAdd = 2
         }
         else if (course.family === 'IELTS') {
-           if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
-           else monthsToAdd = 3
+          if (course.name.toLowerCase().includes('crash')) monthsToAdd = 1
+          else if (course.name.toLowerCase().includes('cd')) {
+            monthsToAdd = 2
+            daysToAdd = 15 // 2.5 months
+          }
+          else monthsToAdd = 3
         }
         
-        if (monthsToAdd > 0) {
+        if (monthsToAdd > 0 || daysToAdd > 0) {
           start.setMonth(start.getMonth() + monthsToAdd)
+          if (daysToAdd > 0) start.setDate(start.getDate() + daysToAdd)
           const endStr = start.toISOString().split('T')[0]
           setValue('expected_end_date', endStr, { shouldValidate: true })
         }

@@ -136,7 +136,7 @@ export default function StudentProgressModal({
                           placeholder="e.g. 10.5"
                         />
                       </div>
-                      <div className="w-full sm:w-2/3">
+                      <div className="w-full sm:w-1/3">
                         <label className="block text-[10px] text-slate-400 mb-1 uppercase">Remarks</label>
                         <input 
                           type="text" 
@@ -144,6 +144,16 @@ export default function StudentProgressModal({
                           onChange={e => setPracticeDetails({...practiceDetails, [`week_${week}_remarks`]: e.target.value})} 
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                           placeholder="Student feedback..." 
+                        />
+                      </div>
+                      <div className="w-full sm:w-1/3">
+                        <label className="block text-[10px] text-slate-400 mb-1 uppercase">Practiced Q's</label>
+                        <input 
+                          type="text" 
+                          value={practiceDetails[`week_${week}_questions`] || ''} 
+                          onChange={e => setPracticeDetails({...practiceDetails, [`week_${week}_questions`]: e.target.value})} 
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                          placeholder="Questions count..." 
                         />
                       </div>
                     </div>

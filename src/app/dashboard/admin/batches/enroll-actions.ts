@@ -80,7 +80,7 @@ export async function removeEnrollment(batchId: string, studentId: string) {
   return { success: true, message: 'Student removed from batch' }
 }
 
-export async function updatePortalAssigned(enrollmentId: string, assigned: boolean) {
+export async function updatePortalAssigned(enrollmentId: string, assigned: boolean, batchId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false }
@@ -89,5 +89,24 @@ export async function updatePortalAssigned(enrollmentId: string, assigned: boole
   
   const { error } = await supabase.from('enrollments').update({ portal_assigned: assigned }).eq('id', enrollmentId)
   if (error) return { success: false, message: error.message }
+  revalidatePath(`/dashboard/admin/batches/${batchId}`)
+  return { success: true }
+}
+
+export async function updateEnrollmentPayment(enrollmentId: string, courseFee: number, paidAmount: number, dueAmount: number, batchId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false }
+  
+  const { error } = await supabase.from('enrollments').update({ 
+    course_fee: courseFee,
+    paid_amount: paidAmount,
+    due_amount: dueAmount
+  }).eq('id', enrollmentId)
+  
+  if (error) return { success: false, message: error.message }
+  revalidatePath(`/dashboard/admin/batches/${batchId}`)
   return { success: true }
 }

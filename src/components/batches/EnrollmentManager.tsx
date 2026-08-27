@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { enrollStudent, removeEnrollment, updatePortalAssigned } from '@/app/dashboard/admin/batches/enroll-actions'
-import { Trash2, UserPlus, MoreVertical } from 'lucide-react'
+import { enrollStudent, removeEnrollment, updatePortalAssigned, updateEnrollmentPayment } from '@/app/dashboard/admin/batches/enroll-actions'
+import { Trash2, UserPlus, MoreVertical, X } from 'lucide-react'
 
 export default function EnrollmentManager({ 
   batchId, 
@@ -15,6 +15,7 @@ export default function EnrollmentManager({
   const [error, setError] = useState<string | null>(null)
   const [portalFilter, setPortalFilter] = useState<'All' | 'Yes' | 'No'>('All')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [editingPayment, setEditingPayment] = useState<any>(null)
 
   const handleAddStudent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -97,21 +98,29 @@ export default function EnrollmentManager({
                       </div>
                     </td>
                     <td className="p-4 text-sm text-gray-500">{s.phone}</td>
-                    <td className="p-4 text-sm text-gray-500">{s.guardian_phone || '-'}</td>
-                    <td className="p-4 text-sm text-gray-900">৳{enrollment?.course_fee || 0}</td>
-                    <td className="p-4 text-sm text-gray-600">৳{enrollment?.paid_amount || 0}</td>
-                    <td className="p-4 text-sm text-red-600 font-medium">৳{enrollment?.due_amount || 0}</td>
-                    <td className="p-4 text-sm text-gray-600">{enrollment?.reference || '-'}</td>
-                    <td className="p-4 text-center">
-                      <select 
-                        value={enrollment?.portal_assigned ? 'Yes' : 'No'}
-                        onChange={async (e) => {
-                          if (!enrollment?.id) return;
-                          const res = await updatePortalAssigned(enrollment.id, e.target.value === 'Yes');
-                          if (!res.success) alert(res.message || 'Failed to update portal assigned status');
-                        }}
-                        className="text-xs border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
-                      >
+                      <td className="p-4 text-sm text-gray-500">{s.guardian_phone || '-'}</td>
+                      <td className="p-4 text-sm text-gray-900">৳{enrollment?.course_fee || 0}</td>
+                      <td className="p-4 text-sm text-gray-600">৳{enrollment?.paid_amount || 0}</td>
+                      <td className="p-4 text-sm text-red-600 font-medium">
+                        <span 
+                          onClick={() => setEditingPayment({ s, enrollment })}
+                          className="cursor-pointer hover:underline"
+                          title="Click to edit payment"
+                        >
+                          ৳{enrollment?.due_amount || 0}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-gray-600">{enrollment?.reference || '-'}</td>
+                      <td className="p-4 text-center">
+                        <select 
+                          value={enrollment?.portal_assigned ? 'Yes' : 'No'}
+                          onChange={async (e) => {
+                            if (!enrollment?.id) return;
+                            const res = await updatePortalAssigned(enrollment.id, e.target.value === 'Yes', batchId);
+                            if (!res.success) alert(res.message || 'Failed to update portal assigned status');
+                          }}
+                          className="text-xs border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                        >
                         <option value="No">No</option>
                         <option value="Yes">Yes</option>
                       </select>
@@ -236,6 +245,53 @@ export default function EnrollmentManager({
           </table>
         </div>
       </div>
+
+      {/* Payment Edit Modal */}
+      {editingPayment && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-xl shadow-2xl w-full max-w-md border border-slate-700 flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+              <h3 className="font-semibold text-white">Update Payment: {editingPayment.s.name}</h3>
+              <button onClick={() => setEditingPayment(null)} className="text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form className="p-4 space-y-4 overflow-y-auto" onSubmit={async (e) => {
+              e.preventDefault();
+              const form = new FormData(e.currentTarget);
+              const fee = Number(form.get('course_fee'));
+              const paid = Number(form.get('paid_amount'));
+              const due = Number(form.get('due_amount'));
+              
+              const res = await updateEnrollmentPayment(editingPayment.enrollment.id, fee, paid, due, batchId);
+              if (res.success) {
+                setEditingPayment(null);
+              } else {
+                alert(res.message);
+              }
+            }}>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Course Fee</label>
+                <input type="number" name="course_fee" defaultValue={editingPayment.enrollment.course_fee} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Paid Amount</label>
+                <input type="number" name="paid_amount" defaultValue={editingPayment.enrollment.paid_amount} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Due Amount</label>
+                <input type="number" name="due_amount" defaultValue={editingPayment.enrollment.due_amount} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+              </div>
+              <div className="pt-4 flex justify-end gap-3">
+                <button type="button" onClick={() => setEditingPayment(null)} className="px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
