@@ -16,6 +16,24 @@ export default function EnrollmentManager({
   const [portalFilter, setPortalFilter] = useState<'All' | 'Yes' | 'No'>('All')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editingPayment, setEditingPayment] = useState<any>(null)
+  const [optimisticPortal, setOptimisticPortal] = useState<Record<string, boolean>>({})
+
+  const handlePortalChange = async (enrollmentId: string, newValue: boolean) => {
+    // 1. Instantly update the UI without waiting for the server
+    setOptimisticPortal(prev => ({ ...prev, [enrollmentId]: newValue }))
+    
+    // 2. Save to database in the background
+    const res = await updatePortalAssigned(enrollmentId, newValue, batchId)
+    if (!res.success) {
+      // Revert if it fails
+      setOptimisticPortal(prev => {
+        const next = { ...prev }
+        delete next[enrollmentId]
+        return next
+      })
+      alert(res.message || 'Failed to update portal assigned status')
+    }
+  }
 
   const handleAddStudent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -79,13 +97,14 @@ export default function EnrollmentManager({
               )}
               {students.filter(s => {
                 if (portalFilter === 'All') return true;
-                const isAssigned = s.enrollment_data?.portal_assigned === true;
+                const isAssigned = optimisticPortal[s.enrollment_data?.id] ?? (s.enrollment_data?.portal_assigned === true);
                 if (portalFilter === 'Yes') return isAssigned;
                 if (portalFilter === 'No') return !isAssigned;
                 return true;
               }).map(s => {
                 // Find enrollment data for this student in this batch
                 const enrollment = s.enrollment_data // we will pass this from page.tsx
+                const isAssigned = optimisticPortal[enrollment?.id] ?? enrollment?.portal_assigned
                 
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
@@ -113,11 +132,9 @@ export default function EnrollmentManager({
                       <td className="p-4 text-sm text-gray-600">{enrollment?.reference || '-'}</td>
                       <td className="p-4 text-center">
                         <select 
-                          value={enrollment?.portal_assigned ? 'Yes' : 'No'}
-                          onChange={async (e) => {
-                            if (!enrollment?.id) return;
-                            const res = await updatePortalAssigned(enrollment.id, e.target.value === 'Yes', batchId);
-                            if (!res.success) alert(res.message || 'Failed to update portal assigned status');
+                          value={isAssigned ? 'Yes' : 'No'}
+                          onChange={(e) => {
+                            if (enrollment?.id) handlePortalChange(enrollment.id, e.target.value === 'Yes');
                           }}
                           className="text-xs border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
                         >
