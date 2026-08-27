@@ -90,28 +90,52 @@ export default function StudentProgressModal({
           ) : (
             <>
               {/* Exam Scores Section */}
-              <section>
-                <h4 className="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-4">Exam Scores</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                  <div>
-                    <label className="block text-xs text-slate-300 mb-1">Mock Test</label>
-                    <input type="number" step="0.5" value={mockScore} onChange={e => setMockScore(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              <section className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-3">A. Full Mock 01</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {['Full', 'Speaking', 'Listening', 'Reading', 'Writing'].map(type => (
+                      <div key={type}>
+                        <label className="block text-[10px] uppercase text-slate-400 mb-1">{type}</label>
+                        <input type="number" step="0.5" value={practiceDetails[`mock_01_${type.toLowerCase()}`] || ''} onChange={e => setPracticeDetails({...practiceDetails, [`mock_01_${type.toLowerCase()}`]: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-300 mb-1">Speaking</label>
-                    <input type="number" step="0.5" value={speaking} onChange={e => setSpeaking(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-3">B. Full Mock 02</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {['Full', 'Speaking', 'Listening', 'Reading', 'Writing'].map(type => (
+                      <div key={type}>
+                        <label className="block text-[10px] uppercase text-slate-400 mb-1">{type}</label>
+                        <input type="number" step="0.5" value={practiceDetails[`mock_02_${type.toLowerCase()}`] || ''} onChange={e => setPracticeDetails({...practiceDetails, [`mock_02_${type.toLowerCase()}`]: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-300 mb-1">Listening</label>
-                    <input type="number" step="0.5" value={listening} onChange={e => setListening(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-3">C. Partial 01</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {['Speaking', 'Listening', 'Reading', 'Writing'].map(type => (
+                      <div key={type}>
+                        <label className="block text-[10px] uppercase text-slate-400 mb-1">{type}</label>
+                        <input type="number" step="0.5" value={practiceDetails[`partial_01_${type.toLowerCase()}`] || ''} onChange={e => setPracticeDetails({...practiceDetails, [`partial_01_${type.toLowerCase()}`]: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-300 mb-1">Reading</label>
-                    <input type="number" step="0.5" value={reading} onChange={e => setReading(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-300 mb-1">Writing</label>
-                    <input type="number" step="0.5" value={writing} onChange={e => setWriting(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-3">D. Partial 02</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {['Speaking', 'Listening', 'Reading', 'Writing'].map(type => (
+                      <div key={type}>
+                        <label className="block text-[10px] uppercase text-slate-400 mb-1">{type}</label>
+                        <input type="number" step="0.5" value={practiceDetails[`partial_02_${type.toLowerCase()}`] || ''} onChange={e => setPracticeDetails({...practiceDetails, [`partial_02_${type.toLowerCase()}`]: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </section>
