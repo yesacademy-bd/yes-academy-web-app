@@ -9,20 +9,20 @@ import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 
 const batchSchema = z.object({
-  batch_name: z.string().min(1, 'Batch name is required'),
-  course_id: z.string().uuid('Course is required'),
-  teacher_id: z.string().uuid('Teacher is required'),
+  batch_name: z.string().optional().or(z.literal('')),
+  course_id: z.string().optional().or(z.literal('')),
+  teacher_id: z.string().optional().or(z.literal('')),
   monitor_teacher_id: z.string().optional().nullable(),
-  room_id: z.string().uuid('Room is required'),
+  room_id: z.string().optional().or(z.literal('')),
   start_date: z.string().optional().or(z.literal('')),
   expected_end_date: z.string().optional().or(z.literal('')),
   max_students: z.coerce.number().min(1),
   total_classes: z.coerce.number().min(1),
   additional_classes: z.coerce.number().min(0),
   status: z.enum(['Upcoming', 'Active', 'Paused', 'Completed']),
-  schedule_days: z.array(z.string()).min(1, 'Select at least one day'),
-  start_time: z.string().min(1, 'Start time required'),
-  end_time: z.string().min(1, 'End time required'),
+  schedule_days: z.array(z.string()).optional().default([]),
+  start_time: z.string().optional().or(z.literal('')),
+  end_time: z.string().optional().or(z.literal('')),
 })
 
 type BatchFormValues = z.infer<typeof batchSchema>

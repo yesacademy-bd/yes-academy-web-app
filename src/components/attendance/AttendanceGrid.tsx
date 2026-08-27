@@ -99,7 +99,10 @@ export default function AttendanceGrid({
 
   const getClassState = (classNum: number) => {
     const session = sessions.find(s => s.class_number === classNum)
-    const now = new Date()
+    
+    const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+    const now = new Date(tzDateStr)
+    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     // 1. HR Override
     const isOverrideActive = session?.override_unlock_until && new Date(session.override_unlock_until) > now
@@ -107,38 +110,21 @@ export default function AttendanceGrid({
 
     if (batch.status === 'Completed') return { locked: true, reason: 'Batch Completed' }
 
-    // 2. 48 hour grace period if no start_date
-    if (!batch.start_date && batch.created_at) {
-      const createdTime = new Date(batch.created_at).getTime()
-      const hoursSinceCreation = (now.getTime() - createdTime) / (1000 * 60 * 60)
-      if (hoursSinceCreation <= 48) {
-        return { locked: false, reason: `Manual Entry (${Math.floor(48 - hoursSinceCreation)}h left)` }
-      }
-    }
-
-    // 3. Dynamic N+1 Rule
-    // Find the highest class number that has a session created ON A PREVIOUS DAY.
-    // Actually, N+1 means you can only open the next class.
+    // 2. Dynamic N+1 Rule
+    const sessionToday = sessions.find(s => s.session_date === todayDateStr)
     const highestCompleted = sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 0
+    const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
     
-    // If the class is greater than N+1, it's upcoming
-    if (classNum > highestCompleted + 1) {
+    if (classNum > allowedClassNum) {
       return { locked: true, reason: 'Upcoming' }
     }
-    
-    // If the class is less than the current highest, it's locked (past class)
-    if (classNum < highestCompleted) {
+    if (classNum < allowedClassNum) {
       return { locked: true, reason: 'Completed & Locked' }
     }
 
-    // 4. Valid Time Window Check for Current (or N+1) class
+    // 3. Valid Time Window Check for the allowed class
     const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const todayName = DAYS_OF_WEEK[now.getDay()]
-    const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-
-    if (batch.start_date && now < new Date(batch.start_date)) {
-      return { locked: true, reason: 'Batch not started yet' }
-    }
 
     if (holidays.includes(todayDateStr)) {
       return { locked: true, reason: 'Holiday' }
@@ -154,8 +140,7 @@ export default function AttendanceGrid({
     const startDatetime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin, 0)
     const endDatetime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin, 0)
     
-    // We allow taking attendance within the class time window, or maybe up to 1 hour after? 
-    // The user strictly said: "Then after the class time the attendance day will lock again."
+    // Strict locking based on class time
     if (now >= startDatetime && now <= endDatetime) {
       return { locked: false, reason: 'In Progress' }
     } else if (now < startDatetime) {
