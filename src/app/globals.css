@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root {
   --background: linear-gradient(135deg, #7f1d1d, #4c1d95, #1e3a8a);
