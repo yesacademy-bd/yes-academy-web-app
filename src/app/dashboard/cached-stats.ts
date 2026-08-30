@@ -38,7 +38,7 @@ export const getCachedDashboardStats = unstable_cache(
       .select('id, batch_id')
       .eq('session_date', todayStr)
       
-    const batchesWithSessions = new Set((sessionsTodayRes || []).map(s => s.batch_id))
+    const batchesWithSessions = (sessionsTodayRes || []).map(s => s.batch_id)
 
     return {
       allBatches,

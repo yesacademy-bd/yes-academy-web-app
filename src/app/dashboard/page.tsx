@@ -71,11 +71,12 @@ export default async function DashboardPage() {
   })
 
   if (todaysBatches.length > 0) {
+    const batchesWithSessionsSet = new Set(batchesWithSessions)
     // If a batch is scheduled today, but the time has passed and no session exists, it's missed.
-    missedAttendanceBatches = todaysBatches.filter(b => {
+    missedAttendanceBatches = todaysBatches.filter((b: any) => {
       const endMinutes = timeToMinutes(b.end_time)
       // Check if time passed and no session marked
-      return currentTime > endMinutes && !batchesWithSessions.has(b.id)
+      return currentTime > endMinutes && !batchesWithSessionsSet.has(b.id)
     })
   }
 
