@@ -20,24 +20,30 @@ export async function markAttendance(
     const { data: session } = await supabase.from('class_sessions').select('*').eq('id', classSessionId).single()
     if (!session) throw new Error('Session not found')
 
+    // Fetch batch-level unlock (-1 row)
+    const { data: batchSession } = await supabase.from('class_sessions').select('*').eq('batch_id', batchId).eq('class_number', -1).maybeSingle()
+
     const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
     if (!batch) throw new Error('Batch not found')
 
-    const totalClasses = batch.total_classes + batch.additional_classes
-    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
-    
-    const classWindow = schedule.find(s => s.class_number === session.class_number)
-    if (!classWindow) throw new Error('Class window could not be computed')
+    const now = Date.now()
+    const isSessionOverrideActive = session.override_unlock_until && new Date(session.override_unlock_until).getTime() > now
+    const isBatchOverrideActive = batchSession?.override_unlock_until && new Date(batchSession.override_unlock_until).getTime() > now
+    const isOverrideActive = isSessionOverrideActive || isBatchOverrideActive
 
-    const now = new Date()
-    const isOverrideActive = session.override_unlock_until && new Date(session.override_unlock_until) > now
+    // Only compute and validate time window if there is no active HR override
+    if (!isOverrideActive) {
+      const totalClasses = batch.total_classes + batch.additional_classes
+      const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+      
+      const classWindow = schedule.find(s => s.class_number === session.class_number)
+      if (!classWindow) throw new Error('Class window could not be computed')
 
-    // Check if within window (with 15 minute grace period before/after)
-    // Actually strictly sticking to exact window based on requirements
-    const isWithinWindow = now >= classWindow.start_datetime && now <= classWindow.end_datetime
+      const isWithinWindow = now >= classWindow.start_datetime.getTime() && now <= classWindow.end_datetime.getTime()
 
-    if (!isWithinWindow && !isOverrideActive) {
-      throw new Error(`Cannot modify attendance. This class is locked. Scheduled window was ${classWindow.start_datetime.toLocaleString()} to ${classWindow.end_datetime.toLocaleString()}`)
+      if (!isWithinWindow) {
+        throw new Error(`Cannot modify attendance. This class is locked. Scheduled window was ${classWindow.start_datetime.toLocaleString()} to ${classWindow.end_datetime.toLocaleString()}`)
+      }
     }
 
     // Upsert the attendance record
