@@ -122,9 +122,12 @@ export async function unlockClassSession(batchId: string, classNum: number, dura
     const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
     if (!batch) throw new Error('Batch not found')
 
-    const totalClasses = batch.total_classes + batch.additional_classes
-    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
-    const sessionDate = schedule.find(s => s.class_number === classNum)?.date || new Date().toISOString().split('T')[0]
+    let sessionDate = new Date().toISOString().split('T')[0]
+    if (batch.start_date) {
+      const totalClasses = batch.total_classes + batch.additional_classes
+      const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+      sessionDate = schedule.find(s => s.class_number === classNum)?.date || sessionDate
+    }
 
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
@@ -160,25 +163,13 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
       throw new Error('Only HR or Admin can unlock sessions')
     }
 
-    const { data: batch } = await supabase.from('batches').select('*').eq('id', batchId).single()
-    if (!batch) throw new Error('Batch not found')
-
-    const totalClasses = batch.total_classes + batch.additional_classes
-    const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
-
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
 
-    const sessionsToUpsert = schedule.map(s => ({
-      batch_id: batchId,
-      class_number: s.class_number,
-      session_date: s.date,
-      override_unlock_until: unlockUntil.toISOString()
-    }))
-
     const { error } = await supabase
       .from('class_sessions')
-      .upsert(sessionsToUpsert, { onConflict: 'batch_id,class_number' })
+      .update({ override_unlock_until: unlockUntil.toISOString() })
+      .eq('batch_id', batchId)
 
     if (error) throw new Error(error.message)
 
@@ -186,5 +177,43 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
     return { success: true }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to unlock batch' }
+  }
+}
+
+export async function unlockAllActiveBatches(durationMinutes: number = 60) {
+  const supabase = await createClient()
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // Verify HR/Admin/BDM
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!['HR', 'Admin', 'BDM'].includes(profile?.role || '')) {
+      throw new Error('Only HR or Admin can unlock sessions')
+    }
+
+    const unlockUntil = new Date()
+    unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
+
+    // Instead of computing schedules (which fails for missing start_dates),
+    // we simply update ALL existing class_sessions for all Active batches.
+    // To do this strictly for Active batches, we first fetch their IDs.
+    const { data: activeBatches } = await supabase.from('batches').select('id').eq('status', 'Active')
+    if (!activeBatches || activeBatches.length === 0) return { success: true }
+    
+    const batchIds = activeBatches.map(b => b.id)
+
+    const { error } = await supabase
+      .from('class_sessions')
+      .update({ override_unlock_until: unlockUntil.toISOString() })
+      .in('batch_id', batchIds)
+
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/dashboard`)
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to unlock batches' }
   }
 }

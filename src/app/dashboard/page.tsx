@@ -17,6 +17,16 @@ export default async function DashboardPage() {
   const isFaculty = false // Because Faculty is redirected, this page is now HR-only
   const role = profile?.role || 'HR'
 
+  function format12Hour(timeStr: string) {
+    if (!timeStr) return '';
+    const [hourStr, minuteStr] = timeStr.split(':');
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+    return `${hour}:${minuteStr} ${ampm}`;
+  }
+
   // Fetch batches based on role
   let query = supabase.from('batches').select(`
     id, batch_name, status, schedule_days, start_time, end_time, start_date, expected_end_date,
@@ -166,7 +176,7 @@ export default async function DashboardPage() {
                         <h3 className="font-bold text-orange-900">{b.batch_name}</h3>
                         <p className="text-sm text-orange-800 mt-1">
                           Teacher: <span className="font-medium">{(b.profiles as any)?.display_name}</span> • 
-                          Schedule: <span className="font-medium">{b.schedule_days.join(', ')} ({b.start_time})</span>
+                          Schedule: <span className="font-medium">{b.schedule_days.join(', ')} ({format12Hour(b.start_time)})</span>
                         </p>
                       </div>
                       <div className="mt-2 sm:mt-0 text-right">
@@ -197,7 +207,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-gray-900">{(b.rooms as any)?.name}</p>
-                    <p className="text-sm text-gray-500 mt-1">{b.start_time.substring(0,5)} - {b.end_time.substring(0,5)}</p>
+                    <p className="text-sm text-gray-500 mt-1">{format12Hour(b.start_time)} - {format12Hour(b.end_time)}</p>
                   </div>
                 </div>
               ))}
@@ -218,9 +228,9 @@ export default async function DashboardPage() {
               {todaysBatches.sort((a, b) => a.start_time.localeCompare(b.start_time)).map(b => (
                 <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 text-center shrink-0">
-                      <p className="text-sm font-bold text-gray-900">{b.start_time.substring(0,5)}</p>
-                      <p className="text-xs text-gray-500">{b.end_time.substring(0,5)}</p>
+                    <div className="w-20 text-center shrink-0">
+                      <p className="text-sm font-bold text-gray-900">{format12Hour(b.start_time)}</p>
+                      <p className="text-xs text-gray-500">{format12Hour(b.end_time)}</p>
                     </div>
                     <div className="h-10 w-px bg-gray-200 hidden sm:block"></div>
                     <div>
@@ -261,7 +271,7 @@ export default async function DashboardPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900">{b.batch_name}</h3>
                       <p className="text-xs text-gray-500 mt-1">
-                        Class {missedClassNo} • Teacher: {(b.profiles as any)?.display_name || 'Unassigned'} • Ended at {b.end_time.substring(0,5)}
+                        Class {missedClassNo} • Teacher: {(b.profiles as any)?.display_name || 'Unassigned'} • Ended at {format12Hour(b.end_time)}
                       </p>
                     </div>
                     <Link 

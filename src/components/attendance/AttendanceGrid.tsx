@@ -12,22 +12,20 @@ export default function AttendanceGrid({
   students,
   initialSessions,
   initialRecords,
+  serverHolidays,
   userRole
 }: {
   batch: any
   students: any[]
   initialSessions: any[]
   initialRecords: any[]
+  serverHolidays: string[]
   userRole: string
 }) {
   const [sessions, setSessions] = useState(initialSessions)
   const [records, setRecords] = useState(initialRecords)
-  const [holidays, setHolidays] = useState<string[]>([])
+  const holidays = serverHolidays || []
   const [isPending, startTransition] = useTransition()
-
-  useEffect(() => {
-    getHolidays().then(setHolidays)
-  }, [])
   
   const totalClasses = batch.total_classes + batch.additional_classes
   const classNumbers = Array.from({ length: totalClasses }, (_, i) => i + 1)

@@ -29,15 +29,21 @@ export default async function BatchManagerPage() {
     .select(`
       id,
       batch_name,
+      course_id,
       status,
       start_date,
       expected_end_date,
       courses ( name, family ),
       profiles!batches_teacher_id_fkey ( display_name )
     `)
-    .order('start_date', { ascending: false })
+    // We will do alphanumeric sorting in the client component
+
+  const { data: courses } = await supabase
+    .from('courses')
+    .select('id, name')
+    .order('name')
 
   return (
-    <BatchList batches={batches || []} userRole={role} />
+    <BatchList batches={batches || []} courses={courses || []} userRole={role} />
   )
 }

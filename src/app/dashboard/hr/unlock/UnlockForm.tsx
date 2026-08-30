@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { unlockClassSession, unlockEntireBatch } from '@/app/actions/attendance'
+import { unlockClassSession, unlockEntireBatch, unlockAllActiveBatches } from '@/app/actions/attendance'
 import { Key, Unlock, AlertCircle } from 'lucide-react'
 
 export default function UnlockForm({ batches }: { batches: any[] }) {
@@ -22,7 +22,9 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
 
     startTransition(async () => {
       let res;
-      if (selectedClassNum === 'ALL') {
+      if (selectedBatchId === 'ALL_EXISTING_BATCHES') {
+        res = await unlockAllActiveBatches(durationNum)
+      } else if (selectedClassNum === 'ALL') {
         res = await unlockEntireBatch(selectedBatchId, durationNum)
       } else {
         const classNum = parseInt(selectedClassNum)
@@ -56,6 +58,7 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="" className="text-gray-900">-- Choose a Batch --</option>
+              <option value="ALL_EXISTING_BATCHES" className="text-gray-900 font-bold bg-gray-100">Unlock All Existing Batches</option>
               {batches.map(b => (
                 <option key={b.id} value={b.id} className="text-gray-900">{b.batch_name} ({b.status})</option>
               ))}
@@ -67,7 +70,7 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
             <select 
               value={selectedClassNum}
               onChange={(e) => setSelectedClassNum(e.target.value)}
-              disabled={!selectedBatchId}
+              disabled={!selectedBatchId || selectedBatchId === 'ALL_EXISTING_BATCHES'}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
             >
               <option value="ALL" className="text-gray-900">Entire Batch (All past/current classes)</option>
@@ -88,6 +91,7 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
               <option value="30" className="text-gray-900">30 Minutes</option>
               <option value="60" className="text-gray-900">1 Hour</option>
               <option value="120" className="text-gray-900">2 Hours</option>
+              <option value="1440" className="text-gray-900 font-bold">24 Hours</option>
             </select>
           </div>
 
@@ -106,6 +110,9 @@ export default function UnlockForm({ batches }: { batches: any[] }) {
         <h3 className="text-blue-900 font-bold flex items-center gap-2">
           <AlertCircle className="w-5 h-5" /> How it works
         </h3>
+        <p className="text-sm text-blue-800">
+          <strong>All Existing Batches:</strong> Force unlocks every single class session for all currently active/upcoming batches at once.
+        </p>
         <p className="text-sm text-blue-800">
           <strong>Entire Batch:</strong> Unlocks every single class session currently registered for the selected batch. Use this if a teacher needs to go back and audit multiple days of attendance.
         </p>

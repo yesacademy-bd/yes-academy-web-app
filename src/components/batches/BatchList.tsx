@@ -4,9 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Plus, Search } from 'lucide-react'
 
-export default function BatchList({ batches, userRole }: { batches: any[], userRole: string }) {
+export default function BatchList({ batches, courses, userRole }: { batches: any[], courses: any[], userRole: string }) {
   const [activeTab, setActiveTab] = useState<'Active' | 'Upcoming' | 'Completed'>('Active')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCourse, setSelectedCourse] = useState('')
 
   // Determine available tabs based on role
   const tabs = ['Active', 'Upcoming']
@@ -14,11 +15,19 @@ export default function BatchList({ batches, userRole }: { batches: any[], userR
     tabs.push('Completed')
   }
 
-  // Filter batches by selected tab and search query
-  const filteredBatches = batches.filter(batch => {
+  // Filter batches by selected tab, search query, and selected course
+  let filteredBatches = batches.filter(batch => {
     const matchesTab = batch.status === activeTab
-    const matchesSearch = batch.batch_name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesTab && matchesSearch
+    const matchesSearch = batch.batch_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCourse = selectedCourse ? batch.course_id === selectedCourse : true
+    return matchesTab && matchesSearch && matchesCourse
+  })
+
+  // Sort batches alphanumerically ascending
+  filteredBatches = filteredBatches.sort((a, b) => {
+    const nameA = a.batch_name || ''
+    const nameB = b.batch_name || ''
+    return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' })
   })
 
   return (
@@ -62,6 +71,20 @@ export default function BatchList({ batches, userRole }: { batches: any[], userR
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+          <div className="w-full sm:w-64">
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="w-full px-3 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Courses</option>
+              {courses?.map((course: any) => (
+                <option key={course.id} value={course.id}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
