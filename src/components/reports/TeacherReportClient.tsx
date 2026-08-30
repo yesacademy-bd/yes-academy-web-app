@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { getTeacherReportsByDate, submitTeacherReport } from '@/app/actions/reports'
@@ -18,23 +18,22 @@ export default function TeacherReportClient({ batches, teacherId }: { batches: a
   })
 
   useEffect(() => {
+    const loadReports = async (date: string) => {
+      setLoading(true)
+      const res = await getTeacherReportsByDate(date)
+      if (res.success) {
+        setReports(res.data)
+      }
+      setLoading(false)
+    }
     loadReports(selectedDate)
   }, [selectedDate])
 
-  const loadReports = async (date: string) => {
-    setLoading(true)
-    const res = await getTeacherReportsByDate(date)
-    if (res.success) {
-      setReports(res.data)
-    }
-    setLoading(false)
-  }
-
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value
-    const today = new Date().toISOString().split('T')[0]
-    if (newDate > today) {
-      alert('Cannot select a future date.')
+    // Faculty can only select today or past dates
+    if (new Date(newDate) > new Date()) {
+      alert("Cannot select future dates.")
       return
     }
     setSelectedDate(newDate)
@@ -176,3 +175,4 @@ export default function TeacherReportClient({ batches, teacherId }: { batches: a
     </div>
   )
 }
+
