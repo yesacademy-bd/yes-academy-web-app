@@ -4,7 +4,11 @@ import EnrollmentClient from './EnrollmentClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EnrollmentsPage() {
+export default async function EnrollmentsPage({
+  searchParams
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
   const supabase = await createClient()
 
   // 1. Auth check
@@ -21,20 +25,31 @@ export default async function EnrollmentsPage() {
     redirect('/dashboard')
   }
 
-  // 2. Fetch Data in Parallel
+  // 2. Pagination Logic
+  const { page } = await searchParams
+  const currentPage = parseInt(page || '1', 10)
+  const limit = 50
+  const from = (currentPage - 1) * limit
+  const to = from + limit - 1
+
+  // 3. Fetch Data in Parallel
   const [
-    { data: students },
     { data: courses },
     { data: batches },
-    { data: teachers }
+    { data: teachers },
+    { data: recentEnrollments, count }
   ] = await Promise.all([
-    supabase.from('students').select('id, name, phone, system_id').order('created_at', { ascending: false }),
     supabase.from('courses').select('*').order('name'),
     supabase.from('batches').select(`
       id, batch_name, course_id, status, expected_end_date, teacher_id,
       profiles!batches_teacher_id_fkey(display_name)
     `).neq('status', 'Completed').order('created_at', { ascending: false }),
-    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').order('display_name')
+    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').order('display_name'),
+    supabase.from('enrollments').select(`
+      id, enrolled_at,
+      students ( name, phone ),
+      batches ( batch_name )
+    `, { count: 'exact' }).order('enrolled_at', { ascending: false }).range(from, to)
   ])
 
   return (
@@ -45,10 +60,12 @@ export default async function EnrollmentsPage() {
       </div>
 
       <EnrollmentClient 
-        students={students || []} 
         courses={courses || []} 
         batches={batches || []} 
         teachers={teachers || []}
+        recentEnrollments={recentEnrollments || []}
+        totalCount={count || 0}
+        currentPage={currentPage}
       />
     </div>
   )

@@ -1,17 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { UserPlus, Calendar, CreditCard, Filter } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { UserPlus, Calendar, CreditCard, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createEnrollment } from './actions'
 
 type EnrollmentClientProps = {
-  students: any[]
   courses: any[]
   batches: any[]
   teachers: any[]
+  recentEnrollments: any[]
+  totalCount: number
+  currentPage: number
 }
 
-export default function EnrollmentClient({ students, courses, batches, teachers }: EnrollmentClientProps) {
+export default function EnrollmentClient({ courses, batches, teachers, recentEnrollments, totalCount, currentPage }: EnrollmentClientProps) {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -173,6 +177,71 @@ export default function EnrollmentClient({ students, courses, batches, teachers 
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Recent Enrollments Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-lg font-bold text-gray-900">Recent Enrollments</h2>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                <th className="p-4">Student</th>
+                <th className="p-4">Batch</th>
+                <th className="p-4">Enrolled At</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {recentEnrollments.map((e) => (
+                <tr key={e.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-4">
+                    <p className="font-medium text-gray-900">{(e.students as any)?.name}</p>
+                    <p className="text-xs text-gray-500">{(e.students as any)?.phone}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="text-sm font-medium text-gray-700">{(e.batches as any)?.batch_name}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="text-sm text-gray-500">{new Date(e.enrolled_at).toLocaleDateString()}</p>
+                  </td>
+                </tr>
+              ))}
+              {recentEnrollments.length === 0 && (
+                <tr>
+                  <td colSpan={3} className="p-8 text-center text-gray-500">
+                    No enrollments found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Pagination Controls */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            Showing <span className="font-medium">{(currentPage - 1) * 50 + 1}</span> to <span className="font-medium">{Math.min(currentPage * 50, totalCount)}</span> of <span className="font-medium">{totalCount}</span> results
+          </p>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => router.push(`?page=${currentPage - 1}`)}
+              disabled={currentPage <= 1}
+              className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> Previous
+            </button>
+            <button 
+              onClick={() => router.push(`?page=${currentPage + 1}`)}
+              disabled={currentPage * 50 >= totalCount}
+              className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

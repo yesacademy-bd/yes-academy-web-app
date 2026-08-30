@@ -27,33 +27,24 @@ export default async function DashboardPage() {
     return `${hour}:${minuteStr} ${ampm}`;
   }
 
-  // Fetch batches based on role
-  let query = supabase.from('batches').select(`
-    id, batch_name, status, schedule_days, start_time, end_time, start_date, expected_end_date,
-    total_classes, additional_classes,
-    courses(family, name), rooms(name), profiles!batches_teacher_id_fkey(display_name)
-  `)
-  
-  if (isFaculty) {
-    query = query.or(`teacher_id.eq.${user.id},monitor_teacher_id.eq.${user.id}`)
-  }
-
-  const { data: batches } = await query
-  const allBatches = batches || []
-
-  // Stats calculation
-  const activeBatches = allBatches.filter(b => b.status === 'Active')
-  const upcomingBatches = allBatches.filter(b => b.status === 'Upcoming')
-  const completedBatches = allBatches.filter(b => b.status === 'Completed')
-
-  // Calculate "Today's Batches" based on current day of week
   const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
   const now = new Date(tzDateStr)
-  
+  const todayStr = now.toISOString().split('T')[0]
+
+  // Use the new unstable_cache wrapper for heavy data loading
+  const { getCachedDashboardStats } = await import('./cached-stats')
+  const { allBatches, sessionCounts, batchesWithSessions } = await getCachedDashboardStats(todayStr)
+
+  // Stats calculation
+  const activeBatches = allBatches.filter((b: any) => b.status === 'Active')
+  const upcomingBatches = allBatches.filter((b: any) => b.status === 'Upcoming')
+  const completedBatches = allBatches.filter((b: any) => b.status === 'Completed')
+
+  // Calculate "Today's Batches" based on current day of week
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const todayName = daysOfWeek[now.getDay()]
   
-  const todaysBatches = activeBatches.filter(b => b.schedule_days.includes(todayName))
+  const todaysBatches = activeBatches.filter((b: any) => b.schedule_days.includes(todayName))
 
   // Calculate "Live Now" batches based on current Dhaka time
   const currentHours = now.getHours()
@@ -65,44 +56,21 @@ export default async function DashboardPage() {
     return h * 60 + m
   }
 
-  const liveNowBatches = todaysBatches.filter(b => {
+  const liveNowBatches = todaysBatches.filter((b: any) => {
     const startMinutes = timeToMinutes(b.start_time)
     const endMinutes = timeToMinutes(b.end_time)
     return currentTime >= startMinutes && currentTime <= endMinutes
   })
 
-  // Determine missed attendance for today's batches
-  // For a real app, you'd fetch the class_sessions for today and check attendance_records.
-  // We'll mock the check by seeing if a session exists for today.
-  const todayStr = now.toISOString().split('T')[0]
-  const batchIds = todaysBatches.map(b => b.id)
-  
   let missedAttendanceBatches: any[] = []
-  const sessionCounts: Record<string, number> = {}
-  let batchEndAlerts: any[] = []
-
-  const activeBatchIds = activeBatches.map(b => b.id)
   
-  if (activeBatchIds.length > 0) {
-    const { data: allActiveSessions } = await supabase.from('class_sessions').select('batch_id').in('batch_id', activeBatchIds)
-    ;(allActiveSessions || []).forEach(s => {
-      sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
-    })
+  const batchEndAlerts = activeBatches.filter((b: any) => {
+    const completed = sessionCounts[b.id] || 0
+    const remaining = b.total_classes + b.additional_classes - completed
+    return remaining > 0 && remaining <= 6
+  })
 
-    batchEndAlerts = activeBatches.filter(b => {
-      const completed = sessionCounts[b.id] || 0
-      const remaining = b.total_classes + b.additional_classes - completed
-      return remaining > 0 && remaining <= 6
-    })
-  }
-
-  if (batchIds.length > 0) {
-    const [sessionsTodayRes, allSessionsRes] = await Promise.all([
-      supabase.from('class_sessions').select('batch_id, id').in('batch_id', batchIds).eq('session_date', todayStr),
-      supabase.from('class_sessions').select('batch_id').in('batch_id', batchIds)
-    ])
-      
-    const batchesWithSessions = new Set((sessionsTodayRes.data || []).map(s => s.batch_id))
+  if (todaysBatches.length > 0) {
     // If a batch is scheduled today, but the time has passed and no session exists, it's missed.
     missedAttendanceBatches = todaysBatches.filter(b => {
       const endMinutes = timeToMinutes(b.end_time)
