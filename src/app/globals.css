@@ -24,24 +24,92 @@ body {
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
   }
 
-  .text-gray-900, .text-gray-700, .text-gray-500 {
-    color: rgba(255, 255, 255, 0.9) !important;
+  /* Make sidebar and main backgrounds transparent so the global gradient shows */
+  aside, main, .bg-gray-100 {
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
 
-  input, select, textarea {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
+  /* Text Colors */
+  .text-gray-900, .text-gray-800, .text-gray-700, .text-gray-600 {
+    color: #ffffff !important;
+  }
+  .text-gray-500, .text-gray-400 {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  /* Borders */
+  .border-gray-200, .border-gray-300 {
     border-color: rgba(255, 255, 255, 0.3) !important;
   }
 
-  input::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important;
+  /* Gradient Text Theme for headings and primary colored text */
+  h1, h2, h3, .text-blue-600 {
+    background: linear-gradient(to right, #fca5a5, #93c5fd) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+  }
+
+  /* Buttons */
+  .bg-blue-600 {
+    background: linear-gradient(to right, #ef4444, #3b82f6) !important;
+    border: none !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+  .hover\:bg-blue-700:hover {
+    background: linear-gradient(to right, #dc2626, #2563eb) !important;
+  }
+  
+  /* Tables specific fixes for glassmorphism */
+  table th {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #ffffff !important;
+  }
+  table td {
+    background-color: transparent !important;
+  }
+  tr.hover\:bg-gray-50:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Inputs, Selects, Search Bars */
+  input, select, textarea {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border-color: #93c5fd !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5) !important;
+  }
+  
+  /* Dropdown Options specific fix */
+  option {
+    background-color: #1e3a8a !important; /* solid blue for readability */
+    color: #ffffff !important;
+  }
+
+  /* General Hover states for sidebar items, table rows, etc */
+  .hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover, .hover\:bg-blue-50:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+  .hover\:text-blue-600:hover {
+    -webkit-text-fill-color: #93c5fd !important;
+    color: #93c5fd !important;
   }
 }
-
 @keyframes jump3d {
   0%, 100% {
     transform: translateY(0);
