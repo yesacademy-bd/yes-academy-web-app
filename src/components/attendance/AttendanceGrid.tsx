@@ -97,20 +97,23 @@ export default function AttendanceGrid({
 
   const getClassState = (classNum: number) => {
     const session = sessions.find(s => s.class_number === classNum)
+    const batchLevelSession = sessions.find(s => s.class_number === -1) // Special batch-level unlock row
     
     const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
     const now = new Date(tzDateStr)
     const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-    // 1. HR Override
-    const isOverrideActive = session?.override_unlock_until && new Date(session.override_unlock_until) > now
-    if (isOverrideActive) return { locked: false, reason: 'Unlocked by HR' }
+    // 1. HR Override (Use absolute Date.now() for override comparisons to avoid timezone shifting bugs)
+    const isSessionOverride = session?.override_unlock_until && new Date(session.override_unlock_until).getTime() > Date.now()
+    const isBatchOverride = batchLevelSession?.override_unlock_until && new Date(batchLevelSession.override_unlock_until).getTime() > Date.now()
+    
+    if (isSessionOverride || isBatchOverride) return { locked: false, reason: 'Unlocked by HR' }
 
     if (batch.status === 'Completed') return { locked: true, reason: 'Batch Completed' }
 
     // 2. Dynamic N+1 Rule
-    const sessionToday = sessions.find(s => s.session_date === todayDateStr)
-    const highestCompleted = sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 0
+    const sessionToday = sessions.find(s => s.session_date === todayDateStr && s.class_number > 0)
+    const highestCompleted = sessions.length > 0 ? Math.max(...sessions.filter(s => s.class_number > 0).map(s => s.class_number), 0) : 0
     const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
     
     if (classNum > allowedClassNum) {
@@ -156,10 +159,10 @@ export default function AttendanceGrid({
       return
     }
     startTransition(async () => {
-      const res = await unlockClassSession(batch.id, session.id, 60)
+      const res = await unlockClassSession(batch.id, activeClassNum, 60)
       if (res.success) {
         // Optimistic refresh
-        setSessions(sessions.map(s => s.id === session.id ? { ...s, override_unlock_until: new Date(Date.now() + 60*60*1000).toISOString() } : s))
+        setSessions(sessions.map(s => s.class_number === activeClassNum ? { ...s, override_unlock_until: new Date(Date.now() + 60*60*1000).toISOString() } : s))
       } else {
         alert(res.message)
       }

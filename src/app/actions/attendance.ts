@@ -166,10 +166,17 @@ export async function unlockEntireBatch(batchId: string, durationMinutes: number
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
 
+    const todayDateStr = new Date().toISOString().split('T')[0]
+
+    // Create a dummy batch-level session row (-1) to represent the batch unlock
     const { error } = await supabase
       .from('class_sessions')
-      .update({ override_unlock_until: unlockUntil.toISOString() })
-      .eq('batch_id', batchId)
+      .upsert({
+        batch_id: batchId,
+        class_number: -1,
+        session_date: todayDateStr,
+        override_unlock_until: unlockUntil.toISOString()
+      }, { onConflict: 'batch_id,class_number' })
 
     if (error) throw new Error(error.message)
 
@@ -195,19 +202,22 @@ export async function unlockAllActiveBatches(durationMinutes: number = 60) {
 
     const unlockUntil = new Date()
     unlockUntil.setMinutes(unlockUntil.getMinutes() + durationMinutes)
+    const todayDateStr = new Date().toISOString().split('T')[0]
 
-    // Instead of computing schedules (which fails for missing start_dates),
-    // we simply update ALL existing class_sessions for all Active batches.
-    // To do this strictly for Active batches, we first fetch their IDs.
     const { data: activeBatches } = await supabase.from('batches').select('id').eq('status', 'Active')
     if (!activeBatches || activeBatches.length === 0) return { success: true }
     
-    const batchIds = activeBatches.map(b => b.id)
+    // Bulk upsert dummy -1 class_number rows for ALL active batches
+    const bulkUpsertPayload = activeBatches.map(b => ({
+      batch_id: b.id,
+      class_number: -1,
+      session_date: todayDateStr,
+      override_unlock_until: unlockUntil.toISOString()
+    }))
 
     const { error } = await supabase
       .from('class_sessions')
-      .update({ override_unlock_until: unlockUntil.toISOString() })
-      .in('batch_id', batchIds)
+      .upsert(bulkUpsertPayload, { onConflict: 'batch_id,class_number' })
 
     if (error) throw new Error(error.message)
 
