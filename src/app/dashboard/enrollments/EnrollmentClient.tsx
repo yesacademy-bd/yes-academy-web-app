@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserPlus, Calendar, CreditCard, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createEnrollment } from './actions'
+import GlobalLoader from '@/components/GlobalLoader'
 
 type EnrollmentClientProps = {
   courses: any[]
@@ -17,11 +18,18 @@ type EnrollmentClientProps = {
 export default function EnrollmentClient({ courses, batches, teachers, recentEnrollments, totalCount, currentPage }: EnrollmentClientProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPaginating, setIsPaginating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   const [selectedCourse, setSelectedCourse] = useState('')
   const [selectedTeacherForm, setSelectedTeacherForm] = useState('All')
   const [installmentCount, setInstallmentCount] = useState(0)
+
+  const handlePagination = (page: number) => {
+    setIsPaginating(true)
+    router.push(`?page=${page}`)
+    // it will reset isPaginating when the component unmounts/remounts due to page load.
+  }
 
   const filteredFormBatches = batches.filter(b => {
     let match = true
@@ -59,6 +67,7 @@ export default function EnrollmentClient({ courses, batches, teachers, recentEnr
 
   return (
     <div className="space-y-6">
+      {(isSubmitting || isPaginating) && <GlobalLoader />}
       {/* Enrollment Form */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -227,15 +236,15 @@ export default function EnrollmentClient({ courses, batches, teachers, recentEnr
           </p>
           <div className="flex gap-2">
             <button 
-              onClick={() => router.push(`?page=${currentPage - 1}`)}
-              disabled={currentPage <= 1}
+              onClick={() => handlePagination(currentPage - 1)}
+              disabled={currentPage <= 1 || isPaginating}
               className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
             <button 
-              onClick={() => router.push(`?page=${currentPage + 1}`)}
-              disabled={currentPage * 50 >= totalCount}
+              onClick={() => handlePagination(currentPage + 1)}
+              disabled={currentPage * 50 >= totalCount || isPaginating}
               className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next <ChevronRight className="w-4 h-4" />

@@ -110,3 +110,20 @@ body {
     color: #93c5fd !important;
   }
 }
+@keyframes jump3d {
+  0% {
+    transform: perspective(400px) translateY(0) scale(1) rotateX(0deg);
+    animation-timing-function: ease-in;
+  }
+  40% {
+    transform: perspective(400px) translateY(60px) scaleY(0.85) scaleX(1.1) rotateX(20deg);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: perspective(400px) translateY(0) scale(1) rotateX(0deg);
+    animation-timing-function: ease-in;
+  }
+}
+.animate-jump3d {
+  animation: jump3d 1.2s infinite;
+}
