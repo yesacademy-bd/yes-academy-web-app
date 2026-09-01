@@ -141,7 +141,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Activity className="w-5 h-5" /></div>
+            <div className="p-2 bg-sky-50 text-sky-600 rounded-lg"><Activity className="w-5 h-5" /></div>
             <p className="text-sm font-medium text-gray-500">Active Batches</p>
           </div>
           <p className="text-3xl font-bold text-gray-900">{activeBatches.length}</p>
