@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const batchSchema = z.object({
@@ -49,7 +49,8 @@ export async function createBatch(prevState: any, formData: FormData) {
 
     if (error) throw new Error(error.message)
 
-    revalidatePath('/dashboard/admin/batches')
+    revalidateTag('dashboard-stats')
+    revalidatePath('/dashboard', 'layout')
     return { success: true, message: 'Batch created successfully', data }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to create batch' }
@@ -85,8 +86,8 @@ export async function updateBatch(id: string, prevState: any, formData: FormData
 
     if (error) throw new Error(error.message)
 
-    revalidatePath('/dashboard/admin/batches')
-    revalidatePath(`/dashboard/admin/batches/${id}`)
+    revalidateTag('dashboard-stats')
+    revalidatePath('/dashboard', 'layout')
     return { success: true, message: 'Batch updated successfully', data }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to update batch' }
@@ -112,7 +113,8 @@ export async function deleteBatch(id: string) {
 
     if (error) throw new Error(error.message)
 
-    revalidatePath('/dashboard/admin/batches')
+    revalidateTag('dashboard-stats')
+    revalidatePath('/dashboard', 'layout')
     return { success: true, message: 'Batch deleted successfully' }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to delete batch' }
