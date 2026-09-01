@@ -27,6 +27,17 @@ export default function TimetableGrid({
     return h + m / 60
   }
 
+  // Helper to convert 24h to 12h format
+  const formatTime12h = (time24: string) => {
+    if (!time24) return '';
+    const [h, m] = time24.split(':');
+    let hours = parseInt(h, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    return `${hours}:${m} ${ampm}`;
+  }
+
   // Get batches for the selected day
   const dayBatches = activeBatches.filter(b => b.schedule_days.includes(selectedDay))
 
@@ -47,10 +58,12 @@ export default function TimetableGrid({
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                 selectedDay === day
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-transparent text-gray-600 hover:bg-gray-100'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : dayBatches.some(b => b.schedule_days.includes(day))
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
               {day}
@@ -65,14 +78,10 @@ export default function TimetableGrid({
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="p-4 w-48 font-semibold text-gray-700 border-r border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" /> Time Slot
-                  </div>
-                </th>
+                <th className="p-4 w-32 border-r border-gray-200 font-semibold text-gray-700">Time</th>
                 {rooms.map(room => (
-                  <th key={room.id} className="p-4 font-semibold text-gray-700 text-center border-r border-gray-200 last:border-0">
-                    <div className="flex items-center justify-center gap-2">
+                  <th key={room.id} className="p-4 min-w-[200px] border-r border-gray-200 last:border-0">
+                    <div className="flex items-center gap-2 font-semibold text-gray-700">
                       <MapPin className="w-4 h-4 text-gray-400" /> {room.name}
                     </div>
                   </th>
@@ -90,11 +99,13 @@ export default function TimetableGrid({
               ) : (
                 timeSlots.map(slot => {
                   const [start, end] = slot.split(' - ')
+                  const start12 = formatTime12h(start)
+                  const end12 = formatTime12h(end)
                   
                   return (
                     <tr key={slot} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4 font-bold text-gray-900 border-r border-gray-200 align-top">
-                        {start} <br/> <span className="text-xs text-gray-500 font-normal">to {end}</span>
+                        {start12} <br/> <span className="text-xs text-gray-500 font-normal">to {end12}</span>
                       </td>
                       
                       {rooms.map(room => {
