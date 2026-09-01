@@ -77,23 +77,22 @@ export default async function AttendanceRegisterPage({
     .order('class_number')
     
   const sessions = classSessions || []
-  const sessionIds = sessions.map(s => s.id)
+  const validSessions = sessions.filter(s => s.class_number > 0)
+  const validSessionIds = validSessions.map(s => s.id)
 
-  // Fetch existing attendance records for those sessions
+  // Fetch existing attendance records ONLY for valid sessions
   let attendanceRecords: any[] = []
-  if (sessionIds.length > 0) {
+  if (validSessionIds.length > 0) {
     const { data: records } = await supabase
       .from('attendance_records')
       .select('*')
-      .in('class_session_id', sessionIds)
+      .in('class_session_id', validSessionIds)
     attendanceRecords = records || []
   }
 
   // Fetch holidays for locking sync
   const { getHolidays } = await import('@/app/actions/holidays')
   const holidays = await getHolidays()
-
-  const validSessions = sessions.filter(s => s.class_number > 0)
 
   // Calculate Batch Summary Stats & Attendance Map
   const totalStudents = students.length
