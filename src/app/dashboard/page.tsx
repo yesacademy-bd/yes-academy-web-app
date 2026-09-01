@@ -64,11 +64,59 @@ export default async function DashboardPage() {
 
   let missedAttendanceBatches: any[] = []
   
-  const batchEndAlerts = activeBatches.filter((b: any) => {
+  const { getHolidays } = await import('@/app/actions/holidays')
+  const holidays = await getHolidays()
+  const batchesWithSessionsSet = new Set(batchesWithSessions)
+
+  const batchEndAlerts = activeBatches.reduce((alerts: any[], b: any) => {
+    const totalClasses = b.total_classes + b.additional_classes
     const completed = sessionCounts[b.id] || 0
-    const remaining = b.total_classes + b.additional_classes - completed
-    return remaining > 0 && remaining <= 6
-  })
+    const remaining = totalClasses - completed
+    
+    // Only trigger if exactly or fewer than 6 classes remain (and > 0)
+    if (remaining > 0 && remaining <= 6) {
+      let classesFound = 0
+      let d = new Date(now) // Start from current Dhaka date
+      let expectedEndDate = null
+
+      // Check if today is a valid class day and hasn't been taken yet
+      const todayDateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+      const todayDayName = daysOfWeek[d.getDay()]
+      if (
+        b.schedule_days.includes(todayDayName) && 
+        !holidays.includes(todayDateStr) && 
+        !batchesWithSessionsSet.has(b.id)
+      ) {
+        classesFound++
+        if (classesFound === remaining) {
+          expectedEndDate = new Date(d)
+        }
+      }
+
+      // Look forward until remaining classes are exhausted
+      while (classesFound < remaining) {
+        d.setDate(d.getDate() + 1)
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+        const dayName = daysOfWeek[d.getDay()]
+
+        if (b.schedule_days.includes(dayName) && !holidays.includes(dateStr)) {
+          classesFound++
+          if (classesFound === remaining) {
+            expectedEndDate = new Date(d)
+          }
+        }
+      }
+
+      alerts.push({
+        ...b,
+        completed,
+        remaining,
+        totalClasses,
+        expectedEndDate
+      })
+    }
+    return alerts
+  }, [])
 
   if (todaysBatches.length > 0) {
     const batchesWithSessionsSet = new Set(batchesWithSessions)
@@ -131,31 +179,41 @@ export default async function DashboardPage() {
               <div className="px-6 py-4 border-b border-orange-100 flex justify-between items-center bg-orange-100/50">
                 <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-orange-600" />
-                  Batch End Alerts (Next 2 Weeks)
+                  Batch End Alerts
                 </h2>
                 <span className="bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">{batchEndAlerts.length}</span>
               </div>
               <div className="divide-y divide-orange-100">
-                {batchEndAlerts.map(b => {
-                  const completed = sessionCounts[b.id] || 0
-                  const remaining = b.total_classes + b.additional_classes - completed
-                  return (
-                    <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-orange-100/30 transition-colors">
-                      <div>
-                        <h3 className="font-bold text-orange-900">{b.batch_name}</h3>
-                        <p className="text-sm text-orange-800 mt-1">
-                          Teacher: <span className="font-medium">{(b.profiles as any)?.display_name}</span> • 
-                          Schedule: <span className="font-medium">{b.schedule_days.join(', ')} ({format12Hour(b.start_time)})</span>
-                        </p>
-                      </div>
-                      <div className="mt-2 sm:mt-0 text-right">
-                        <span className="inline-block bg-orange-600 text-white font-medium text-xs px-3 py-1 rounded-full">
-                          {remaining} classes left
-                        </span>
-                      </div>
+                {batchEndAlerts.map(b => (
+                  <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-orange-100/30 transition-colors">
+                    <div>
+                      <h3 className="font-bold text-orange-900 mb-2">{b.batch_name}</h3>
+                      <p className="text-sm text-orange-800 mt-1">
+                        Course Type: <span className="font-medium">{b.courses?.name}</span>
+                      </p>
+                      <p className="text-sm text-orange-800 mt-1">
+                        Completed Classes: <span className="font-medium">{b.completed} / {b.totalClasses}</span>
+                      </p>
+                      <p className="text-sm text-orange-800 mt-1">
+                        Remaining Classes: <span className="font-medium">{b.remaining}</span>
+                      </p>
+                      <p className="text-sm text-orange-800 mt-1">
+                        Class Days: <span className="font-medium">{b.schedule_days.join(', ')}</span>
+                      </p>
+                      <p className="text-sm text-orange-800 mt-1">
+                        Expected End Date: <span className="font-bold text-orange-900">{b.expectedEndDate?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) || 'Unknown'}</span>
+                      </p>
                     </div>
-                  )
-                })}
+                    <div className="mt-4 sm:mt-0 text-right">
+                      <Link 
+                        href={`/dashboard/${role === 'Admin' ? 'admin' : 'faculty'}/batches/${b.id}`}
+                        className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors shadow-sm"
+                      >
+                        View Batch
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
