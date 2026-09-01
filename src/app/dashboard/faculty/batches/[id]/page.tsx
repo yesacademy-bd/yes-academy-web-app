@@ -93,6 +93,8 @@ export default async function AttendanceRegisterPage({
   const { getHolidays } = await import('@/app/actions/holidays')
   const holidays = await getHolidays()
 
+  const validSessions = sessions.filter(s => s.class_number > 0)
+
   // Calculate Batch Summary Stats & Attendance Map
   const totalStudents = students.length
   const totalClasses = batch.total_classes + batch.additional_classes
@@ -147,7 +149,7 @@ export default async function AttendanceRegisterPage({
           <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600"><Calendar className="w-5 h-5" /></div>
           <div>
             <p className="text-sm font-medium text-gray-500">Classes</p>
-            <p className="text-xl font-bold text-gray-900">{sessions.length} / {totalClasses}</p>
+            <p className="text-xl font-bold text-gray-900">{validSessions.length} / {totalClasses}</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
@@ -243,7 +245,7 @@ export default async function AttendanceRegisterPage({
               enrollments={enrollments}
               initialScores={examScores}
               attendanceMap={attendanceMap}
-              totalSessions={sessions.length}
+              totalSessions={validSessions.length}
             />
           </div>
         ) : tab === 'top-attendance' ? (
@@ -256,7 +258,7 @@ export default async function AttendanceRegisterPage({
               enrollments={enrollments}
               initialScores={examScores}
               attendanceMap={attendanceMap}
-              totalSessions={sessions.length}
+              totalSessions={validSessions.length}
             />
           </div>
         ) : null}

@@ -30,9 +30,9 @@ export default function AttendanceGrid({
   const totalClasses = batch.total_classes + batch.additional_classes
   const classNumbers = Array.from({ length: totalClasses }, (_, i) => i + 1)
   
-  const [activeClassNum, setActiveClassNum] = useState<number | null>(
-    sessions.length > 0 ? Math.max(...sessions.map(s => s.class_number)) : 1
-  )
+  const validSessionNumbers = sessions.filter(s => s.class_number > 0).map(s => s.class_number)
+  const initialClassNum = validSessionNumbers.length > 0 ? Math.max(...validSessionNumbers) : 1
+  const [activeClassNum, setActiveClassNum] = useState<number | null>(initialClassNum)
 
   const handleMarkAttendance = async (studentId: string, classNum: number, status: 'Present' | 'Absent' | 'Leave') => {
     // 1. Ensure class session exists

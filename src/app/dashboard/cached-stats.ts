@@ -24,11 +24,13 @@ export const getCachedDashboardStats = unstable_cache(
     if (activeBatchIds.length > 0) {
       const { data: allActiveSessions } = await supabase
         .from('class_sessions')
-        .select('batch_id')
+        .select('batch_id, class_number')
         .in('batch_id', activeBatchIds)
       
       ;(allActiveSessions || []).forEach(s => {
-        sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
+        if (s.class_number > 0) {
+          sessionCounts[s.batch_id] = (sessionCounts[s.batch_id] || 0) + 1
+        }
       })
     }
 
