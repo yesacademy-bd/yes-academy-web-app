@@ -33,16 +33,56 @@ export async function markAttendance(
 
     // Only compute and validate time window if there is no active HR override
     if (!isOverrideActive) {
-      const totalClasses = batch.total_classes + batch.additional_classes
-      const schedule = computeClassSchedule(batch.start_date, batch.schedule_days, batch.start_time, batch.end_time, totalClasses)
+      // 1. Timezone-aware current time
+      const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+      const nowDhaka = new Date(tzDateStr)
+      const todayDateStr = `${nowDhaka.getFullYear()}-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
+
+      // 2. Fetch all real sessions to determine N+1
+      const { data: allSessions } = await supabase.from('class_sessions')
+        .select('class_number, session_date')
+        .eq('batch_id', batchId)
+        .gt('class_number', 0)
       
-      const classWindow = schedule.find(s => s.class_number === session.class_number)
-      if (!classWindow) throw new Error('Class window could not be computed')
+      const sessionsArr = allSessions || []
+      const sessionToday = sessionsArr.find(s => s.session_date === todayDateStr)
+      const highestCompleted = sessionsArr.length > 0 ? Math.max(...sessionsArr.map(s => s.class_number)) : 0
+      const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
 
-      const isWithinWindow = now >= classWindow.start_datetime.getTime() && now <= classWindow.end_datetime.getTime()
+      if (session.class_number > allowedClassNum) {
+        throw new Error(`Attendance is locked. You cannot mark a future class. (Expected Class ${allowedClassNum})`)
+      }
+      if (session.class_number < allowedClassNum) {
+        throw new Error('Attendance is locked. This is a previous class that can no longer be modified without HR override.')
+      }
 
-      if (!isWithinWindow) {
-        throw new Error(`Cannot modify attendance. This class is locked. Scheduled window was ${classWindow.start_datetime.toLocaleString()} to ${classWindow.end_datetime.toLocaleString()}`)
+      // 3. Holiday Validation
+      const { data: holidays } = await supabase.from('holidays').select('holiday_date')
+      const holidayDates = holidays?.map(h => h.holiday_date) || []
+      if (holidayDates.includes(todayDateStr)) {
+        throw new Error('Attendance is locked. Today is a holiday.')
+      }
+
+      // 4. Scheduled Day Validation
+      const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+      const todayName = DAYS_OF_WEEK[nowDhaka.getDay()]
+      if (!batch.schedule_days.includes(todayName)) {
+        throw new Error('Attendance is locked. Today is not a scheduled class day for this batch.')
+      }
+
+      // 5. Scheduled Time Validation
+      const [startHour, startMin] = batch.start_time.split(':').map(Number)
+      const [endHour, endMin] = batch.end_time.split(':').map(Number)
+      
+      const startDatetime = new Date(nowDhaka.getFullYear(), nowDhaka.getMonth(), nowDhaka.getDate(), startHour, startMin, 0)
+      const endDatetime = new Date(nowDhaka.getFullYear(), nowDhaka.getMonth(), nowDhaka.getDate(), endHour, endMin, 0)
+      
+      if (nowDhaka < startDatetime) {
+        throw new Error('Attendance is locked. The class has not started yet.')
+      }
+      
+      if (nowDhaka > endDatetime) {
+        throw new Error('Attendance is locked. The scheduled class time has ended.')
       }
     }
 
@@ -81,6 +121,25 @@ export async function createClassSession(batchId: string, classNumber: number, s
   const supabase = await createClient()
 
   try {
+    // 1. Validate N+1 constraint before creating
+    const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
+    const nowDhaka = new Date(tzDateStr)
+    const todayDateStr = `${nowDhaka.getFullYear()}-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
+
+    const { data: allSessions } = await supabase.from('class_sessions')
+      .select('class_number, session_date')
+      .eq('batch_id', batchId)
+      .gt('class_number', 0)
+    
+    const sessionsArr = allSessions || []
+    const sessionToday = sessionsArr.find(s => s.session_date === todayDateStr)
+    const highestCompleted = sessionsArr.length > 0 ? Math.max(...sessionsArr.map(s => s.class_number)) : 0
+    const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
+
+    if (classNumber > allowedClassNum) {
+      throw new Error(`Cannot create future class session. Expected Class ${allowedClassNum}`)
+    }
+
     const { data, error } = await supabase
       .from('class_sessions')
       .insert({
