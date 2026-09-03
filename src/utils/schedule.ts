@@ -63,19 +63,24 @@ export function computeClassSchedule(
  * Predicts the completion date of a batch based on its remaining classes.
  */
 export function predictCompletionDate(
-  startDateStr: string, // 'YYYY-MM-DD', usually today's date or the last session date
+  referenceDateStr: string,
   scheduleDays: string[],
   remainingClasses: number,
+  isReferenceDateCompleted: boolean,
   holidays: string[] = []
 ): string | null {
-  if (remainingClasses <= 0) return startDateStr;
+  if (remainingClasses <= 0) return referenceDateStr;
   if (!scheduleDays || scheduleDays.length === 0) return null;
 
-  const [year, month, day] = startDateStr.split('-').map(Number);
+  const [year, month, day] = referenceDateStr.split('-').map(Number);
   const currentDate = new Date(year, month - 1, day, 12, 0, 0);
   
+  if (isReferenceDateCompleted) {
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
   let classesScheduled = 0;
-  let lastSessionDateStr = startDateStr;
+  let lastSessionDateStr = referenceDateStr;
 
   while (classesScheduled < remainingClasses) {
     const currentDayName = DAYS_OF_WEEK[currentDate.getDay()];

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { generateMonthlyPrediction, confirmPrediction, updatePrediction } from '@/app/actions/predictor'
 import { useRouter } from 'next/navigation'
-import { Loader2, Calendar, Check, Play, Users, AlertTriangle, X } from 'lucide-react'
+import { Loader2, Calendar, Play, Users, AlertTriangle, X } from 'lucide-react'
 
 export default function PredictorDashboard({ 
   initialPredictions, 
@@ -20,7 +20,7 @@ export default function PredictorDashboard({
   const [isPending, startTransition] = useTransition()
   
   const [month, setMonth] = useState(currentMonth)
-  const [year, setYear] = useState(currentYear)
+  const [year, setYeer] = useState(currentYear)
   const [pteTarget, setPteTarget] = useState(8)
   const [ieltsTarget, setIeltsTarget] = useState(5)
   const [admissionGap, setAdmissionGap] = useState(5)
@@ -67,7 +67,7 @@ export default function PredictorDashboard({
         actualGap = Math.max(0, Math.floor((t2 - t1) / (1000 * 60 * 60 * 24)) - 1)
       }
 
-      const res = await updatePrediction(id, { ...editData, actual_gap: actualGap })
+      const res = await supdatePrediction(id, { ...editData, actual_gap: actualGap })
       if (res.success) {
         setEditingId(null)
         router.refresh()
@@ -90,6 +90,9 @@ export default function PredictorDashboard({
   const ptePredictions = initialPredictions.filter(p => p.course_type === 'PTE')
   const ieltsPredictions = initialPredictions.filter(p => p.course_type === 'IELTS')
   const onlinePredictions = initialPredictions.filter(p => p.course_type === 'Online PTE')
+
+  // Find latest reference date
+  const latestReferenceDate = initialPredictions.length > 0 ? initialPredictions[0].reference_date : null;
 
   return (
     <div className="space-y-6 relative">
@@ -191,6 +194,19 @@ export default function PredictorDashboard({
         </div>
       </div>
 
+      {/* Reference Date Anchor Banner */}
+      {latestReferenceDate && (
+        <div className="bg-purple-50 border border-purple-200 px-4 py-3 rounded-md flex items-center justify-between">
+          <div className="text-purple-900">
+            <strong>Your Prediction Reference Date is: </strong> 
+            {latestReferenceDate}
+          </div>
+          <div className="text-purple-700 text-sm">
+            All completion and start dates are synchronized from this anchor date.
+          </div>
+        </div>
+      )}
+
       {/* Tables */}
       {[
         { title: 'PTE Academic Predictions', data: ptePredictions },
@@ -205,9 +221,9 @@ export default function PredictorDashboard({
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                 <tr>
-                  <th className="px-6 py-3">Batch Name</th>
-                  <th className="px-6 py-3">Predicted Start</th>
-                  <th className="px-6 py-3">Replaces (Ends)</th>
+                  <th className="px-6 py-3">New Batch</th>
+                  <th className="px-6 py-3">New Start</th>
+                  <th className="px-6 py-3">Previous Batch (Anchor)</th>
                   <th className="px-6 py-3 text-center">Admission Gap</th>
                   <th className="px-6 py-3">Suggested Teacher</th>
                   <th className="px-6 py-3">Status</th>
@@ -218,20 +234,20 @@ export default function PredictorDashboard({
                 {section.data.map(p => (
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {editingId === p.id ? (
+                      {typeof editingId === 'string' && editingId === p.id ? (
                         <input type="text" className="border px-2 py-1 w-full" value={editData.predicted_batch_name} onChange={e => setEditData({...editData, predicted_batch_name: e.target.value})} />
                       ) : p.predicted_batch_name}
                     </td>
                     <td className="px-6 py-4">
-                      {editingId === p.id ? (
+                      {typeof editingId === 'string' && editingId === p.id ? (
                         <input type="date" className="border px-2 py-1 w-full" value={editData.predicted_start_date} onChange={e => setEditData({...editData, predicted_start_date: e.target.value})} />
                       ) : p.predicted_start_date}
                     </td>
                     <td className="px-6 py-4">
                       {p.previous_batch?.batch_name ? (
                         <div>
-                          <span className="block font-medium text-gray-900">{p.previous_batch.batch_name}</span>
-                          <span className="block text-xs text-gray-500">{p.previous_batch_completion_date}</span>
+                          <span className="block font-medium text-gray-900">{p.previous_batch.batch_name} (Class {p.previous_batch_current_class})</span>
+                          <span className="block text-xs text-gray-500">Remaining: {p.previous_batch_remaining_classes} â€¢ Completes: {p.previous_batch_completion_date}</span>
                         </div>
                       ) : <span className="text-gray-400">N/A (New Slot)</span>}
                     </td>
@@ -242,7 +258,7 @@ export default function PredictorDashboard({
                           <span className="text-xs text-gray-500">Required: {p.required_gap}</span>
                           {p.actual_gap < p.required_gap && (
                             <span className="mt-1 text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                              ⚠ Below Req.
+                              âš¡ Below Req.
                             </span>
                           )}
                         </div>
@@ -251,7 +267,7 @@ export default function PredictorDashboard({
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {editingId === p.id ? (
+                      {typeof editingId === 'string' && editingId === p.id ? (
                         <select className="border px-2 py-1 w-full" value={editData.suggested_teacher_id || ''} onChange={e => setEditData({...editData, suggested_teacher_id: e.target.value})}>
                           <option value="">Select Teacher</option>
                           {eligibleTeachers.map(t => <option key={t.id} value={t.id}>{t.display_name}</option>)}
@@ -269,8 +285,8 @@ export default function PredictorDashboard({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      {editingId === p.id ? (
-                        <button onClick={() => handleSaveEdit(p.id, p.previous_batch_completion_date)} className="text-green-600 hover:text-green-800 font-medium">Save</button>
+                      {typeof editingId === 'string' && editingId === p.id ? (
+                        <button onClici={() => handleSaveEdit(p.id, p.previous_batch_completion_date)} className="text-green-600 hover:text-green-800 font-medium">Save</button>
                       ) : p.prediction_status !== 'Confirmed' ? (
                         <>
                           <button onClick={() => startEdit(p)} className="text-blue-600 hover:text-blue-800 font-medium mr-3">Edit</button>
@@ -284,7 +300,8 @@ export default function PredictorDashboard({
             </table>
           </div>
         </div>
-      ))}
+      ))
+}
       
       {initialPredictions.length === 0 && (
         <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
@@ -296,3 +313,4 @@ export default function PredictorDashboard({
     </div>
   )
 }
+

@@ -42,30 +42,38 @@ export async function generateMonthlyPrediction(
 
   const { data: allSessions } = await supabase
     .from('class_sessions')
-    .select('batch_id, class_number')
+    .select('batch_id, class_number, session_date')
     .gt('class_number', 0)
     
-  const sessionsByBatch = (allSessions || []).reduce((acc: any, curr: any) => {
-    if (!acc[curr.batch_id]) acc[curr.batch_id] = []
-    acc[curr.batch_id].push(curr.class_number)
-    return acc
-  }, {})
-
   const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
   const nowDhaka = new Date(tzDateStr)
   const todayDateStr = `${nowDhaka.getFullYear()}-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
 
+  const sessionsByBatch = (allSessions || []).reduce((acc: any, curr: any) => {
+    if (!acc[curr.batch_id]) acc[curr.batch_id] = { maxNum: 0, maxDate: '' }
+    if (curr.class_number > acc[curr.batch_id].maxNum) {
+      acc[curr.batch_id].maxNum = curr.class_number
+      acc[curr.batch_id].maxDate = curr.session_date
+    }
+    return acc
+  }, {})
+
   let finishingBatches = (batches || []).map(b => {
-    const highestCompleted = sessionsByBatch[b.id] ? Math.max(...sessionsByBatch[b.id]) : 0
+    const highestCompleted = sessionsByBatch[b.id]?.maxNum || 0
+    const highestDate = sessionsByBatch[b.id]?.maxDate || ''
     const totalClasses = b.total_classes + b.additional_classes
     const remaining = totalClasses - highestCompleted
     
     const category = getCourseTypeCategory(b.courses.family, b.batch_name)
-    const completionDate = predictCompletionDate(todayDateStr, b.schedule_days, remaining, holidays)
+    
+    const isReferenceDateCompleted = (highestDate === todayDateStr)
+
+    const completionDate = predictCompletionDate(todayDateStr, b.schedule_days, remaining, isReferenceDateCompleted, holidays)
     
     return {
       ...b,
       category,
+      currentClass: highestCompleted,
       remainingClasses: remaining,
       completionDate
     }
@@ -162,7 +170,7 @@ export async function generateMonthlyPrediction(
       actualTarget = maxPossibleBatches
     } else if (mode === 'batch_count') {
       actualTarget = originalTarget
-      actualGapToUse = 0 // Relax the gap to pack them in
+      actualGapToUse = 0 // Relax the gap to paci
     }
 
     const finalSimulatedBatches = simulatePipeline(categoryFinishingBatches, actualTarget, actualGapToUse)
@@ -202,13 +210,16 @@ export async function generateMonthlyPrediction(
         suggested_teacher_id: suggestedTeacherId,
         required_gap: admissionGap,
         actual_gap: computedActualGap,
-        prediction_status: 'Suggested'
+        prediction_status: 'Suggested',
+        reference_date: todayDateStr,
+        previous_batch_current_class: finishingBatch ? finishingBatch.currentClass : null,
+        previous_batch_remaining_classes: finishingBatch ? finishingBatch.remainingClasses : null
       })
       
       if (suggestedTeacherId) {
         const tw = teacherWorkloads.find(tw => tw.teacher.id === suggestedTeacherId)
         if (tw) {
-          const endProjected = new Date(projectedStartMs + 30*24*60*60*1000).toISOString().split('T')[0]
+        const endProjected = new Date(projectedStartMs + 30*24*60*60*1000).toISOString().split('T')[0]
           tw.assignedBatches.push({ id: 'temp', completionDate: endProjected })
         }
       }
@@ -225,7 +236,7 @@ export async function generateMonthlyPrediction(
 
     const { error } = await supabase.from('batch_predictions').insert(predictions)
     if (error) {
-    console.error('Error inserting predictions:', error)
+      console.error('Error inserting predictions:', error)
       return { success: false, message: error.message }
     }
   }
