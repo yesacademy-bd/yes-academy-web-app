@@ -32,8 +32,10 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
   }
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['HR', 'BDM'] },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin', 'Faculty', 'HR', 'BDM'] },
     { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR', 'BDM'] },
+    { name: 'Batch Predictor', href: '/dashboard/admin/predictor', icon: Calendar, roles: ['Admin', 'BDM'] },
+    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR', 'BDM'] },
     { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR', 'BDM'] },
     { name: 'Due Details', href: '/dashboard/dues', icon: Wallet, roles: ['HR'] },
     { name: 'Lead Call Entry', href: '/dashboard/leads', icon: Phone, roles: ['HR'] },
@@ -134,3 +136,4 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     </aside>
   )
 }
+

@@ -58,3 +58,70 @@ export function computeClassSchedule(
 
   return sessions;
 }
+
+/**
+ * Predicts the completion date of a batch based on its remaining classes.
+ */
+export function predictCompletionDate(
+  startDateStr: string, // 'YYYY-MM-DD', usually today's date or the last session date
+  scheduleDays: string[],
+  remainingClasses: number,
+  holidays: string[] = []
+): string | null {
+  if (remainingClasses <= 0) return startDateStr;
+  if (!scheduleDays || scheduleDays.length === 0) return null;
+
+  const [year, month, day] = startDateStr.split('-').map(Number);
+  const currentDate = new Date(year, month - 1, day, 12, 0, 0);
+  
+  let classesScheduled = 0;
+  let lastSessionDateStr = startDateStr;
+
+  while (classesScheduled < remainingClasses) {
+    const currentDayName = DAYS_OF_WEEK[currentDate.getDay()];
+    const sessionDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+    
+    if (scheduleDays.includes(currentDayName) && !holidays.includes(sessionDateStr)) {
+      classesScheduled++;
+      lastSessionDateStr = sessionDateStr;
+    }
+
+    if (classesScheduled < remainingClasses) {
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+
+  return lastSessionDateStr;
+}
+
+/**
+ * Finds the next valid start date strictly after the given date.
+ */
+export function findNextValidClassDay(
+  afterDateStr: string,
+  scheduleDays: string[],
+  holidays: string[] = []
+): string | null {
+  if (!scheduleDays || scheduleDays.length === 0) return null;
+
+  const [year, month, day] = afterDateStr.split('-').map(Number);
+  const currentDate = new Date(year, month - 1, day, 12, 0, 0);
+  
+  // Start checking from the day AFTER
+  currentDate.setDate(currentDate.getDate() + 1);
+
+  // Failsafe: max 30 days lookahead to prevent infinite loop
+  for (let i = 0; i < 30; i++) {
+    const currentDayName = DAYS_OF_WEEK[currentDate.getDay()];
+    const sessionDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+    
+    if (scheduleDays.includes(currentDayName) && !holidays.includes(sessionDateStr)) {
+      return sessionDateStr;
+    }
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return null;
+}
+
