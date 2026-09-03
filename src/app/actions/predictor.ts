@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -24,19 +24,22 @@ function getBatchPrefix(category: string): string {
   return 'Batch'
 }
 
-export async function generateMonthlyPrediction(month: number, year: number, pteTarget: number, ieltsTarget: number) {
+export async function generateMonthlyPrediction(
+  month: number, 
+  year: number, 
+  pteTarget: number, 
+  ieltsTarget: number,
+  admissionGap: number = 0,
+  mode: 'strict' | 'batch_count' | 'admission_gap' = 'strict'
+) {
   const supabase = await createClient()
-  
-  // 1. Fetch holidays
   const holidays = await getHolidays()
   
-  // 2. Fetch all batches (Active & Upcoming) with course info
   const { data: batches } = await supabase
     .from('batches')
     .select('*, courses(family, name)')
     .in('status', ['Active', 'Upcoming'])
 
-  // 3. Fetch all class sessions to determine completed counts
   const { data: allSessions } = await supabase
     .from('class_sessions')
     .select('batch_id, class_number')
@@ -48,10 +51,9 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
     return acc
   }, {})
 
-  // 4. Calculate completion date for each active batch
   const tzDateStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" })
   const nowDhaka = new Date(tzDateStr)
-  const todayDateStr = `-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
+  const todayDateStr = `${nowDhaka.getFullYear()}-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
 
   let finishingBatches = (batches || []).map(b => {
     const highestCompleted = sessionsByBatch[b.id] ? Math.max(...sessionsByBatch[b.id]) : 0
@@ -69,10 +71,8 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
     }
   }).filter(b => b.completionDate !== null)
 
-  // Sort by completion date ascending
   finishingBatches.sort((a, b) => new Date(a.completionDate!).getTime() - new Date(b.completionDate!).getTime())
 
-  // 5. Fetch existing highest batch numbers
   const { data: allBatches } = await supabase.from('batches').select('batch_name, courses(family)')
   let currentMaxNumbers = { 'PTE': 0, 'IELTS': 0, 'Online PTE': 0 }
   
@@ -84,10 +84,8 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
     }
   })
 
-  // 6. Fetch profiles to find eligible teachers
   const { data: teachers } = await supabase.from('profiles').select('*').in('role', ['Faculty', 'Admin', 'BDM'])
   
-  // Predict teacher workload map: teacher_id -> array of active batches and their end dates
   const teacherWorkloads = (teachers || []).map(t => {
     const assigned = finishingBatches.filter(b => b.teacher_id === t.id)
     return {
@@ -96,57 +94,96 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
     }
   })
 
-  const predictions = []
-
   const targetMap: Record<string, number> = {
     'PTE': pteTarget,
     'IELTS': ieltsTarget,
-    'Online PTE': 0 // Usually part of PTE target or handled manually
+    'Online PTE': 0
   }
 
-  // Generate predictions for each category based on targets
-  for (const category of ['PTE', 'IELTS', 'Online PTE']) {
-    let target = targetMap[category] || 0
-    if (target === 0) continue
-
-    const categoryFinishingBatches = finishingBatches.filter(b => b.category === category)
-    
+  const simulatePipeline = (categoryFinishingBatches: any[], target: number, enforcedGap: number) => {
+    const results = []
     for (let i = 0; i < target; i++) {
-      // If we run out of finishing batches, we can't perfectly map a "replacement", but we can still suggest a new batch
       const finishingBatch = i < categoryFinishingBatches.length ? categoryFinishingBatches[i] : null
-      
       let suggestedStartDate = todayDateStr
-      let scheduleDays = ['Sunday', 'Tuesday', 'Thursday'] // Default if no finishing batch
+      let scheduleDays = ['Sunday', 'Tuesday', 'Thursday']
 
       if (finishingBatch) {
         scheduleDays = finishingBatch.schedule_days
-        suggestedStartDate = findNextValidClassDay(finishingBatch.completionDate!, scheduleDays, holidays) || todayDateStr
+        const [cy, cm, cd] = finishingBatch.completionDate!.split('-').map(Number)
+        const gapDate = new Date(cy, cm - 1, cd, 12, 0, 0)
+        gapDate.setDate(gapDate.getDate() + enforcedGap)
+        const gapDateStr = `${gapDate.getFullYear()}-${String(gapDate.getMonth() + 1).padStart(2, '0')}-${String(gapDate.getDate()).padStart(2, '0')}`
+        suggestedStartDate = findNextValidClassDay(gapDateStr, scheduleDays, holidays) || todayDateStr
       } else {
-        // Find next valid day from today for default schedule
         suggestedStartDate = findNextValidClassDay(todayDateStr, scheduleDays, holidays) || todayDateStr
       }
 
-      // Ensure the suggested start date is within the targeted month/year
       const [sy, sm] = suggestedStartDate.split('-').map(Number)
       if (sy > year || (sy === year && sm > month)) {
-        // The projected date is beyond the target month, so we skip it to accurately report shortfall
-        continue
+        break // Reached end of the month
       }
       if (sy < year || (sy === year && sm < month)) {
-        // If the projected date is BEFORE the target month, we bump it to the 1st of the target month
-        const firstOfMonth = `-${String(month).padStart(2, '0')}-01`
-        suggestedStartDate = findNextValidClassDay(`-${String(month).padStart(2, '0')}-00`, scheduleDays, holidays) || firstOfMonth
+        const firstOfMonth = `${year}-${String(month).padStart(2, '0')}-01`
+        suggestedStartDate = findNextValidClassDay(`${year}-${String(month).padStart(2, '0')}-00`, scheduleDays, holidays) || firstOfMonth
       }
+      
+      results.push({ finishingBatch, suggestedStartDate, scheduleDays })
+    }
+    return results
+  }
+
+  const predictions = []
+
+  for (const category of ['PTE', 'IELTS', 'Online PTE']) {
+    let originalTarget = targetMap[category] || 0
+    if (originalTarget === 0) continue
+
+    const categoryFinishingBatches = finishingBatches.filter(b => b.category === category)
+    
+    // Feasibility Check
+    const strictBatches = simulatePipeline(categoryFinishingBatches, originalTarget, admissionGap)
+    const maxPossibleBatches = strictBatches.length
+    
+    if (mode === 'strict' && maxPossibleBatches < originalTarget) {
+      return { 
+        success: false, 
+        isFeasible: false,
+        failedCategory: category,
+        target: originalTarget,
+        maxPossible: maxPossibleBatches,
+        message: `The requested target of ${originalTarget} ${category} batches cannot be achieved in ${month}/${year} while maintaining a ${admissionGap}-day admission gap.`
+      }
+    }
+
+    let actualTarget = originalTarget
+    let actualGapToUse = admissionGap
+
+    if (mode === 'admission_gap') {
+      actualTarget = maxPossibleBatches
+    } else if (mode === 'batch_count') {
+      actualTarget = originalTarget
+      actualGapToUse = 0 // Relax the gap to pack them in
+    }
+
+    const finalSimulatedBatches = simulatePipeline(categoryFinishingBatches, actualTarget, actualGapToUse)
+    
+    for (let i = 0; i < finalSimulatedBatches.length; i++) {
+      const { finishingBatch, suggestedStartDate } = finalSimulatedBatches[i]
 
       currentMaxNumbers[category as keyof typeof currentMaxNumbers]++
       const newBatchNumber = currentMaxNumbers[category as keyof typeof currentMaxNumbers]
       const prefix = getBatchPrefix(category)
-      const newBatchName = ` `
+      const newBatchName = `${prefix} ${newBatchNumber}`
 
-      // Rank teachers based on workload on suggestedStartDate
-      // A teacher's workload is the number of batches that finish AFTER the suggestedStartDate
+      // Calculate actual gap for transparency
+      let computedActualGap = admissionGap // Default if no previous batch
+      if (finishingBatch) {
+        const t1 = new Date(finishingBatch.completionDate + 'T12:00:00Z').getTime()
+        const t2 = new Date(suggestedStartDate + 'T12:00:00Z').getTime()
+        computedActualGap = Math.max(0, Math.floor((t2 - t1) / (1000 * 60 * 60 * 24)) - 1)
+      }
+
       const projectedStartMs = new Date(suggestedStartDate).getTime()
-      
       const rankedTeachers = teacherWorkloads.map(tw => {
         const activeCount = tw.assignedBatches.filter(b => new Date(b.completionDate!).getTime() >= projectedStartMs).length
         return { teacher_id: tw.teacher.id, activeCount }
@@ -163,14 +200,14 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
         previous_batch_id: finishingBatch ? finishingBatch.id : null,
         previous_batch_completion_date: finishingBatch ? finishingBatch.completionDate : null,
         suggested_teacher_id: suggestedTeacherId,
+        required_gap: admissionGap,
+        actual_gap: computedActualGap,
         prediction_status: 'Suggested'
       })
       
-      // Update teacher workload to simulate them picking up this batch
       if (suggestedTeacherId) {
         const tw = teacherWorkloads.find(tw => tw.teacher.id === suggestedTeacherId)
         if (tw) {
-          // Approximate the new batch takes 1 month to finish
           const endProjected = new Date(projectedStartMs + 30*24*60*60*1000).toISOString().split('T')[0]
           tw.assignedBatches.push({ id: 'temp', completionDate: endProjected })
         }
@@ -179,8 +216,7 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
   }
 
   // Save to DB
-  if (predictions.length > 0) {
-    // Delete old unconfirmed predictions for this month/year to avoid duplicates
+  if (predictions.length > 0 && mode !== 'strict') {
     await supabase.from('batch_predictions')
       .delete()
       .eq('planning_month', month)
@@ -189,13 +225,13 @@ export async function generateMonthlyPrediction(month: number, year: number, pte
 
     const { error } = await supabase.from('batch_predictions').insert(predictions)
     if (error) {
-      console.error('Error inserting predictions:', error)
+    console.error('Error inserting predictions:', error)
       return { success: false, message: error.message }
     }
   }
 
   revalidatePath('/dashboard/admin/predictor')
-  return { success: true }
+  return { success: true, isFeasible: true }
 }
 
 export async function getPredictions(month: number, year: number) {
@@ -230,8 +266,6 @@ export async function getEligibleTeachers() {
 }
 
 export async function confirmPrediction(id: string) {
-  // Logic to turn a prediction into a real batch could go here.
-  // For now, we just mark it Confirmed.
   const supabase = await createClient()
   const { error } = await supabase
     .from('batch_predictions')
@@ -242,3 +276,4 @@ export async function confirmPrediction(id: string) {
   revalidatePath('/dashboard/admin/predictor')
   return { success: true }
 }
+

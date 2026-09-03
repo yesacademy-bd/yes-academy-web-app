@@ -1,9 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState, useTransition } from 'react'
 import { generateMonthlyPrediction, confirmPrediction, updatePrediction } from '@/app/actions/predictor'
 import { useRouter } from 'next/navigation'
-import { Loader2, Calendar, Check, Edit2, Play, Users } from 'lucide-react'
+import { Loader2, Calendar, Check, Play, Users, AlertTriangle, X } from 'lucide-react'
 
 export default function PredictorDashboard({ 
   initialPredictions, 
@@ -23,17 +23,24 @@ export default function PredictorDashboard({
   const [year, setYear] = useState(currentYear)
   const [pteTarget, setPteTarget] = useState(8)
   const [ieltsTarget, setIeltsTarget] = useState(5)
+  const [admissionGap, setAdmissionGap] = useState(5)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editData, setEditData] = useState<any>({})
 
-  const handleGenerate = () => {
-    if (!confirm('This will clear unconfirmed predictions for the selected month. Continue?')) return
+  // Modal state
+  const [feasibilityError, setFeasibilityError] = useState<any>(null)
+
+  const handleGenerate = (mode: 'strict' | 'batch_count' | 'admission_gap' = 'strict') => {
+    if (mode === 'strict' && !confirm('This will clear unconfirmed predictions for the selected month. Continue?')) return
     
     startTransition(async () => {
-      const res = await generateMonthlyPrediction(month, year, pteTarget, ieltsTarget)
+      const res = await generateMonthlyPrediction(month, year, pteTarget, ieltsTarget, admissionGap, mode)
       if (res.success) {
+        setFeasibilityError(null)
         router.push('/dashboard/admin/predictor?month=' + month + '&year=' + year)
+      } else if (res.isFeasible === false) {
+        setFeasibilityError(res)
       } else {
         alert(res.message)
       }
@@ -51,9 +58,16 @@ export default function PredictorDashboard({
     })
   }
 
-  const handleSaveEdit = (id: string) => {
+  const handleSaveEdit = (id: string, originalCompletionDate: string) => {
     startTransition(async () => {
-      const res = await updatePrediction(id, editData)
+      let actualGap = editData.required_gap
+      if (editData.predicted_start_date && originalCompletionDate) {
+        const t1 = new Date(originalCompletionDate + 'T12:00:00Z').getTime()
+        const t2 = new Date(editData.predicted_start_date + 'T12:00:00Z').getTime()
+        actualGap = Math.max(0, Math.floor((t2 - t1) / (1000 * 60 * 60 * 24)) - 1)
+      }
+
+      const res = await updatePrediction(id, { ...editData, actual_gap: actualGap })
       if (res.success) {
         setEditingId(null)
         router.refresh()
@@ -68,7 +82,8 @@ export default function PredictorDashboard({
     setEditData({
       predicted_batch_name: p.predicted_batch_name,
       predicted_start_date: p.predicted_start_date,
-      suggested_teacher_id: p.suggested_teacher_id
+      suggested_teacher_id: p.suggested_teacher_id,
+      required_gap: p.required_gap
     })
   }
 
@@ -77,7 +92,52 @@ export default function PredictorDashboard({
   const onlinePredictions = initialPredictions.filter(p => p.course_type === 'Online PTE')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Feasibility Modal */}
+      {feasibilityError && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3 text-orange-600">
+                <AlertTriangle className="h-6 w-6" />
+                <h2 className="text-xl font-bold text-gray-900">Prediction Not Possible</h2>
+              </div>
+              <button onClick={() => setFeasibilityError(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Your current requirements cannot be satisfied simultaneously. 
+              {feasibilityError.message}
+            </p>
+
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-gray-700">
+              <p><strong>Month:</strong> {month}/{year}</p>
+              <p><strong>Required {feasibilityError.failedCategory} Batches:</strong> {feasibilityError.target}</p>
+              <p><strong>Required Admission Gap:</strong> {admissionGap} Days</p>
+              <p className="mt-2 text-orange-700 font-medium">Maximum Possible With {admissionGap}-Day Gap: {feasibilityError.maxPossible} Batches</p>
+            </div>
+
+            <p className="text-sm font-medium text-gray-900 mb-3">What would you like to do?</p>
+            <div className="space-y-3">
+              <button onClick={() => handleGenerate('admission_gap')} className="w-full text-left px-4 py-3 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div className="font-medium text-blue-700">Predict Using {admissionGap}-Day Admission Gap</div>
+                <div className="text-xs text-gray-500">Generate {feasibilityError.maxPossible} batches to strictly maintain the admission period.</div>
+              </button>
+              <button onClick={() => handleGenerate('batch_count')} className="w-full text-left px-4 py-3 border rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
+                <div className="font-medium text-orange-700">Predict Based on Batch Count</div>
+                <div className="text-xs text-gray-500">Force {feasibilityError.target} batches to be generated, relaxing the admission gap where necessary.</div>
+              </button>
+              <button onClick={() => setFeasibilityError(null)} className="w-full text-left px-4 py-3 border rounded-lg hover:border-gray-400 hover:bg-gray-100 transition-colors">
+                <div className="font-medium text-gray-700">Change Inputs</div>
+                <div className="text-xs text-gray-500">Go back and adjust your monthly targets or admission gap.</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-4 items-end">
         <div>
@@ -100,9 +160,13 @@ export default function PredictorDashboard({
           <label className="block text-sm font-medium text-gray-700 mb-1">IELTS Target</label>
           <input type="number" value={ieltsTarget} onChange={e => setIeltsTarget(Number(e.target.value))} className="w-24 border border-gray-300 rounded-md px-3 py-2" />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Admission Gap (Days)</label>
+          <input type="number" value={admissionGap} onChange={e => setAdmissionGap(Number(e.target.value))} className="w-24 border border-gray-300 rounded-md px-3 py-2" />
+        </div>
         
         <button 
-          onClick={handleGenerate}
+          onClick={() => handleGenerate('strict')}
           disabled={isPending}
           className="ml-auto bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
@@ -134,7 +198,7 @@ export default function PredictorDashboard({
         { title: 'Online PTE Predictions', data: onlinePredictions }
       ].map(section => section.data.length > 0 && (
         <div key={section.title} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">{section.title}</h2>
           </div>
           <div className="overflow-x-auto">
@@ -143,7 +207,8 @@ export default function PredictorDashboard({
                 <tr>
                   <th className="px-6 py-3">Batch Name</th>
                   <th className="px-6 py-3">Predicted Start</th>
-                  <th className="px-6 py-3">Replaces</th>
+                  <th className="px-6 py-3">Replaces (Ends)</th>
+                  <th className="px-6 py-3 text-center">Admission Gap</th>
                   <th className="px-6 py-3">Suggested Teacher</th>
                   <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3 text-right">Actions</th>
@@ -166,9 +231,24 @@ export default function PredictorDashboard({
                       {p.previous_batch?.batch_name ? (
                         <div>
                           <span className="block font-medium text-gray-900">{p.previous_batch.batch_name}</span>
-                          <span className="block text-xs text-gray-500">Ends: {p.previous_batch_completion_date}</span>
+                          <span className="block text-xs text-gray-500">{p.previous_batch_completion_date}</span>
                         </div>
                       ) : <span className="text-gray-400">N/A (New Slot)</span>}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {p.previous_batch?.batch_name ? (
+                        <div className="flex flex-col items-center">
+                          <span className="font-medium text-gray-900">{p.actual_gap} days</span>
+                          <span className="text-xs text-gray-500">Required: {p.required_gap}</span>
+                          {p.actual_gap < p.required_gap && (
+                            <span className="mt-1 text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                              ⚠ Below Req.
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {editingId === p.id ? (
@@ -184,13 +264,13 @@ export default function PredictorDashboard({
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={'px-2 py-1 text-xs font-medium rounded-full ' + (p.prediction_status === 'Confirmed' ? 'bg-green-100 text-green-700' : p.manually_modified ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700')}>
+                      <span className={'px-2 py-1 text-xs font-medium rounded-full ' + (p.prediction_status === 'Confirmed' ? 'bg-green-100 text-green-700' : p.manually_modified ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700')}>
                         {p.prediction_status === 'Confirmed' ? 'Confirmed' : p.manually_modified ? 'Modified' : 'Suggested'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       {editingId === p.id ? (
-                        <button onClick={() => handleSaveEdit(p.id)} className="text-green-600 hover:text-green-800 font-medium">Save</button>
+                        <button onClick={() => handleSaveEdit(p.id, p.previous_batch_completion_date)} className="text-green-600 hover:text-green-800 font-medium">Save</button>
                       ) : p.prediction_status !== 'Confirmed' ? (
                         <>
                           <button onClick={() => startEdit(p)} className="text-blue-600 hover:text-blue-800 font-medium mr-3">Edit</button>
