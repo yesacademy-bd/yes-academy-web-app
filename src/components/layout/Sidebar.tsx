@@ -42,7 +42,6 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     { name: 'Walk-ins', href: '/dashboard/walkins', icon: UserCheck, roles: ['HR'] },
     { name: 'Mock Services', href: '/dashboard/mocks', icon: FileText, roles: ['HR'] },
     { name: 'Exam Registrations', href: '/dashboard/registrations', icon: ClipboardList, roles: ['HR'] },
-    { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR', 'BDM'] },
     { name: 'Teacher Report', href: '/dashboard/faculty/reports', icon: ClipboardList, roles: ['Faculty'] },
     { name: 'Teachers Reports', href: '/dashboard/hr/reports', icon: ClipboardList, roles: ['HR', 'BDM'] },
     { name: 'CRM (Finance)', href: '/dashboard/crm', icon: Wallet, roles: ['HR'] },
