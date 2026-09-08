@@ -1,74 +1,83 @@
-﻿import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import EnrollmentClient from './EnrollmentClient'
+import BatchForm from '@/components/batches/BatchForm'
+import EnrollmentManager from '@/components/batches/EnrollmentManager'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
-
-export default async function EnrollmentsPage({
-  searchParams
-}: {
-  searchParams: Promise<{ page?: string }>
-}) {
+export default async function EditBatchPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
 
-  // 1. Auth check
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Check Admin or HR role
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return <div className="text-red-500 font-medium">Access Denied. Admin or HR only</div>
 
-  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) {
-    redirect('/dashboard')
-  }
-
-  // 2. Pagination Logic
-  const { page } = await searchParams
-  const currentPage = parseInt(page || '1', 10)
-  const limit = 50
-  const from = (currentPage - 1) * limit
-  const to = from + limit - 1
-
-  // 3. Fetch Data in Parallel
-  const [
-    { data: courses },
-    { data: batches },
-    { data: teachers },
-    { data: recentEnrollments, count }
-  ] = await Promise.all([
-    supabase.from('courses').select('*').order('name'),
-    supabase.from('batches').select(`
-      id, batch_name, course_id, status, expected_end_date, teacher_id,
-      profiles!batches_teacher_id_fkey(display_name)
-    `).neq('status', 'Completed').order('created_at', { ascending: false }),
-    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').eq('is_suspended', false).eq('is_suspended', false).eq('is_suspended', false).order('display_name'),
-    supabase.from('enrollments').select(`
-      id, enrolled_at,
-      students ( name, phone ),
-      batches ( batch_name )
-    `, { count: 'exact' }).order('enrolled_at', { ascending: false }).range(from, to)
+  // Fetch reference data and existing batch
+  const [coursesRes, teachersRes, roomsRes, settingsRes, batchRes, enrollmentsRes] = await Promise.all([
+    supabase.from('courses').select('*').order('family'),
+    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').eq('is_suspended', false).order('display_name'),
+    supabase.from('rooms').select('*').order('name'),
+    supabase.from('settings').select('*').eq('id', 1).single(),
+    supabase.from('batches').select('*').eq('id', id).single(),
+    supabase.from('enrollments').select('*, students(*), installments(*)').eq('batch_id', id)
   ])
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Student Enrollments</h1>
-        <p className="text-gray-500 mt-1">Manage enrollments, fees, and installment plans.</p>
-      </div>
+  const enrollmentIds = enrollmentsRes?.data?.map((e: any) => e.id) || []
+  const { data: paymentHistoryData } = await supabase
+    .from('payment_history')
+    .select('*')
+    .in('record_id', enrollmentIds)
+    .order('payment_date', { ascending: false })
 
-      <EnrollmentClient 
-        courses={courses || []} 
-        batches={batches || []} 
-        teachers={teachers || []}
-        recentEnrollments={recentEnrollments || []}
-        totalCount={count || 0}
-        currentPage={currentPage}
+  const students = enrollmentsRes?.data?.map((e: any) => ({
+    ...e.students,
+    enrollment_data: {
+      id: e.id,
+      course_fee: e.course_fee,
+      paid_amount: e.paid_amount,
+      due_amount: e.due_amount,
+      reference: e.reference,
+      payment_method: e.payment_method,
+      portal_assigned: e.portal_assigned,
+      installments: e.installments || [],
+      payment_history: paymentHistoryData?.filter((h: any) => h.record_id === e.id) || []
+    }
+  })).filter((s: any) => s.id) || []
+
+  if (batchRes.error || !batchRes.data) {
+    return (
+      <div className="text-red-500 p-8">
+        <h2 className="font-bold text-xl">Batch not found or error occurred</h2>
+        <pre className="mt-4 bg-gray-100 p-4 rounded text-sm overflow-auto">
+          {JSON.stringify(batchRes.error || 'No batch data returned', null, 2)}
+        </pre>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="flex items-center gap-4">
+        <Link href="/dashboard/admin/batches" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <ArrowLeft className="w-5 h-5 text-gray-600" />
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Batch</h1>
+      </div>
+      
+      <BatchForm 
+        initialData={batchRes.data}
+        courses={coursesRes.data || []}
+        teachers={teachersRes.data || []}
+        rooms={roomsRes.data || []}
+        settings={settingsRes.data}
+        userRole={profile?.role}
       />
+
+      <EnrollmentManager batchId={id} students={students} />
     </div>
   )
 }
-
-
