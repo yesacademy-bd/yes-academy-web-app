@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -52,6 +52,7 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     { name: 'Holiday Manager', href: '/dashboard/hr/holidays', icon: Calendar, roles: ['HR', 'BDM'] },
     { name: 'Permanent DB', href: '/dashboard/archive', icon: Archive, roles: ['HR', 'BDM'] },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['HR'] },
+    { name: 'Leave Request', href: '/dashboard/leave-requests', icon: FileText, roles: ['Admin', 'Faculty', 'HR', 'BDM'] },
   ]
 
   const filteredNav = navItems.filter(item => item.roles.includes(role))
@@ -135,4 +136,5 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
     </aside>
   )
 }
+
 
