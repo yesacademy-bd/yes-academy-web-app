@@ -101,9 +101,27 @@ export default function LeaveRequestManagementClient({ employees }: { employees:
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full"
           >
             <option value="">All Employees</option>
-            {employees.map(e => (
-              <option key={e.id} value={e.id}>{e.display_name} ({e.role})</option>
-            ))}
+            {employees.filter(e => e.role === 'Faculty').length > 0 && (
+              <optgroup label="Faculty">
+                {employees.filter(e => e.role === 'Faculty').map(e => (
+                  <option key={e.id} value={e.id}>{e.display_name}</option>
+                ))}
+              </optgroup>
+            )}
+            {employees.filter(e => e.role === 'Admin').length > 0 && (
+              <optgroup label="Admin">
+                {employees.filter(e => e.role === 'Admin').map(e => (
+                  <option key={e.id} value={e.id}>{e.display_name}</option>
+                ))}
+              </optgroup>
+            )}
+            {employees.filter(e => e.role !== 'Faculty' && e.role !== 'Admin' && e.role !== 'HR' && e.role !== 'BDM').length > 0 && (
+              <optgroup label="Other">
+                {employees.filter(e => e.role !== 'Faculty' && e.role !== 'Admin' && e.role !== 'HR' && e.role !== 'BDM').map(e => (
+                  <option key={e.id} value={e.id}>{e.display_name} ({e.role})</option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
       </div>
@@ -221,3 +239,6 @@ export default function LeaveRequestManagementClient({ employees }: { employees:
     </div>
   )
 }
+
+
+
