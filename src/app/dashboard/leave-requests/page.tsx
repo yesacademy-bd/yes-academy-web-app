@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Eye, FileText, CheckCircle, XCircle, Clock, Calendar } from 'lucide-react'
 
-export default async function LeaveRequestsPage({ searchParams }: { searchParams: { month?: string } }) {
+export default async function LeaveRequestsPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,7 +25,7 @@ export default async function LeaveRequestsPage({ searchParams }: { searchParams
   // Calculate monthly stats for management
   const today = new Date()
   const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
-  const selectedMonth = searchParams.month || currentMonthStr
+  const selectedMonth = resolvedSearchParams.month || currentMonthStr
 
   let monthlyStats: any[] = []
   if (isManagement && requests) {
@@ -32,7 +33,7 @@ export default async function LeaveRequestsPage({ searchParams }: { searchParams
     
     requests.forEach((req: any) => {
       // Filter by selected month
-      if (!req.starting_on.startsWith(selectedMonth)) return
+      if (!req.starting_on?.startsWith(selectedMonth)) return
       if (req.status !== 'Approved') return // Only count approved leaves
       
       const empName = req.employee_name
@@ -204,3 +205,6 @@ export default async function LeaveRequestsPage({ searchParams }: { searchParams
     </div>
   )
 }
+
+
+

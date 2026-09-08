@@ -4,7 +4,8 @@ import Link from 'next/link'
 import DecisionForm from './DecisionForm'
 import { ArrowLeft, Printer } from 'lucide-react'
 
-export default async function LeaveRequestDetail({ params }: { params: { id: string } }) {
+export default async function LeaveRequestDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -13,7 +14,7 @@ export default async function LeaveRequestDetail({ params }: { params: { id: str
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   const role = profile?.role || 'Faculty'
 
-  const { data: req } = await supabase.from('leave_requests').select('*').eq('id', params.id).single()
+  const { data: req } = await supabase.from('leave_requests').select('*').eq('id', resolvedParams.id).single()
   
   if (!req) return <div>Leave request not found</div>
 
@@ -195,3 +196,4 @@ export default async function LeaveRequestDetail({ params }: { params: { id: str
     </div>
   )
 }
+

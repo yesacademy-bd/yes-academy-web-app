@@ -1,10 +1,11 @@
 ﻿import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 
-export default async function PrintLeaveRequest({ params }: { params: { id: string } }) {
+export default async function PrintLeaveRequest({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const supabase = await createClient()
 
-  const { data: req } = await supabase.from('leave_requests').select('*').eq('id', params.id).single()
+  const { data: req } = await supabase.from('leave_requests').select('*').eq('id', resolvedParams.id).single()
   
   if (!req) return notFound()
 
@@ -208,3 +209,4 @@ export default async function PrintLeaveRequest({ params }: { params: { id: stri
     </div>
   )
 }
+
