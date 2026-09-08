@@ -8,7 +8,10 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [reason, setReason] = useState('')
+  const [leaveType, setLeaveType] = useState('Days')
   const [error, setError] = useState('')
+
+  const isManagement = ['Admin', 'BDM', 'HR'].includes(profile?.role)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -16,6 +19,11 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
     setError('')
     
     const formData = new FormData(e.currentTarget)
+    // If not Days, we must clear ending_on and make it match starting_on logic, but to keep db simple, we let ending_on = starting_on for hours/half day
+    if (leaveType !== 'Days') {
+      formData.set('ending_on', formData.get('starting_on') as string)
+    }
+
     const result = await submitLeaveRequest(formData)
     
     if (result.error) {
@@ -62,32 +70,55 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Leave request details</h2>
         </div>
         <div className="p-0 flex flex-col divide-y divide-gray-200">
-          <div className="flex">
-            <div className="w-1/4 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200 flex items-center">Leave request</div>
-            <div className="w-3/4 px-4 py-4 flex items-center gap-8">
+          <div className="flex flex-col md:flex-row">
+            <div className="w-full md:w-1/4 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-b md:border-b-0 md:border-r border-gray-200 flex items-center">Leave request</div>
+            <div className="w-full md:w-3/4 px-4 py-4 flex flex-wrap items-center gap-6 md:gap-8">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="leave_type" value="Days" required className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                <input type="radio" name="leave_type" value="Days" required checked={leaveType === 'Days'} onChange={(e) => setLeaveType(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
                 <span className="text-sm text-gray-700 font-medium">Days</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="leave_type" value="Hours" className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                <input type="radio" name="leave_type" value="Half Day" required checked={leaveType === 'Half Day'} onChange={(e) => setLeaveType(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                <span className="text-sm text-gray-700 font-medium">Half Day</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="leave_type" value="Hours" checked={leaveType === 'Hours'} onChange={(e) => setLeaveType(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
                 <span className="text-sm text-gray-700 font-medium">Hours</span>
               </label>
             </div>
           </div>
+          
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="flex md:w-1/2">
-              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Starting on</div>
+              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Starting Date</div>
               <div className="w-1/2 px-4 py-3">
                 <input type="date" name="starting_on" required className="w-full text-sm outline-none bg-transparent" />
               </div>
             </div>
-            <div className="flex md:w-1/2">
-              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Ending on</div>
-              <div className="w-1/2 px-4 py-3">
-                <input type="date" name="ending_on" required className="w-full text-sm outline-none bg-transparent" />
+            {leaveType === 'Days' && (
+              <div className="flex md:w-1/2">
+                <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Ending Date</div>
+                <div className="w-1/2 px-4 py-3">
+                  <input type="date" name="ending_on" required className="w-full text-sm outline-none bg-transparent" />
+                </div>
               </div>
-            </div>
+            )}
+            {(leaveType === 'Hours' || leaveType === 'Half Day') && (
+              <>
+                <div className="flex md:w-1/4">
+                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{leaveType === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3">
+                    <input type="time" name="start_time" required className="w-full text-sm outline-none bg-transparent" />
+                  </div>
+                </div>
+                <div className="flex md:w-1/4">
+                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{leaveType === 'Hours' ? 'End Hour' : 'End Time'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3">
+                    <input type="time" name="end_time" required className="w-full text-sm outline-none bg-transparent" />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -121,7 +152,7 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
       {/* Explanation */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
         <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-bold text-white">Give short explanation on the selected reasons for leave (Attach Necessary Documents)</h2>
+          <h2 className="text-sm font-bold text-white">Give short explanation on the selected reasons for leave {isManagement && '(Attach Necessary Documents)'}</h2>
         </div>
         <div className="p-4 bg-gray-50/50">
           <textarea 
@@ -130,9 +161,11 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
             className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
             placeholder="Type your explanation here..."
           ></textarea>
-          <div className="mt-3">
-            <input type="file" name="attachment" className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
-          </div>
+          {isManagement && (
+            <div className="mt-3">
+              <input type="file" name="attachment" className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+            </div>
+          )}
         </div>
       </div>
 

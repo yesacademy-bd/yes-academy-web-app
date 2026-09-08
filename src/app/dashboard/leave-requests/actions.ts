@@ -16,6 +16,8 @@ export async function submitLeaveRequest(formData: FormData) {
   const leave_type = formData.get('leave_type') as string
   const starting_on = formData.get('starting_on') as string
   const ending_on = formData.get('ending_on') as string
+  const start_time = formData.get('start_time') as string
+  const end_time = formData.get('end_time') as string
   const reason = formData.get('reason') as string
   const other_reason = formData.get('other_reason') as string
   const explanation = formData.get('explanation') as string
@@ -32,6 +34,8 @@ export async function submitLeaveRequest(formData: FormData) {
     leave_type,
     starting_on,
     ending_on,
+    start_time: start_time || null,
+    end_time: end_time || null,
     reason,
     other_reason,
     explanation,
@@ -81,3 +85,4 @@ export async function processLeaveDecision(id: string, formData: FormData) {
   revalidatePath(`/dashboard/leave-requests/${id}`)
   return { success: true }
 }
+

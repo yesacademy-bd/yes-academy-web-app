@@ -77,21 +77,36 @@ export default async function PrintLeaveRequest({ params }: { params: { id: stri
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="flex divide-x">
               <div className="w-1/4 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Leave request</div>
-              <div className="w-3/4 p-2 text-sm flex gap-12 justify-center">
+              <div className="w-3/4 p-2 text-sm flex gap-8 justify-center">
                 <span>{req.leave_type === 'Days' ? '☒' : '☐'} Days</span>
+                <span>{req.leave_type === 'Half Day' ? '☒' : '☐'} Half Day</span>
                 <span>{req.leave_type === 'Hours' ? '☒' : '☐'} Hours</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 divide-x">
+            <div className="grid grid-cols-2 divide-x border-b border-[#1e2a5c]">
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Starting on</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Starting Date</div>
                 <div className="w-1/2 p-2 text-sm">{new Date(req.starting_on).toLocaleDateString('en-GB')}</div>
               </div>
-              <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Ending on</div>
-                <div className="w-1/2 p-2 text-sm">{new Date(req.ending_on).toLocaleDateString('en-GB')}</div>
-              </div>
+              {req.leave_type === 'Days' && (
+                <div className="flex divide-x">
+                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Ending Date</div>
+                  <div className="w-1/2 p-2 text-sm">{new Date(req.ending_on).toLocaleDateString('en-GB')}</div>
+                </div>
+              )}
             </div>
+            {(req.leave_type === 'Half Day' || req.leave_type === 'Hours') && (
+              <div className="grid grid-cols-2 divide-x">
+                <div className="flex divide-x">
+                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Start Time</div>
+                  <div className="w-1/2 p-2 text-sm">{req.start_time?.slice(0, 5) || ''}</div>
+                </div>
+                <div className="flex divide-x">
+                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">End Time</div>
+                  <div className="w-1/2 p-2 text-sm">{req.end_time?.slice(0, 5) || ''}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -129,9 +144,9 @@ export default async function PrintLeaveRequest({ params }: { params: { id: stri
         </div>
 
         {/* Explanation */}
-        <div className="border border-[#1e2a5c] mb-6 h-32 flex flex-col">
+        <div className="border border-[#1e2a5c] mb-6 min-h-[60px] flex flex-col">
           <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
-            Give short explanation on the selected reasons for leave (Attach Necessary Documents)
+            Give short explanation on the selected reasons for leave
           </div>
           <div className="p-2 text-sm flex-1 border-t border-[#1e2a5c]">
             {req.explanation}
@@ -178,7 +193,7 @@ export default async function PrintLeaveRequest({ params }: { params: { id: stri
         </div>
 
         {/* Manager notes */}
-        <div className="border border-[#1e2a5c] h-32 flex flex-col">
+        <div className="border border-[#1e2a5c] min-h-[60px] flex flex-col">
           <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
             Notes and comments of the Manager/Head of Business
           </div>

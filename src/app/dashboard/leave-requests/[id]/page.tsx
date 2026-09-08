@@ -56,7 +56,7 @@ export default async function LeaveRequestDetail({ params }: { params: { id: str
             <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Department</div>
             <div className="w-2/3 px-4 py-3 text-sm text-gray-900">{req.department}</div>
           </div>
-          <div className="flex">
+          <div className="flex border-b md:border-b-0 border-gray-200">
             <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Job title</div>
             <div className="w-2/3 px-4 py-3 text-sm text-gray-900">{req.job_title}</div>
           </div>
@@ -75,20 +75,35 @@ export default async function LeaveRequestDetail({ params }: { params: { id: str
         <div className="flex flex-col divide-y divide-gray-200">
           <div className="flex">
             <div className="w-1/4 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200 flex items-center">Leave request</div>
-            <div className="w-3/4 px-4 py-4 flex items-center gap-8">
+            <div className="w-3/4 px-4 py-4 flex flex-wrap items-center gap-8">
               <span className={`text-sm font-medium ${req.leave_type === 'Days' ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>☑ Days</span>
+              <span className={`text-sm font-medium ${req.leave_type === 'Half Day' ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>☑ Half Day</span>
               <span className={`text-sm font-medium ${req.leave_type === 'Hours' ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>☑ Hours</span>
             </div>
           </div>
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="flex md:w-1/2">
-              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Starting on</div>
+              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Starting Date</div>
               <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{new Date(req.starting_on).toLocaleDateString()}</div>
             </div>
-            <div className="flex md:w-1/2">
-              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Ending on</div>
-              <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{new Date(req.ending_on).toLocaleDateString()}</div>
-            </div>
+            {req.leave_type === 'Days' && (
+              <div className="flex md:w-1/2">
+                <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Ending Date</div>
+                <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{new Date(req.ending_on).toLocaleDateString()}</div>
+              </div>
+            )}
+            {(req.leave_type === 'Half Day' || req.leave_type === 'Hours') && (
+              <>
+                <div className="flex md:w-1/4">
+                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{req.leave_type === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{req.start_time?.slice(0, 5) || 'N/A'}</div>
+                </div>
+                <div className="flex md:w-1/4">
+                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{req.leave_type === 'Hours' ? 'End Hour' : 'End Time'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{req.end_time?.slice(0, 5) || 'N/A'}</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
