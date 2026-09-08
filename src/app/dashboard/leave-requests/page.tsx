@@ -15,7 +15,7 @@ export default async function LeaveRequestsPage() {
   const isManagement = ['Admin', 'BDM', 'HR'].includes(role)
 
   if (isManagement) {
-    const { data: employees } = await supabase.from('profiles').select('id, display_name, role').order('display_name')
+    const { data: employees } = await supabase.from('profiles').select('id, display_name, role').eq('is_suspended', false).order('display_name')
     return (
       <div className="space-y-8 pb-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -124,3 +124,4 @@ export default async function LeaveRequestsPage() {
     </div>
   )
 }
+

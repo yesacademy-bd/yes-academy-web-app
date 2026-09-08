@@ -17,7 +17,7 @@ export default async function TeachersReportsPage() {
   const { data: teachers } = await supabase
     .from('profiles')
     .select('id, display_name')
-    .eq('role', 'Faculty')
+    .eq('role', 'Faculty').eq('is_suspended', false)
     .order('display_name')
 
   return (
@@ -27,3 +27,4 @@ export default async function TeachersReportsPage() {
     </div>
   )
 }
+

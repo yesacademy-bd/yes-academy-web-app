@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { Plus, Trash2, Ban, CheckCircle, ShieldAlert, Key, Eye, EyeOff } from 'lucide-react'
@@ -11,6 +11,7 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
   const [formData, setFormData] = useState({ email: '', password: '', name: '', role: 'Faculty' })
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [view, setView] = useState<'active' | 'suspended'>('active')
   
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,15 +64,22 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
 
   return (
     <>
+      <div className="mb-6 flex gap-4">
+        <button onClick={() => setView('active')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${view === 'active' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}>Active Users</button>
+        <button onClick={() => setView('suspended')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${view === 'suspended' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'}`}>Suspended Users</button>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-          <h2 className="font-semibold text-gray-900">Staff Accounts</h2>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Add User
-          </button>
+          <h2 className="font-semibold text-gray-900">{view === 'active' ? 'Active Staff' : 'Suspended Staff'}</h2>
+          {view === 'active' && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add User
+            </button>
+          )}
         </div>
 
         <div className="overflow-x-auto">
@@ -86,18 +94,14 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {users.map(u => (
+              {users.filter(u => view === 'active' ? !u.is_banned : u.is_banned).map(u => (
                 <tr key={u.id} className="hover:bg-gray-50">
                   <td className="p-4">
                     <p className="font-medium text-gray-900">{u.display_name}</p>
                   </td>
                   <td className="p-4 text-sm text-gray-600">{u.email}</td>
                   <td className="p-4">
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      u.role === 'Admin' ? 'bg-purple-100 text-purple-700' :
-                      ['HR', 'BDM'].includes(u.role) ? 'bg-orange-100 text-orange-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
+                    <span className={inline-flex px-2 py-1 rounded-full text-xs font-medium }>
                       {u.role}
                     </span>
                   </td>
@@ -117,7 +121,7 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
                       <button 
                         onClick={() => handleToggleSuspend(u.id, u.is_banned)}
                         disabled={isPending || u.id === currentUserId}
-                        className={`p-2 rounded-lg transition-colors ${u.is_banned ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'} disabled:opacity-50`}
+                        className={p-2 rounded-lg transition-colors  disabled:opacity-50}
                         title={u.is_banned ? "Reactivate User" : "Suspend User (Safe Delete)"}
                       >
                         <Ban className="w-4 h-4" />
@@ -134,9 +138,9 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {users.filter(u => view === 'active' ? !u.is_banned : u.is_banned).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-500">No users found.</td>
+                  <td colSpan={5} className="p-8 text-center text-gray-500">No {view} users found.</td>
                 </tr>
               )}
             </tbody>
@@ -196,3 +200,5 @@ export default function UserManagementClient({ initialUsers, currentUserId, curr
     </>
   )
 }
+
+

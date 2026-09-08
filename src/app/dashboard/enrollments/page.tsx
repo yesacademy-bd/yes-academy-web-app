@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+﻿import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import EnrollmentClient from './EnrollmentClient'
 
@@ -44,7 +44,7 @@ export default async function EnrollmentsPage({
       id, batch_name, course_id, status, expected_end_date, teacher_id,
       profiles!batches_teacher_id_fkey(display_name)
     `).neq('status', 'Completed').order('created_at', { ascending: false }),
-    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').order('display_name'),
+    supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').eq('is_suspended', false).order('display_name'),
     supabase.from('enrollments').select(`
       id, enrolled_at,
       students ( name, phone ),
@@ -70,3 +70,4 @@ export default async function EnrollmentsPage({
     </div>
   )
 }
+

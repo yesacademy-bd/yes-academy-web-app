@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
@@ -102,8 +102,12 @@ export async function toggleUserSuspension(userId: string, suspend: boolean) {
     }
     
     const { error } = await adminClient.auth.admin.updateUserById(userId, {
-      ban_duration: suspend ? '876000h' : 'none' // roughly 100 years
+      ban_duration: suspend ? '876000h' : 'none'
     })
+    
+    if (!error) {
+      await adminClient.from('profiles').update({ is_suspended: suspend }).eq('id', userId)
+    }
     
     if (error) return { success: false, message: error.message }
     
@@ -113,3 +117,4 @@ export async function toggleUserSuspension(userId: string, suspend: boolean) {
     return { success: false, message: error.message || 'An error occurred' }
   }
 }
+
