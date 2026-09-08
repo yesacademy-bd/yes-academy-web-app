@@ -10,19 +10,19 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
   if (!req) return notFound()
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white ">
       <style dangerouslySetInnerHTML={{__html: `
-        @media print {
+        @media print { html, body { overflow: visible !important; height: auto !important; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           @page { size: A4; margin: 15mm; }
           #sidebar, #topbar { display: none !important; }
           main { padding: 0 !important; margin: 0 !important; }
         }
       `}} />
-      <div className="max-w-[210mm] mx-auto bg-white p-8 text-black font-sans">
+      <div className="max-w-[210mm] mx-auto bg-white p-4 text-black font-sans">
         
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-3">
           <h1 className="text-3xl font-bold text-[#1e2a5c]">Leave Request Form</h1>
           <div className="text-right flex items-center">
              <div className="text-[#be1e2d] font-bold text-3xl italic mr-1">YES</div>
@@ -31,11 +31,11 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
         </div>
 
         {/* How to submit */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             How to submit a leave request
           </div>
-          <div className="p-3 text-sm">
+          <div className="p-1.5 text-sm">
             <ol className="list-decimal pl-5 space-y-1">
               <li>Fill out the leave request form with accurate details.</li>
               <li>Submit the form to your Direct Manager/Head of Business for approval.</li>
@@ -46,39 +46,39 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
         </div>
 
         {/* Employee details */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Employee details
           </div>
           <div className="grid grid-cols-2 divide-x border-t border-[#1e2a5c]">
             <div className="flex divide-x border-b border-[#1e2a5c]">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Employee name</div>
-              <div className="w-2/3 p-2 text-sm">{req.employee_name}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Employee name</div>
+              <div className="w-2/3 p-1 text-sm">{req.employee_name}</div>
             </div>
             <div className="flex divide-x border-b border-[#1e2a5c]">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Department</div>
-              <div className="w-2/3 p-2 text-sm">{req.department}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Department</div>
+              <div className="w-2/3 p-1 text-sm">{req.department}</div>
             </div>
             <div className="flex divide-x">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Job title</div>
-              <div className="w-2/3 p-2 text-sm">{req.job_title}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Job title</div>
+              <div className="w-2/3 p-1 text-sm">{req.job_title}</div>
             </div>
             <div className="flex divide-x">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Staff ID</div>
-              <div className="w-2/3 p-2 text-sm">{req.staff_id}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Staff ID</div>
+              <div className="w-2/3 p-1 text-sm">{req.staff_id}</div>
             </div>
           </div>
         </div>
 
         {/* Leave request details */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Leave request details
           </div>
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="flex divide-x">
-              <div className="w-1/4 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Leave request</div>
-              <div className="w-3/4 p-2 text-sm flex gap-8 justify-center">
+              <div className="w-1/4 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Leave request</div>
+              <div className="w-3/4 p-1 text-sm flex gap-4 justify-center">
                 <span>{req.leave_type === 'Days' ? '☒' : '☐'} Days</span>
                 <span>{req.leave_type === 'Half Day' ? '☒' : '☐'} Half Day</span>
                 <span>{req.leave_type === 'Hours' ? '☒' : '☐'} Hours</span>
@@ -86,25 +86,25 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
             </div>
             <div className="grid grid-cols-2 divide-x border-b border-[#1e2a5c]">
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Starting Date</div>
-                <div className="w-1/2 p-2 text-sm">{new Date(req.starting_on).toLocaleDateString('en-GB')}</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Starting Date</div>
+                <div className="w-1/2 p-1 text-sm">{new Date(req.starting_on).toLocaleDateString('en-GB')}</div>
               </div>
               {req.leave_type === 'Days' && (
                 <div className="flex divide-x">
-                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Ending Date</div>
-                  <div className="w-1/2 p-2 text-sm">{new Date(req.ending_on).toLocaleDateString('en-GB')}</div>
+                  <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Ending Date</div>
+                  <div className="w-1/2 p-1 text-sm">{new Date(req.ending_on).toLocaleDateString('en-GB')}</div>
                 </div>
               )}
             </div>
             {(req.leave_type === 'Half Day' || req.leave_type === 'Hours') && (
               <div className="grid grid-cols-2 divide-x">
                 <div className="flex divide-x">
-                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Start Time</div>
-                  <div className="w-1/2 p-2 text-sm">{req.start_time?.slice(0, 5) || ''}</div>
+                  <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Start Time</div>
+                  <div className="w-1/2 p-1 text-sm">{req.start_time?.slice(0, 5) || ''}</div>
                 </div>
                 <div className="flex divide-x">
-                  <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">End Time</div>
-                  <div className="w-1/2 p-2 text-sm">{req.end_time?.slice(0, 5) || ''}</div>
+                  <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">End Time</div>
+                  <div className="w-1/2 p-1 text-sm">{req.end_time?.slice(0, 5) || ''}</div>
                 </div>
               </div>
             )}
@@ -112,11 +112,11 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
         </div>
 
         {/* Reason */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Reason for leave request
           </div>
-          <div className="grid grid-cols-3 p-3 gap-2 text-sm border-t border-[#1e2a5c]">
+          <div className="grid grid-cols-3 p-1.5 gap-1 text-sm border-t border-[#1e2a5c]">
             <div>{req.reason === 'Casual' ? '☒' : '☐'} Casual</div>
             <div>{req.reason === 'Family Reasons' ? '☒' : '☐'} Family Reasons</div>
             <div>{req.reason === 'Emergency' ? '☒' : '☐'} Emergency</div>
@@ -127,78 +127,78 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
         </div>
 
         {/* Declaration */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             I confirm that the information provided in this leave request form is accurate and complete.<br/>
             I understand that this request is subject to approval by my employer
           </div>
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="flex divide-x">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Employee signature</div>
-              <div className="w-2/3 p-2 font-serif italic">{req.employee_signature}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Employee signature</div>
+              <div className="w-2/3 p-1 font-serif italic">{req.employee_signature}</div>
             </div>
             <div className="flex divide-x">
-              <div className="w-1/3 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Date</div>
-              <div className="w-2/3 p-2 text-sm">{new Date(req.employee_signature_date).toLocaleDateString('en-GB')}</div>
+              <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
+              <div className="w-2/3 p-1 text-sm">{new Date(req.employee_signature_date).toLocaleDateString('en-GB')}</div>
             </div>
           </div>
         </div>
 
         {/* Explanation */}
-        <div className="border border-[#1e2a5c] mb-6 min-h-[60px] flex flex-col">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3 min-h-[40px] flex flex-col">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Give short explanation on the selected reasons for leave
           </div>
-          <div className="p-2 text-sm flex-1 border-t border-[#1e2a5c]">
+          <div className="p-1 text-sm flex-1 border-t border-[#1e2a5c]">
             {req.explanation}
           </div>
         </div>
 
         {/* Management decision */}
-        <div className="border border-[#1e2a5c] mb-6">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] mb-3">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Management decision
           </div>
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="grid grid-cols-2 divide-x">
-              <div className="p-2 text-sm flex gap-8 justify-center">
+              <div className="p-1 text-sm flex gap-4 justify-center">
                 <span>{req.status === 'Approved' ? '☒' : '☐'} Approved</span>
                 <span>{req.status === 'Rejected' ? '☒' : '☐'} Rejected</span>
               </div>
-              <div className="p-2 text-sm flex gap-8 justify-center">
+              <div className="p-1 text-sm flex gap-4 justify-center">
                 <span>{req.payment_status === 'Paid' ? '☒' : '☐'} Paid</span>
                 <span>{req.payment_status === 'Unpaid' ? '☒' : '☐'} Unpaid</span>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x">
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Manager signature</div>
-                <div className="w-1/2 p-2 font-serif italic">{req.manager_signature}</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Manager signature</div>
+                <div className="w-1/2 p-1 font-serif italic">{req.manager_signature}</div>
               </div>
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Signature of<br/>Head of Business</div>
-                <div className="w-1/2 p-2 font-serif italic flex items-center">{req.hob_signature}</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Signature of<br/>Head of Business</div>
+                <div className="w-1/2 p-1 font-serif italic flex items-center">{req.hob_signature}</div>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x">
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Date</div>
-                <div className="w-1/2 p-2 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
+                <div className="w-1/2 p-1 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
               </div>
               <div className="flex divide-x">
-                <div className="w-1/2 bg-[#d4f0fa] p-2 text-sm font-bold text-[#1e2a5c]">Date</div>
-                <div className="w-1/2 p-2 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
+                <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
+                <div className="w-1/2 p-1 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Manager notes */}
-        <div className="border border-[#1e2a5c] min-h-[60px] flex flex-col">
-          <div className="bg-[#1e2a5c] text-white font-bold p-2 text-sm">
+        <div className="border border-[#1e2a5c] min-h-[40px] flex flex-col">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
             Notes and comments of the Manager/Head of Business
           </div>
-          <div className="p-2 text-sm flex-1 border-t border-[#1e2a5c]">
+          <div className="p-1 text-sm flex-1 border-t border-[#1e2a5c]">
             {req.manager_notes}
           </div>
         </div>
@@ -209,4 +209,5 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
     </div>
   )
 }
+
 

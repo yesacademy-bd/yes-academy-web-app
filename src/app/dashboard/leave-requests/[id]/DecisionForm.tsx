@@ -26,7 +26,7 @@ export default function DecisionForm({ req }: { req: any }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden mt-8 border-t-4 border-t-blue-600">
+    <form onSubmit={handleSubmit} className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden mt-8 border-t-4 border-t-gray-800">
       <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
         <h2 className="text-sm font-bold text-white uppercase tracking-wider">Management decision</h2>
       </div>
@@ -58,20 +58,20 @@ export default function DecisionForm({ req }: { req: any }) {
         </div>
         <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200">
           <div className="w-full md:w-1/2 flex">
-            <div className="w-1/2 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200">Manager signature</div>
+            <div className="w-1/2 bg-gray-50 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200">Manager signature</div>
             <div className="w-1/2 px-4 py-4">
               <input type="text" name="manager_signature" required placeholder="Type signature" className="w-full text-sm outline-none bg-transparent font-medium" />
             </div>
           </div>
           <div className="w-full md:w-1/2 flex">
-            <div className="w-1/2 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200">Signature of Head of Business</div>
+            <div className="w-1/2 bg-gray-50 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200">Signature of Head of Business</div>
             <div className="w-1/2 px-4 py-4">
               <input type="text" name="hob_signature" placeholder="Type signature (if applicable)" className="w-full text-sm outline-none bg-transparent font-medium" />
             </div>
           </div>
         </div>
         <div className="flex border-b border-gray-200">
-          <div className="w-1/4 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Date</div>
+          <div className="w-1/4 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Date</div>
           <div className="w-3/4 px-4 py-3">
             <input type="text" readOnly value={new Date().toLocaleDateString('en-US')} className="w-full text-sm outline-none bg-transparent text-gray-500" />
           </div>
@@ -101,3 +101,4 @@ export default function DecisionForm({ req }: { req: any }) {
     </form>
   )
 }
+

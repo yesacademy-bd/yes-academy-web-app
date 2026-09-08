@@ -41,24 +41,24 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
       
       {/* Employee details */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
+        <div className="bg-gray-800 px-6 py-3 border-b border-gray-200">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Employee details</h2>
         </div>
         <div className="p-0 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
           <div className="flex border-b border-gray-200">
-            <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Employee name</div>
+            <div className="w-1/3 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Employee name</div>
             <div className="w-2/3 px-4 py-3"><input name="employee_name" type="text" readOnly defaultValue={profile?.display_name || ''} className="w-full bg-transparent border-0 p-0 text-sm focus:ring-0 text-gray-900" /></div>
           </div>
           <div className="flex border-b border-gray-200">
-            <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Department</div>
+            <div className="w-1/3 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Department</div>
             <div className="w-2/3 px-4 py-3"><input name="department" type="text" required defaultValue="Faculty" className="w-full bg-transparent border-0 p-0 text-sm focus:ring-0 text-gray-900 outline-none placeholder-gray-400" placeholder="e.g. Academics" /></div>
           </div>
           <div className="flex">
-            <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Job title</div>
+            <div className="w-1/3 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Job title</div>
             <div className="w-2/3 px-4 py-3"><input name="job_title" type="text" required defaultValue={profile?.role || ''} className="w-full bg-transparent border-0 p-0 text-sm focus:ring-0 text-gray-900 outline-none placeholder-gray-400" placeholder="e.g. Instructor" /></div>
           </div>
           <div className="flex">
-            <div className="w-1/3 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Staff ID</div>
+            <div className="w-1/3 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Staff ID</div>
             <div className="w-2/3 px-4 py-3"><input name="staff_id" type="text" required defaultValue="TBD" className="w-full bg-transparent border-0 p-0 text-sm focus:ring-0 text-gray-900 outline-none placeholder-gray-400" /></div>
           </div>
         </div>
@@ -66,12 +66,12 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
 
       {/* Leave request details */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
+        <div className="bg-gray-800 px-6 py-3 border-b border-gray-200">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Leave request details</h2>
         </div>
         <div className="p-0 flex flex-col divide-y divide-gray-200">
           <div className="flex flex-col md:flex-row">
-            <div className="w-full md:w-1/4 bg-blue-50 px-4 py-4 text-sm font-bold text-blue-900 border-b md:border-b-0 md:border-r border-gray-200 flex items-center">Leave request</div>
+            <div className="w-full md:w-1/4 bg-gray-50 px-4 py-4 text-sm font-bold text-gray-700 border-b md:border-b-0 md:border-r border-gray-200 flex items-center">Leave request</div>
             <div className="w-full md:w-3/4 px-4 py-4 flex flex-wrap items-center gap-6 md:gap-8">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="leave_type" value="Days" required checked={leaveType === 'Days'} onChange={(e) => setLeaveType(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
@@ -90,14 +90,14 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
           
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="flex md:w-1/2">
-              <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Starting Date</div>
+              <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Starting Date</div>
               <div className="w-1/2 px-4 py-3">
                 <input type="date" name="starting_on" required className="w-full text-sm outline-none bg-transparent" />
               </div>
             </div>
             {leaveType === 'Days' && (
               <div className="flex md:w-1/2">
-                <div className="w-1/2 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">Ending Date</div>
+                <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Ending Date</div>
                 <div className="w-1/2 px-4 py-3">
                   <input type="date" name="ending_on" required className="w-full text-sm outline-none bg-transparent" />
                 </div>
@@ -106,13 +106,13 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
             {(leaveType === 'Hours' || leaveType === 'Half Day') && (
               <>
                 <div className="flex md:w-1/4">
-                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{leaveType === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
+                  <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{leaveType === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
                   <div className="w-1/2 md:w-full px-4 py-3">
                     <input type="time" name="start_time" required className="w-full text-sm outline-none bg-transparent" />
                   </div>
                 </div>
                 <div className="flex md:w-1/4">
-                  <div className="w-1/2 md:w-full bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900 border-r border-gray-200">{leaveType === 'Hours' ? 'End Hour' : 'End Time'}</div>
+                  <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{leaveType === 'Hours' ? 'End Hour' : 'End Time'}</div>
                   <div className="w-1/2 md:w-full px-4 py-3">
                     <input type="time" name="end_time" required className="w-full text-sm outline-none bg-transparent" />
                   </div>
@@ -125,7 +125,7 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
 
       {/* Reason for leave request */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
+        <div className="bg-gray-800 px-6 py-3 border-b border-gray-200">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Reason for leave request</h2>
         </div>
         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-4">
@@ -151,7 +151,7 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
 
       {/* Explanation */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200">
+        <div className="bg-gray-800 px-6 py-3 border-b border-gray-200">
           <h2 className="text-sm font-bold text-white">Give short explanation on the selected reasons for leave {isManagement && '(Attach Necessary Documents)'}</h2>
         </div>
         <div className="p-4 bg-gray-50/50">
@@ -163,7 +163,7 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
           ></textarea>
           {isManagement && (
             <div className="mt-3">
-              <input type="file" name="attachment" className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+              <input type="file" name="attachment" className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
             </div>
           )}
         </div>
@@ -171,19 +171,19 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
 
       {/* Declaration */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="bg-[#1e3a8a] px-6 py-3 border-b border-gray-200 text-white">
+        <div className="bg-gray-800 px-6 py-3 border-b border-gray-200 text-white">
           <p className="text-sm font-bold">I confirm that the information provided in this leave request form is accurate and complete.</p>
           <p className="text-sm font-bold mt-1">I understand that this request is subject to approval by my employer</p>
         </div>
         <div className="p-0 flex flex-col divide-y divide-gray-200">
           <div className="flex">
-            <div className="w-1/3 md:w-1/4 bg-[#dbeafe] px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200 flex items-center">Employee signature</div>
+            <div className="w-1/3 md:w-1/4 bg-gray-100 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200 flex items-center">Employee signature</div>
             <div className="w-2/3 md:w-3/4 px-4 py-4">
               <input type="text" name="employee_signature" required placeholder="Type your full name as signature" className="w-full text-sm outline-none bg-transparent font-medium" />
             </div>
           </div>
           <div className="flex">
-            <div className="w-1/3 md:w-1/4 bg-[#dbeafe] px-4 py-4 text-sm font-bold text-blue-900 border-r border-gray-200 flex items-center">Date</div>
+            <div className="w-1/3 md:w-1/4 bg-gray-100 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200 flex items-center">Date</div>
             <div className="w-2/3 md:w-3/4 px-4 py-4">
               <input type="text" readOnly value={new Date().toLocaleDateString('en-US')} className="w-full text-sm outline-none bg-transparent text-gray-500" />
             </div>
@@ -203,3 +203,4 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
     </form>
   )
 }
+
