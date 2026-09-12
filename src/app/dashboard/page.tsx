@@ -11,7 +11,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase.from('profiles').select('role, display_name').eq('id', user.id).single()
   
-  if (profile?.role === 'Admin') redirect('/dashboard/admin/batches')
+  // if (profile?.role === 'Admin') redirect('/dashboard/admin/batches')
   if (profile?.role === 'Faculty') redirect('/dashboard/faculty/batches')
 
   const isFaculty = false // Because Faculty is redirected, this page is now HR-only
