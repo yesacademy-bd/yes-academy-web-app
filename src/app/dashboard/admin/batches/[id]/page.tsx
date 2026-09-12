@@ -43,6 +43,8 @@ export default async function EditBatchPage({ params }: { params: Promise<{ id: 
       reference: e.reference,
       payment_method: e.payment_method,
       portal_assigned: e.portal_assigned,
+      status: e.status || 'Active',
+      remarks: e.remarks,
       installments: e.installments || [],
       payment_history: paymentHistoryData?.filter((h: any) => h.record_id === e.id) || []
     }

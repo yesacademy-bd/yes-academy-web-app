@@ -50,6 +50,7 @@ export default async function AttendanceRegisterPage({
     .from('enrollments')
     .select('id, student_id, students(id, name, phone, guardian_phone)')
     .eq('batch_id', id)
+    .eq('status', 'Active')
 
   const enrollments = (enrollmentsData || []).map((e: any) => ({
     id: e.id,

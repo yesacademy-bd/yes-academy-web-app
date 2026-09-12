@@ -17,6 +17,7 @@ export default function EnrollmentManager({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editingPayment, setEditingPayment] = useState<any>(null)
   const [optimisticPortal, setOptimisticPortal] = useState<Record<string, boolean>>({})
+  const [view, setView] = useState<'Active' | 'Cancelled' | 'Switched'>('Active')
 
   const handlePortalChange = async (enrollmentId: string, newValue: boolean) => {
     // 1. Instantly update the UI without waiting for the server
@@ -85,7 +86,7 @@ export default function EnrollmentManager({
                 <th className="p-4">Paid</th>
                 <th className="p-4">Due</th>
                 <th className="p-4">Ref</th>
-                <th className="p-4 text-center">Portal Assigned</th>
+                {view === 'Active' && <th className="p-4 text-center">Portal Assigned</th>}
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -130,7 +131,8 @@ export default function EnrollmentManager({
                         </span>
                       </td>
                       <td className="p-4 text-sm text-gray-600">{enrollment?.reference || '-'}</td>
-                      <td className="p-4 text-center">
+                      {view !== 'Active' && <td className="p-4 text-sm text-gray-600 max-w-xs truncate" title={enrollment?.remarks}>{enrollment?.remarks || '-'}</td>}
+                      {view === 'Active' && <td className="p-4 text-center">
                         <select 
                           value={isAssigned ? 'Yes' : 'No'}
                           onChange={(e) => {
@@ -141,7 +143,7 @@ export default function EnrollmentManager({
                         <option value="No">No</option>
                         <option value="Yes">Yes</option>
                       </select>
-                    </td>
+                    </td>}
                     <td className="p-4 text-right flex items-center justify-end">
                       <div className="relative">
                         <button onClick={() => setOpenMenuId(openMenuId === s.id ? null : s.id)} className="p-2 hover:bg-[#ffffff33] rounded-full transition-colors text-white">

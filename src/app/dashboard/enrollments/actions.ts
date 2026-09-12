@@ -101,3 +101,32 @@ export async function createEnrollment(formData: FormData) {
   revalidatePath('/dashboard/enrollments')
   return { success: true }
 }
+
+
+export async function searchEnrollments(batchId: string, studentName: string) {
+  try {
+    const supabase = await createClient()
+    let query = supabase
+      .from('enrollments')
+      .select(`
+        id, status, course_fee, paid_amount, due_amount, reference, batch_id, remarks,
+        students!inner ( id, name, phone ),
+        batches ( id, batch_name )
+      `)
+      .eq('status', 'Active')
+      
+    if (batchId) {
+      query = query.eq('batch_id', batchId)
+    }
+    
+    if (studentName) {
+      query = query.ilike('students.name', `%${studentName}%`)
+    }
+    
+    const { data, error } = await query.limit(50)
+    if (error) throw error
+    return { success: true, data }
+  } catch(e: any) {
+    return { success: false, message: e.message }
+  }
+}

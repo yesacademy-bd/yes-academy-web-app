@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserPlus, Calendar, CreditCard, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createEnrollment } from './actions'
 import GlobalLoader from '@/components/GlobalLoader'
+import StudentDatabaseFilter from '@/components/enrollments/StudentDatabaseFilter'
 
 type EnrollmentClientProps = {
   courses: any[]
@@ -24,6 +25,8 @@ export default function EnrollmentClient({ courses, batches, teachers, recentEnr
   const [selectedCourse, setSelectedCourse] = useState('')
   const [selectedTeacherForm, setSelectedTeacherForm] = useState('All')
   const [installmentCount, setInstallmentCount] = useState(0)
+
+  useEffect(() => { setIsPaginating(false) }, [currentPage])
 
   const handlePagination = (page: number) => {
     setIsPaginating(true)
@@ -187,6 +190,8 @@ export default function EnrollmentClient({ courses, batches, teachers, recentEnr
           </div>
         </form>
       </div>
+
+      <StudentDatabaseFilter batches={batches} />
 
       {/* Recent Enrollments Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">

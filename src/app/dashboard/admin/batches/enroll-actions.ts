@@ -109,3 +109,68 @@ export async function updateEnrollmentPayment(enrollmentId: string, courseFee: n
   revalidatePath(`/dashboard/admin/batches/${batchId}`)
   return { success: true }
 }
+
+export async function cancelEnrollment(enrollmentId: string, remarks: string, batchId: string) {
+  try {
+    const adminClient = createAdminClient()
+    const { error } = await adminClient
+      .from('enrollments')
+      .update({ status: 'Cancelled', remarks })
+      .eq('id', enrollmentId)
+      
+    if (error) return { success: false, message: error.message }
+    revalidatePath(`/dashboard/admin/batches/${batchId}`)
+    revalidatePath(`/dashboard/enrollments`)
+    return { success: true }
+  } catch(e: any) {
+    return { success: false, message: e.message }
+  }
+}
+
+export async function switchEnrollment(oldEnrollmentId: string, newBatchId: string, remarks: string, currentBatchId: string) {
+  try {
+    const adminClient = createAdminClient()
+    
+    // 1. Fetch old enrollment
+    const { data: oldData, error: fetchErr } = await adminClient
+      .from('enrollments')
+      .select('*')
+      .eq('id', oldEnrollmentId)
+      .single()
+      
+    if (fetchErr) return { success: false, message: fetchErr.message }
+    
+    // 2. Clone to new batch
+    const { data: newEnrollment, error: insertErr } = await adminClient
+      .from('enrollments')
+      .insert({
+        student_id: oldData.student_id,
+        batch_id: newBatchId,
+        course_fee: oldData.course_fee,
+        paid_amount: oldData.paid_amount,
+        due_amount: oldData.due_amount,
+        payment_method: oldData.payment_method,
+        reference: oldData.reference,
+        status: 'Active'
+      })
+      .select()
+      .single()
+      
+    if (insertErr) return { success: false, message: insertErr.message }
+    
+    // 3. Mark old as switched
+    const { error: updateErr } = await adminClient
+      .from('enrollments')
+      .update({ status: 'Switched', remarks })
+      .eq('id', oldEnrollmentId)
+      
+    if (updateErr) return { success: false, message: updateErr.message }
+    
+    revalidatePath(`/dashboard/admin/batches/${currentBatchId}`)
+    revalidatePath(`/dashboard/admin/batches/${newBatchId}`)
+    revalidatePath(`/dashboard/enrollments`)
+    return { success: true }
+  } catch(e: any) {
+    return { success: false, message: e.message }
+  }
+}
