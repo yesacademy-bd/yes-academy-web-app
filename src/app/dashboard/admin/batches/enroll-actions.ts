@@ -149,7 +149,7 @@ export async function switchEnrollment(oldEnrollmentId: string, newBatchId: stri
         batch_id: newBatchId,
         course_fee: oldData.course_fee,
         paid_amount: oldData.paid_amount,
-        due_amount: oldData.due_amount,
+        // due_amount is a generated column and cannot be explicitly inserted
         payment_method: oldData.payment_method,
         reference: oldData.reference,
         status: 'Active'

@@ -64,7 +64,7 @@ export default function EnrollmentManager({
     <div className="space-y-6 mt-8">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">Enrolled Students ({students.length})</h3>
+          <h3 className="font-semibold text-gray-900">Batch Roster</h3>
           <select 
             value={portalFilter} 
             onChange={(e) => setPortalFilter(e.target.value as any)}
@@ -74,8 +74,15 @@ export default function EnrollmentManager({
             <option value="Yes">Portal Assigned - Yes</option>
             <option value="No">Portal Assigned - No</option>
           </select>
-        </div>
-        <div className="overflow-x-auto">
+          </div>
+
+          <div className="mb-4 flex gap-4 border-b border-slate-200 px-4 pt-4 bg-white">
+            <button onClick={() => setView('Active')} className={`pb-2 px-1 font-medium ${view === 'Active' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>Enrolled Students ({students.filter(s => s.enrollment_data?.status === 'Active' || !s.enrollment_data?.status).length})</button>
+            <button onClick={() => setView('Cancelled')} className={`pb-2 px-1 font-medium ${view === 'Cancelled' ? 'text-red-600 border-b-2 border-red-600' : 'text-slate-500 hover:text-slate-700'}`}>Cancelled ({students.filter(s => s.enrollment_data?.status === 'Cancelled').length})</button>
+            <button onClick={() => setView('Switched')} className={`pb-2 px-1 font-medium ${view === 'Switched' ? 'text-amber-600 border-b-2 border-amber-600' : 'text-slate-500 hover:text-slate-700'}`}>Switched ({students.filter(s => s.enrollment_data?.status === 'Switched').length})</button>
+          </div>
+          <div className="overflow-x-auto">
+
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
