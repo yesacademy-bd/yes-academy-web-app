@@ -30,7 +30,7 @@ export default async function CRMPage() {
     supabase
       .from('enrollments')
       .select(`
-        id, enrolled_at, course_fee, paid_amount, due_amount, payment_method, reference, last_modified_date,
+        id, status, enrolled_at, course_fee, paid_amount, due_amount, payment_method, reference, last_modified_date,
         students (id, name, phone),
         batches (id, batch_name, courses (id, family, name))
       `)
@@ -42,7 +42,7 @@ export default async function CRMPage() {
     supabase.from('walk_ins').select('*')
   ])
 
-  const enrollments = enrollmentsData?.map((e: any) => ({
+  const enrollments = enrollmentsData?.filter((e: any) => e.status !== 'Switched').map((e: any) => ({
     id: e.id,
     type: 'Enrollment',
     date: e.enrolled_at,
@@ -51,7 +51,7 @@ export default async function CRMPage() {
     item_name: `${e.batches?.courses?.family || ''} - ${e.batches?.batch_name || ''}`,
     total_fee: e.course_fee || 0,
     paid_amount: e.paid_amount || 0,
-    due_amount: e.due_amount || 0,
+    due_amount: e.status === 'Cancelled' ? 0 : (e.due_amount || 0),
     payment_method: e.payment_method || 'Cash',
     reference: e.reference || 'None'
   })) || []

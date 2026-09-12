@@ -1,6 +1,12 @@
 ﻿const fs = require('fs');
-const p3 = 'src/app/dashboard/enrollments/page.tsx';
-let c3 = fs.readFileSync(p3, 'utf8');
-c3 = c3.replace(/\.eq\('is_suspended', false\)/g, '');
-c3 = c3.replace(/\.eq\('role', 'Faculty'\)/g, `.eq('role', 'Faculty').eq('is_suspended', false)`);
-fs.writeFileSync(p3, c3);
+
+const path = 'src/app/dashboard/enrollments/page.tsx';
+let code = fs.readFileSync(path, 'utf8');
+
+if (!code.includes(".eq('status', 'Active')")) {
+  code = code.replace(
+    /supabase\.from\('enrollments'\)\.select\([\s\S]*?\)\.order\('enrolled_at', \{ ascending: false \}\)/,
+    "supabase.from('enrollments').select(`\n        id, enrolled_at,\n        students ( name, phone ),\n        batches ( batch_name )\n      `).eq('status', 'Active').order('enrolled_at', { ascending: false })"
+  );
+  fs.writeFileSync(path, code);
+}

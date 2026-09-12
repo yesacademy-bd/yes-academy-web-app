@@ -46,10 +46,10 @@ export default async function EnrollmentsPage({
     `).neq('status', 'Completed').order('created_at', { ascending: false }),
     supabase.from('profiles').select('id, display_name').eq('role', 'Faculty').eq('is_suspended', false).order('display_name'),
     supabase.from('enrollments').select(`
-      id, enrolled_at,
-      students ( name, phone ),
-      batches ( batch_name )
-    `, { count: 'exact' }).order('enrolled_at', { ascending: false }).range(from, to)
+        id, enrolled_at,
+        students ( name, phone ),
+        batches ( batch_name )
+      `).eq('status', 'Active').order('enrolled_at', { ascending: false }).range(from, to)
   ])
 
   return (
