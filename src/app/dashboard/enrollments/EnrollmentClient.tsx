@@ -191,7 +191,7 @@ export default function EnrollmentClient({ courses, batches, teachers, recentEnr
         </form>
       </div>
 
-      <StudentDatabaseFilter batches={batches} />
+      <StudentDatabaseFilter batches={batches} courses={courses} />
 
       {/* Recent Enrollments Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">

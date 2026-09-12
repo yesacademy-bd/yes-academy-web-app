@@ -1,4 +1,6 @@
-'use client'
+﻿const fs = require('fs');
+
+const compCode = `'use client'
 
 import { useState } from 'react'
 import { searchEnrollments } from '@/app/dashboard/enrollments/actions'
@@ -239,3 +241,5 @@ export default function StudentDatabaseFilter({ batches, courses }: { batches: a
     </div>
   )
 }
+`
+fs.writeFileSync('src/components/enrollments/StudentDatabaseFilter.tsx', compCode);
