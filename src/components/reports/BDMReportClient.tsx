@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { getReportsForBDM, submitBDMFeedback } from '@/app/actions/reports'
-import { generateAIFeedback } from '@/app/actions/ai'
-import { Calendar, Filter, CheckCircle, Clock, Sparkles } from 'lucide-react'
+import { generateAIFeedback, generateAutoFeedback } from '@/app/actions/ai'
+import { Calendar, Filter, CheckCircle, Clock, Sparkles, Bot } from 'lucide-react'
 
 export default function BDMReportClient({ teachers }: { teachers: any[] }) {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -45,6 +45,19 @@ export default function BDMReportClient({ teachers }: { teachers: any[] }) {
       setAiPrompt({...aiPrompt, [report.id]: ''});
     } else {
       alert('AI Generation failed: ' + res.message);
+    }
+    setIsGenerating({...isGenerating, [report.id]: false});
+  }
+
+
+  
+  const handleAutoReply = async (report: any) => {
+    setIsGenerating({...isGenerating, [report.id]: true});
+    const res = await generateAutoFeedback(report);
+    if (res.success) {
+      setFeedbacks({...feedbacks, [report.id]: res.data});
+    } else {
+      alert('Auto Reply Generation failed: ' + res.message);
     }
     setIsGenerating({...isGenerating, [report.id]: false});
   }
@@ -150,9 +163,16 @@ export default function BDMReportClient({ teachers }: { teachers: any[] }) {
                         <button 
                           onClick={() => handleAIGenerate(report)}
                           disabled={isGenerating[report.id]}
-                          className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm flex items-center gap-1 disabled:opacity-50"
+                          className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm flex items-center gap-1 disabled:opacity-50 min-w-max"
                         >
                           <Sparkles className="w-4 h-4" /> {isGenerating[report.id] ? 'Generating...' : 'AI Reply'}
+                        </button>
+                        <button 
+                          onClick={() => handleAutoReply(report)}
+                          disabled={isGenerating[report.id]}
+                          className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm flex items-center gap-1 disabled:opacity-50 min-w-max"
+                        >
+                          <Bot className="w-4 h-4" /> Auto Reply
                         </button>
                       </div>
                       <div className="flex gap-3">
