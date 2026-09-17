@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { getReportsForBDM, submitBDMFeedback } from '@/app/actions/reports'
-import { Calendar, Filter, CheckCircle, Clock } from 'lucide-react'
+import { generateAIFeedback } from '@/app/actions/ai'
+import { Calendar, Filter, CheckCircle, Clock, Sparkles } from 'lucide-react'
 
 export default function BDMReportClient({ teachers }: { teachers: any[] }) {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -11,6 +12,8 @@ export default function BDMReportClient({ teachers }: { teachers: any[] }) {
   const [loading, setLoading] = useState(false)
   
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
+  const [aiPrompt, setAiPrompt] = useState<Record<string, string>>({})
+  const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     loadReports()
@@ -29,6 +32,23 @@ export default function BDMReportClient({ teachers }: { teachers: any[] }) {
     }
     setLoading(false)
   }
+
+  
+  const handleAIGenerate = async (report: any) => {
+    const prompt = aiPrompt[report.id];
+    if (!prompt) return alert('Please enter an instruction for the AI.');
+    
+    setIsGenerating({...isGenerating, [report.id]: true});
+    const res = await generateAIFeedback(report, prompt);
+    if (res.success) {
+      setFeedbacks({...feedbacks, [report.id]: res.data});
+      setAiPrompt({...aiPrompt, [report.id]: ''});
+    } else {
+      alert('AI Generation failed: ' + res.message);
+    }
+    setIsGenerating({...isGenerating, [report.id]: false});
+  }
+
 
   const handleFeedbackSubmit = async (reportId: string) => {
     const res = await submitBDMFeedback(reportId, feedbacks[reportId] || '')
@@ -118,19 +138,37 @@ export default function BDMReportClient({ teachers }: { teachers: any[] }) {
                       {report.bdm_feedback || 'No feedback provided.'}
                     </div>
                   ) : (
-                    <div className="flex gap-3">
-                      <textarea 
-                        value={feedbacks[report.id] || ''}
-                        onChange={e => setFeedbacks({...feedbacks, [report.id]: e.target.value})}
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[80px] text-sm"
-                        placeholder="Type feedback here..."
-                      ></textarea>
-                      <button 
-                        onClick={() => handleFeedbackSubmit(report.id)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium h-fit"
-                      >
-                        Submit Feedback
-                      </button>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Tell AI what to reply (e.g. 'say great job but ask about hw')"
+                          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm"
+                          value={aiPrompt[report.id] || ''}
+                          onChange={e => setAiPrompt({...aiPrompt, [report.id]: e.target.value})}
+                        />
+                        <button 
+                          onClick={() => handleAIGenerate(report)}
+                          disabled={isGenerating[report.id]}
+                          className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <Sparkles className="w-4 h-4" /> {isGenerating[report.id] ? 'Generating...' : 'AI Reply'}
+                        </button>
+                      </div>
+                      <div className="flex gap-3">
+                        <textarea 
+                          value={feedbacks[report.id] || ''}
+                          onChange={e => setFeedbacks({...feedbacks, [report.id]: e.target.value})}
+                          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[80px] text-sm"
+                          placeholder="Type feedback here or use AI above to generate..."
+                        ></textarea>
+                        <button 
+                          onClick={() => handleFeedbackSubmit(report.id)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium h-fit"
+                        >
+                          Submit Feedback
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
