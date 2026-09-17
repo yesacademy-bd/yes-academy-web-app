@@ -284,7 +284,7 @@ export default async function DashboardPage() {
 
         {/* Alerts Sidebar */}
         <div className="space-y-6">
-          {['HR', 'BDM'].includes(role) && (
+          {['HR', 'BDM', 'Admin'].includes(role) && (
             <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600" />
@@ -302,7 +302,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <Link 
-                      href={`/dashboard/faculty/batches/${b.id}`}
+                      href={`/dashboard/${role === 'Admin' ? 'admin' : 'faculty'}/batches/${b.id}`}
                       className="text-xs font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded whitespace-nowrap ml-2"
                     >
                       Mark Now
