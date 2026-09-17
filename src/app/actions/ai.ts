@@ -10,7 +10,7 @@ export async function generateAIFeedback(reportData: any, prompt: string) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro-latest' })
 
     const systemContext = `
 You are an AI assistant helping a Business Development Manager (BDM) write a feedback reply to a teacher's class report.
