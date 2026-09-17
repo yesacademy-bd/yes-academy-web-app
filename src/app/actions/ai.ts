@@ -10,7 +10,7 @@ export async function generateAIFeedback(reportData: any, prompt: string) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' })
 
     const systemContext = `
 You are an AI assistant helping a Business Development Manager (BDM) write a feedback reply to a teacher's class report.
@@ -48,7 +48,7 @@ export async function generateAutoFeedback(reportData: any) {
 
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' })
 
     const systemContext = `
 You are an AI assistant helping a Business Development Manager (BDM) evaluate a teacher's class report.
