@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DecisionForm from './DecisionForm'
+import PrintButton from './PrintButton'
 import { ArrowLeft, Printer } from 'lucide-react'
 
 export default async function LeaveRequestDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -36,9 +37,7 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
             <p className="text-gray-500 text-sm mt-1">ID: {req.id.split('-')[0].toUpperCase()}</p>
           </div>
         </div>
-        <Link href={`/dashboard/leave-requests/${req.id}/print`} target="_blank" className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors shadow-sm">
-          <Printer className="w-4 h-4" /> Print Form
-        </Link>
+        <PrintButton id={req.id} />
       </div>
 
       {/* Employee details */}
