@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Filter, Eye, FileText, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
+import { deleteLeaveRequest } from '@/app/actions/leave-requests'
 
 export default function LeaveRequestManagementClient({ employees }: { employees: any[] }) {
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -24,11 +25,11 @@ export default function LeaveRequestManagementClient({ employees }: { employees:
     if (!confirm('Are you sure you want to delete this leave request? This action cannot be undone.')) return;
     
     setLoading(true);
-    const { error } = await supabase.from('leave_requests').delete().eq('id', id);
-    if (!error) {
+    const result = await deleteLeaveRequest(id);
+    if (result.success) {
       loadRequests();
     } else {
-      alert('Failed to delete: ' + error.message);
+      alert('Failed to delete: ' + result.message);
       setLoading(false);
     }
   }
