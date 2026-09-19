@@ -62,8 +62,8 @@ export default async function CRMPage() {
     date: m.created_at,
     student_name: m.student_name,
     phone: m.phone,
-    item_name: m.mock_type,
-    total_fee: m.amount || 0,
+    item_name: m.service_type || m.mock_type,
+    total_fee: m.course_fee || m.amount || 0,
     paid_amount: m.paid_amount || 0,
     due_amount: m.due_amount || 0,
     payment_method: m.payment_method || 'Cash'
