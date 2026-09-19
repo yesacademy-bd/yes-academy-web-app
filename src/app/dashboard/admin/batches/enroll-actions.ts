@@ -111,7 +111,7 @@ export async function updateEnrollmentPayment(enrollmentId: string, courseFee: n
   return { success: true }
 }
 
-export async function cancelEnrollment(enrollmentId: string, remarks: string, batchId: string) {
+export async function cancelEnrollment(enrollmentId: string, remarks: string, batchId: string, refundAmount: number = 0, studentName: string = '') {
   try {
     const adminClient = createAdminClient()
     const { error } = await adminClient
@@ -120,8 +120,24 @@ export async function cancelEnrollment(enrollmentId: string, remarks: string, ba
       .eq('id', enrollmentId)
       
     if (error) return { success: false, message: error.message }
+    
+    // Process Refund Expense if greater than 0
+    if (refundAmount > 0) {
+      const { error: expError } = await adminClient
+        .from('expenses')
+        .insert({
+          date: new Date().toISOString().split('T')[0],
+          category: 'Refund',
+          description: `Refunded Admission - ${studentName}`,
+          amount: refundAmount,
+          payment_method: 'Cash'
+        })
+      if (expError) console.error('Refund Expense Error:', expError)
+    }
+
     revalidatePath(`/dashboard/admin/batches/${batchId}`)
     revalidatePath(`/dashboard/enrollments`)
+    revalidatePath(`/dashboard/crm`)
     return { success: true }
   } catch(e: any) {
     return { success: false, message: e.message }

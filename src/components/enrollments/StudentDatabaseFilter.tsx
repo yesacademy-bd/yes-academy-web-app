@@ -17,6 +17,7 @@ export default function StudentDatabaseFilter({ batches, courses }: { batches: a
   const [switching, setSwitching] = useState<any>(null)
   
   const [remarks, setRemarks] = useState('')
+  const [refundAmount, setRefundAmount] = useState<number | string>(0)
   const [switchCourseId, setSwitchCourseId] = useState('')
   const [targetBatchId, setTargetBatchId] = useState('')
 
@@ -37,10 +38,11 @@ export default function StudentDatabaseFilter({ batches, courses }: { batches: a
 
   const handleCancel = async () => {
     if (!remarks) return alert("Remarks are required")
-    const res = await cancelEnrollment(cancelling.id, remarks, cancelling.batch_id)
+    const res = await cancelEnrollment(cancelling.id, remarks, cancelling.batch_id, Number(refundAmount) || 0, cancelling.students?.name || 'Unknown')
     if (res.success) {
       setCancelling(null)
       setRemarks('')
+      setRefundAmount(0)
       handleSearch()
     } else alert(res.message)
   }
@@ -184,13 +186,22 @@ export default function StudentDatabaseFilter({ batches, courses }: { batches: a
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cancellation Remarks</label>
-                <textarea rows={3} value={remarks} onChange={e => setRemarks(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Reason for cancellation..." required></textarea>
-              </div>
-              <div className="pt-4 flex justify-end gap-3">
-                <button onClick={() => {setCancelling(null); setRemarks('');}} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Close</button>
-                <button onClick={handleCancel} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">Confirm Cancel</button>
-              </div>
+                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cancellation Remarks</label>
+                    <textarea rows={2} value={remarks} onChange={e => setRemarks(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Reason for cancellation..." required></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Refund Amount (Optional)</label>
+                    <input type="number" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500" placeholder="0" />
+                    <p className="text-xs text-gray-500 mt-1">Will be deducted from CRM as a refund expense.</p>
+                  </div>
+                </div>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button onClick={() => {setCancelling(null); setRemarks(''); setRefundAmount(0);}} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Close</button>
+                  <button onClick={handleCancel} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">Confirm Cancel</button>
+                </div>
             </div>
           </div>
         </div>
