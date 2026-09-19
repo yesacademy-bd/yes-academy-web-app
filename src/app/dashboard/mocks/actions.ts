@@ -10,7 +10,7 @@ export async function createMockService(formData: FormData) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
-  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role, display_name').eq('id', user.id).single()
   if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, or BDM only (Your role: ' + profile?.role + ')' }
 
   const student_type = formData.get('student_type') as string
@@ -84,7 +84,7 @@ export async function createMockService(formData: FormData) {
       exam_date,
       exam_time,
       exam_venue,
-      registered_by: profile?.full_name || profile?.role || 'Unknown'
+      registered_by: profile?.display_name || profile?.role || 'Unknown'
     })
 
   if (error) return { success: false, message: error.message }
