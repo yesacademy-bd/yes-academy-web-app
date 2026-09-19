@@ -59,6 +59,8 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
 
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [mockStatus, setMockStatus] = useState('Paid')
+  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [emailingId, setEmailingId] = useState<string | null>(null)
 
@@ -80,10 +82,12 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
     
     const formData = new FormData(e.currentTarget)
     const res = await createMockService(formData)
-    
-    if (res.success) {
-      window.location.reload()
-    } else {
+      if (res.success) {
+        setIsSuccess(true)
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      } else {
       setError(res.message || 'Failed to add mock service')
       setIsSubmitting(false)
     }
@@ -104,14 +108,15 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Form */}
-        <div className="md:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="md:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-purple-600" /> New Mock Service
           </h2>
           
           {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
-          <form onSubmit={handleAdd} className="space-y-4">
+          <form onSubmit={handleAdd} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Student Type</label>
@@ -122,7 +127,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mock Status</label>
-                <select name="mock_status" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <select name="mock_status" required value={mockStatus} onChange={e => setMockStatus(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                   <option value="Paid">Paid</option>
                   <option value="Free">Free</option>
                 </select>
@@ -170,34 +175,52 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
               <input type="text" name="exam_venue" placeholder="e.g. Room 101" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Total Fee</label>
-                <input type="number" name="amount" defaultValue="0" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Paid</label>
-                <input type="number" name="paid_amount" defaultValue="0" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-              </div>
-            </div>
+            {mockStatus === 'Paid' && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Total Fee</label>
+                    <input type="number" name="amount" defaultValue="0" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Paid</label>
+                    <input type="number" name="paid_amount" defaultValue="0" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                  <select name="payment_method" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="Cash">Cash</option>
+                    <option value="bKash">bKash</option>
+                    <option value="Bank">Bank</option>
+                  </select>
+                </div>
+              </>
+            )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-              <select name="payment_method" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="Cash">Cash</option>
-                <option value="bKash">bKash</option>
-                <option value="Bank">Bank</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Registration By</label>
+            </div> {/* End of grid */}
+            
+            <div className="pt-4 border-t border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="w-full md:w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Registration By</label>
               <input type="text" disabled value="Automatically recorded based on your login" className="w-full border-gray-300 bg-gray-50 text-gray-500 rounded-md shadow-sm" />
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50">
-              {isSubmitting ? 'Saving...' : 'Add Mock Service'}
-            </button>
+            {isSuccess ? (
+                <div className="w-full md:w-1/2 flex justify-end items-center p-2 animate-in fade-in zoom-in duration-500">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white mr-3 shadow-lg scale-110 transition-transform">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="text-green-600 font-bold text-lg">Booking Confirmed Successfully</span>
+                </div>
+              ) : (
+                <div className="w-full md:w-1/2 flex justify-end">
+                  <button type="submit" disabled={isSubmitting} className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-bold transition-colors disabled:opacity-50 text-lg shadow-md hover:shadow-lg">
+                    {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                  </button>
+                </div>
+              )}
+            </div>
           </form>
         </div>
 

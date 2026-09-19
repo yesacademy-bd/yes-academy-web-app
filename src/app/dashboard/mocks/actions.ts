@@ -21,7 +21,7 @@ export async function createMockService(formData: FormData) {
   
   const amount = parseFloat(formData.get('amount') as string) || 0
   const paid_amount = parseFloat(formData.get('paid_amount') as string) || 0
-  const payment_method = formData.get('payment_method') as string
+  const payment_method = (formData.get('payment_method') as string) || (formData.get('mock_status') === 'Free' ? 'None' : 'Cash')
   const exam_date = formData.get('exam_date') as string
   const exam_time = formData.get('exam_time') as string
   const exam_venue = formData.get('exam_venue') as string
