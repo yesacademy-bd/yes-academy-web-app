@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import nodemailer from 'nodemailer'
 
@@ -10,7 +11,7 @@ export async function createMockService(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, or BDM only (Your role: ' + profile?.role + ')' }
 
   const student_type = formData.get('student_type') as string
   const student_name = formData.get('student_name') as string
@@ -42,7 +43,8 @@ export async function createMockService(formData: FormData) {
 
   // 2. Validate Free Inhouse limit
   if (student_type === 'Inhouse' && mock_status === 'Free') {
-    const { count, error: countErr } = await supabase
+    const adminClientCount1 = createAdminClient()
+    const { count, error: countErr } = await adminClientCount1
       .from('mock_services')
       .select('*', { count: 'exact', head: true })
       .eq('phone', phone)
@@ -55,7 +57,8 @@ export async function createMockService(formData: FormData) {
   }
 
   // 3. Validate Session Capacity
-  const { count: sessionCount } = await supabase
+  const adminClientCount2 = createAdminClient()
+  const { count: sessionCount } = await adminClientCount2
     .from('mock_services')
     .select('*', { count: 'exact', head: true })
     .eq('service_type', mock_type)
@@ -65,7 +68,8 @@ export async function createMockService(formData: FormData) {
     return { success: false, message: 'This mock session is full. All 10 slots have been booked. Please select another date.' }
   }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('mock_services')
     .insert({
       student_type,
@@ -155,9 +159,10 @@ export async function deleteMockService(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, or BDM only (Your role: ' + profile?.role + ')' }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('mock_services')
     .delete()
     .eq('id', id)
