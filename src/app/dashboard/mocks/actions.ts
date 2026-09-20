@@ -11,7 +11,7 @@ export async function createMockService(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role, display_name').eq('id', user.id).single()
-  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, or BDM only (Your role: ' + profile?.role + ')' }
+  if (!['Admin', 'HR', 'BDM', 'Faculty'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, BDM, or Faculty only (Your role: ' + profile?.role + ')' }
 
   const student_type = formData.get('student_type') as string
   const student_name = formData.get('student_name') as string
@@ -26,6 +26,9 @@ export async function createMockService(formData: FormData) {
   const exam_date = formData.get('exam_date') as string
   const exam_time = formData.get('exam_time') as string
   const exam_venue = formData.get('exam_venue') as string
+  const speaking_time = formData.get('speaking_time') as string || null
+  const speaking_method = formData.get('speaking_method') as string || null
+  const assigned_speaking_teacher = formData.get('assigned_speaking_teacher') as string || null
 
   if (!student_type || !mock_status || !student_name || !phone || !mock_type || !exam_date) {
     return { success: false, message: 'Missing required fields' }
@@ -84,6 +87,9 @@ export async function createMockService(formData: FormData) {
       exam_date,
       exam_time,
       exam_venue,
+      speaking_time: mock_type === 'IELTS Mock' ? speaking_time : null,
+      speaking_method: mock_type === 'IELTS Mock' ? speaking_method : null,
+      assigned_speaking_teacher: mock_type === 'IELTS Mock' ? assigned_speaking_teacher : null,
       registered_by: profile?.display_name || profile?.role || 'Unknown'
     })
 
@@ -159,12 +165,32 @@ export async function deleteMockService(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, message: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, or BDM only (Your role: ' + profile?.role + ')' }
+  if (!['Admin', 'HR', 'BDM', 'Faculty'].includes(profile?.role || '')) return { success: false, message: 'Admin, HR, BDM, or Faculty only (Your role: ' + profile?.role + ')' }
 
   const adminClient = createAdminClient()
   const { error } = await adminClient
     .from('mock_services')
     .delete()
+    .eq('id', id)
+
+  if (error) return { success: false, message: error.message }
+
+  revalidatePath('/dashboard/mocks')
+  return { success: true }
+}
+
+export async function updateMockDate(id: string, newDate: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: 'Unauthorized' }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!['Admin', 'HR', 'BDM', 'Faculty'].includes(profile?.role || '')) return { success: false, message: 'Unauthorized role' }
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('mock_services')
+    .update({ exam_date: newDate })
     .eq('id', id)
 
   if (error) return { success: false, message: error.message }

@@ -32,15 +32,15 @@ export default function Sidebar({ role, displayName, email }: SidebarProps) {
   }
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin', 'HR', 'BDM'] },
-    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR', 'BDM'] },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['Admin', 'HR', 'BDM', 'Faculty'] },
+    { name: 'Batch Manager', href: '/dashboard/admin/batches', icon: Users, roles: ['Admin', 'HR', 'BDM', 'Faculty'] },
     { name: 'Batch Predictor', href: '/dashboard/admin/predictor', icon: Calendar, roles: ['Admin', 'BDM'] },
     { name: 'Classes & Attendance', href: '/dashboard/faculty/batches', icon: BookOpen, roles: ['Faculty', 'HR', 'BDM'] },
-    { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR', 'BDM'] },
+    { name: 'Student Enrollments', href: '/dashboard/enrollments', icon: UserPlus, roles: ['Admin', 'HR', 'BDM', 'Faculty'] },
     { name: 'Due Details', href: '/dashboard/dues', icon: Wallet, roles: ['HR'] },
     { name: 'Lead Call Entry', href: '/dashboard/leads', icon: Phone, roles: ['HR'] },
     { name: 'Walk-ins', href: '/dashboard/walkins', icon: UserCheck, roles: ['HR'] },
-    { name: 'Mock Services', href: '/dashboard/mocks', icon: FileText, roles: ['Admin', 'HR', 'BDM'] },
+    { name: 'Mock Services', href: '/dashboard/mocks', icon: FileText, roles: ['Admin', 'HR', 'BDM', 'Faculty'] },
     { name: 'Exam Registrations', href: '/dashboard/registrations', icon: ClipboardList, roles: ['HR'] },
     { name: 'Teacher Report', href: '/dashboard/faculty/reports', icon: ClipboardList, roles: ['Faculty'] },
     { name: 'Teachers Reports', href: '/dashboard/hr/reports', icon: ClipboardList, roles: ['HR', 'BDM'] },

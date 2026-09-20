@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { FileText, Calendar, Trash2, Mail } from 'lucide-react'
-import { createMockService, deleteMockService, sendConfirmationEmail } from './actions'
+import { createMockService, deleteMockService, sendConfirmationEmail, updateMockDate } from './actions'
 
 const formatPhone = (phone: string) => {
   const cleaned = phone.replace(/\D/g, '')
@@ -61,8 +61,26 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mockStatus, setMockStatus] = useState('Paid')
   const [isSuccess, setIsSuccess] = useState(false)
+  const [mockType, setMockType] = useState('IELTS Mock')
+  const [switchModal, setSwitchModal] = useState({isOpen: false, id: '', currentDate: '', studentName: ''})
+  const [newDate, setNewDate] = useState('')
+  const [isSwitching, setIsSwitching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [emailingId, setEmailingId] = useState<string | null>(null)
+
+  
+  const handleSwitchDate = async () => {
+    if (!newDate) return alert('Please select a new date.')
+    setIsSwitching(true)
+    const res = await updateMockDate(switchModal.id, newDate)
+    if (res.success) {
+      alert('Date successfully switched!')
+      window.location.reload()
+    } else {
+      alert(res.message || 'Failed to switch date')
+      setIsSwitching(false)
+    }
+  }
 
   const handleSendEmail = async (m: any) => {
     setEmailingId(m.id)
@@ -303,6 +321,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                   <th className="p-4">Student</th>
                   <th className="p-4">Exam Details</th>
                   <th className="p-4 text-right">Fee / Due</th>
+                  <th className="p-4 text-left">Registration By</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -334,6 +353,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                       <p>Fee: ৳{m.course_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
                     </td>
+                    <td className="p-4 text-sm text-gray-600">{m.registered_by || 'Unknown'}</td>
                     <td className="p-4">
                       <div className="flex flex-wrap justify-center items-center gap-2">
                         <button
