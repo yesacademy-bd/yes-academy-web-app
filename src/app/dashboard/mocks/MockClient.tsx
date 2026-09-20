@@ -169,12 +169,31 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mock Type</label>
-              <select name="mock_type" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <select name="mock_type" required value={mockType} onChange={e => setMockType(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="IELTS Mock">IELTS Mock</option>
                 <option value="PTE Mock">PTE Mock</option>
-                
               </select>
             </div>
+
+            {mockType === 'IELTS Mock' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-2 lg:col-span-3 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg mt-2 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Time</label>
+                  <input type="time" name="speaking_time" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Method</label>
+                  <select name="speaking_method" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Speaking Teacher</label>
+                  <input type="text" name="assigned_speaking_teacher" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Teacher name" />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -343,10 +362,16 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                       <p className="text-sm text-gray-600 font-medium">{m.service_type || m.mock_type}</p>
                       {(m.exam_time || m.exam_venue) && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {m.exam_time && <span>🕒 {m.exam_time}</span>}
+                          {m.exam_time && <span>{m.exam_time}</span>}
                           {m.exam_time && m.exam_venue && <span className="mx-1">|</span>}
-                          {m.exam_venue && <span>📍 {m.exam_venue}</span>}
+                          {m.exam_venue && <span>{m.exam_venue}</span>}
                         </p>
+                      )}
+                      {m.service_type === 'IELTS Mock' && (m.speaking_time || m.assigned_speaking_teacher) && (
+                        <div className="text-xs text-blue-600 mt-2 bg-blue-50 inline-block px-2 py-1 rounded border border-blue-100">
+                          <strong>Speaking:</strong> {m.speaking_time} {m.speaking_method ? `(${m.speaking_method})` : ''} 
+                          {m.assigned_speaking_teacher ? ` - ${m.assigned_speaking_teacher}` : ''}
+                        </div>
                       )}
                     </td>
                     <td className="p-4 text-sm text-right">
@@ -374,6 +399,13 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                           <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.183-.573c.978.582 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.765-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"/></svg>
                         </a>
                         <button
+                          onClick={() => setSwitchModal({isOpen: true, id: m.id, currentDate: m.exam_date, studentName: m.student_name})}
+                          className="inline-flex items-center justify-center p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+                          title="Switch Date"
+                        >
+                          <Calendar className="w-5 h-5 shrink-0" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(m.id)}
                           className="inline-flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
                           title="Delete Mock Service"
@@ -390,6 +422,44 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
         </div>
 
       </div>
+      
+      {/* Switch Date Modal */}
+      {switchModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-amber-600" /> Switch Mock Date</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Student: <strong>{switchModal.studentName}</strong><br/>
+              Current Date: {new Date(switchModal.currentDate).toLocaleDateString()}
+            </p>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Exam Date</label>
+              <input 
+                type="date" 
+                value={newDate} 
+                onChange={e => setNewDate(e.target.value)} 
+                className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setSwitchModal({isOpen: false, id: '', currentDate: '', studentName: ''})} 
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSwitchDate} 
+                disabled={isSwitching} 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {isSwitching ? 'Saving...' : 'Confirm Switch Date'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
