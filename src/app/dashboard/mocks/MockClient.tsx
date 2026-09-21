@@ -62,6 +62,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
 
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [studentType, setStudentType] = useState('Inhouse')
   const [mockStatus, setMockStatus] = useState('Paid')
   const [isSuccess, setIsSuccess] = useState(false)
   const [mockType, setMockType] = useState('IELTS Mock')
@@ -141,7 +142,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Student Type</label>
-                <select name="student_type" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <select name="student_type" required value={studentType} onChange={e => setStudentType(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                   <option value="Inhouse">Inhouse</option>
                   <option value="External">External</option>
                 </select>
@@ -159,6 +160,13 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
               <input type="text" name="student_name" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
             </div>
+
+            {studentType === 'Inhouse' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Batch Number</label>
+                <input type="text" name="batch_number" className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Batch Number" />
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>

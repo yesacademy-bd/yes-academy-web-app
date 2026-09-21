@@ -15,6 +15,7 @@ export async function createMockService(formData: FormData) {
 
   const student_type = formData.get('student_type') as string
   const student_name = formData.get('student_name') as string
+  const batch_number = formData.get('batch_number') as string || null
   const phone = formData.get('phone') as string
   const email = formData.get('email') as string
   const mock_type = formData.get('mock_type') as string
@@ -77,6 +78,7 @@ export async function createMockService(formData: FormData) {
     .insert({
       student_type,
       student_name,
+      batch_number: student_type === 'Inhouse' ? batch_number : null,
       phone,
       email,
       service_type: mock_type,
