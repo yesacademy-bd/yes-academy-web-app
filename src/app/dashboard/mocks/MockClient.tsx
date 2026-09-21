@@ -65,7 +65,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
   const [mockStatus, setMockStatus] = useState('Paid')
   const [isSuccess, setIsSuccess] = useState(false)
   const [mockType, setMockType] = useState('IELTS Mock')
-  const [switchModal, setSwitchModal] = useState({isOpen: false, id: '', currentDate: '', studentName: ''})
+  const [switchModal, setSwitchModal] = useState({isOpen: false, id: '', currentDate: '', studentName: '', mockType: ''})
   const [newDate, setNewDate] = useState('')
   const [isSwitching, setIsSwitching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -402,7 +402,7 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                           <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.183-.573c.978.582 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.765-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"/></svg>
                         </a>
                         <button
-                          onClick={() => setSwitchModal({isOpen: true, id: m.id, currentDate: m.exam_date, studentName: m.student_name})}
+                          onClick={() => setSwitchModal({isOpen: true, id: m.id, currentDate: m.exam_date, studentName: m.student_name, mockType: m.service_type || m.mock_type})}
                           className="inline-flex items-center justify-center p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
                           title="Switch Date"
                         >
@@ -428,37 +428,68 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
       
       {/* Switch Date Modal */}
       {switchModal.isOpen && mounted && createPortal(
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100 dark:border-slate-800">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><Calendar className="w-6 h-6 text-amber-600" /> Switch Mock Date</h3>
-            <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg mb-4 border border-gray-100 dark:border-slate-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Student: <strong className="text-gray-900 dark:text-white text-base">{switchModal.studentName}</strong></p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Current Date: <span className="font-medium text-gray-900 dark:text-white">{new Date(switchModal.currentDate).toLocaleDateString()}</span></p>
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="bg-white rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] max-w-md w-full border border-gray-300 relative overflow-hidden" style={{ opacity: 1, isolation: 'isolate' }}>
+            
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-gray-100 bg-white">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 m-0">
+                <Calendar className="w-6 h-6 text-blue-600" /> Switch Mock Date
+              </h3>
             </div>
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-gray-200 mb-2">New Exam Date <span className="text-red-500">*</span></label>
-              <input 
-                type="date" 
-                value={newDate} 
-                onChange={e => setNewDate(e.target.value)} 
-                className="w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg shadow-sm focus:border-amber-500 focus:ring-amber-500 p-3" 
-              />
+
+            <div className="p-6 bg-white">
+              {/* Information Section */}
+              <div className="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-200 shadow-sm">
+                <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Student</p>
+                    <p className="text-sm font-bold text-gray-900">{switchModal.studentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Mock Type</p>
+                    <p className="text-sm font-bold text-gray-900">{switchModal.mockType}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Slots</p>
+                    <p className="text-sm font-bold text-gray-900">10</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Current Date</p>
+                    <p className="text-sm font-bold text-gray-900">{new Date(switchModal.currentDate).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Date Input Section */}
+              <div className="mb-2">
+                <label className="block text-sm font-bold text-gray-900 mb-2">New Exam Date <span className="text-red-500">*</span></label>
+                <input 
+                  type="date" 
+                  value={newDate} 
+                  onChange={e => setNewDate(e.target.value)} 
+                  className="w-full border-2 border-gray-300 bg-white text-gray-900 rounded-xl shadow-sm focus:border-blue-600 focus:ring-blue-600 px-4 py-3 font-medium transition-colors outline-none" 
+                />
+              </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-800">
+
+            {/* Actions */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
               <button 
-                onClick={() => setSwitchModal({isOpen: false, id: '', currentDate: '', studentName: ''})} 
-                className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => setSwitchModal({isOpen: false, id: '', currentDate: '', studentName: '', mockType: ''})} 
+                className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-sm"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSwitchDate} 
                 disabled={isSwitching} 
-                className="px-5 py-2.5 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 shadow-sm"
+                className="px-5 py-2.5 bg-blue-600 border border-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
               >
                 {isSwitching ? 'Saving...' : 'Confirm Switch Date'}
               </button>
             </div>
+            
           </div>
         </div>,
         document.body
