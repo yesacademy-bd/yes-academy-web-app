@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { FileText, Calendar, Trash2, Mail } from 'lucide-react'
+import { FileText, Calendar, Trash2, Mail, Printer, RefreshCw } from 'lucide-react'
 import { createMockService, deleteMockService, sendConfirmationEmail, updateMockDate } from './actions'
+import { fetchPteMockReport, resendPteReportEmail } from './pte-report/actions'
 
 const formatPhone = (phone: string) => {
   const cleaned = phone.replace(/\D/g, '')
@@ -11,10 +12,11 @@ const formatPhone = (phone: string) => {
   return cleaned
 }
 
-export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
+export default function MockClient({ initialMocks, initialReports = [] }: { initialMocks: any[], initialReports?: any[] }) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   const [mocks] = useState(initialMocks)
+  const [reports] = useState(initialReports)
   const [selectedMonthStr, setSelectedMonthStr] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -67,6 +69,11 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
   const [isSuccess, setIsSuccess] = useState(false)
   const [mockType, setMockType] = useState('IELTS Mock')
   const [switchModal, setSwitchModal] = useState({isOpen: false, id: '', currentDate: '', studentName: '', mockType: ''})
+  
+  // PTE Report Viewer state
+  const [reportModal, setReportModal] = useState({ isOpen: false, reportData: null as any, isLoading: false })
+  const [isResending, setIsResending] = useState(false)
+
   const [newDate, setNewDate] = useState('')
   const [isSwitching, setIsSwitching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -95,6 +102,31 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
       alert(res.message || 'Failed to send email.')
     }
     setEmailingId(null)
+  }
+
+  const handleViewReport = async (reportId: string) => {
+    setReportModal({ isOpen: true, reportData: null, isLoading: true })
+    const res = await fetchPteMockReport(reportId)
+    if (res.success && res.data) {
+      setReportModal({ isOpen: true, reportData: res.data, isLoading: false })
+    } else {
+      alert('Failed to load report data.')
+      setReportModal({ isOpen: false, reportData: null, isLoading: false })
+    }
+  }
+
+  const handleResendReportEmail = async (reportId: string) => {
+    setIsResending(true)
+    const res = await resendPteReportEmail(reportId)
+    setIsResending(false)
+    alert(res.message)
+    // Update local state if successful to show 'Sent' instead of 'Failed'
+    if (res.success) {
+      setReportModal(prev => ({
+        ...prev,
+        reportData: { ...prev.reportData, email_status: 'Sent' }
+      }))
+    }
   }
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -352,13 +384,14 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                   <th className="p-4">Exam Details</th>
                   <th className="p-4 text-right">Fee / Due</th>
                   <th className="p-4 text-left">Registration By</th>
+                  <th className="p-4 text-center">Mock Report</th>
                   <th className="p-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {mocks.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-gray-500">No mock services recorded.</td>
+                    <td colSpan={7} className="p-8 text-center text-gray-500">No mock services recorded.</td>
                   </tr>
                 )}
                 {mocks.map(m => (
@@ -389,8 +422,30 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                       <p>Fee: ৳{m.course_fee}</p>
                       <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
                     </td>
-                    <td className="p-4 text-sm text-gray-600">{m.registered_by || 'Unknown'}</td>
-                    <td className="p-4">
+                    <td className="p-4 align-top">
+                      <div className="text-sm font-medium text-gray-900">{m.registration_by || 'Unknown'}</div>
+                    </td>
+
+                    <td className="p-4 align-top text-center">
+                      {(() => {
+                        const isPTE = m.service_type === 'PTE Mock' || m.mock_type === 'PTE Mock';
+                        if (!isPTE) return <span className="text-xs text-gray-400 font-medium px-2 py-1 bg-gray-50 rounded">N/A (IELTS)</span>;
+                        const report = reports.find(r => r.mock_booking_id === m.id);
+                        if (report) {
+                          return (
+                            <button
+                              onClick={() => handleViewReport(report.id)}
+                              className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
+                            >
+                              View Report
+                            </button>
+                          );
+                        }
+                        return <span className="text-xs text-amber-700 font-medium px-2 py-1 bg-amber-50 rounded border border-amber-200">Not Submitted</span>;
+                      })()}
+                    </td>
+
+                    <td className="p-4 align-top">
                       <div className="flex flex-wrap justify-center items-center gap-2">
                         <button
                           onClick={() => handleSendEmail(m)}
@@ -497,6 +552,149 @@ export default function MockClient({ initialMocks }: { initialMocks: any[] }) {
                 {isSwitching ? 'Saving...' : 'Confirm Switch Date'}
               </button>
             </div>
+            
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Report Viewer Modal */}
+      {reportModal.isOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-300 relative" style={{ opacity: 1, isolation: 'isolate' }}>
+            
+            {reportModal.isLoading ? (
+              <div className="p-12 flex flex-col items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mb-4" />
+                <p className="text-gray-600 font-medium">Loading report data...</p>
+              </div>
+            ) : reportModal.reportData ? (
+              <>
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-blue-600" /> PTE Academic Feedback Form
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => {
+                        const content = document.getElementById('printable-report-content');
+                        if (content) {
+                          const originalContents = document.body.innerHTML;
+                          document.body.innerHTML = content.innerHTML;
+                          window.print();
+                          window.location.reload();
+                        }
+                      }}
+                      className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 text-sm shadow-sm"
+                    >
+                      <Printer className="w-4 h-4" /> Print
+                    </button>
+                    <button 
+                      onClick={() => setReportModal({ isOpen: false, reportData: null, isLoading: false })}
+                      className="px-4 py-2 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                <div id="printable-report-content" className="p-6 overflow-y-auto flex-1 bg-white">
+                  <style>{`
+                    @media print {
+                      body * { visibility: hidden; }
+                      #printable-report-content, #printable-report-content * { visibility: visible; }
+                      #printable-report-content { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+                    }
+                  `}</style>
+                  
+                  <div className="text-center mb-8 pb-4 border-b-2 border-red-600">
+                    <h1 className="text-3xl font-bold text-red-700 uppercase tracking-widest mb-1">YES ACADEMY</h1>
+                    <h2 className="text-xl font-semibold text-blue-900">PTE ACADEMIC FEEDBACK FORM</h2>
+                    <p className="text-sm text-gray-600 mt-2 font-medium">YES ACADEMY &mdash; STUDENT PROGRESS & MODULE EVALUATION</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-blue-50/50 p-5 rounded-lg border border-blue-100 mb-8">
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Student Name</p><p className="font-semibold text-gray-900">{reportModal.reportData.student_name}</p></div>
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Student Type</p><p className="font-semibold text-gray-900">{reportModal.reportData.student_type || 'N/A'}</p></div>
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Batch Number</p><p className="font-semibold text-gray-900">{reportModal.reportData.batch_number || 'N/A'}</p></div>
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Student Email</p><p className="font-semibold text-gray-900">{reportModal.reportData.student_email || 'N/A'}</p></div>
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Trainer Name</p><p className="font-semibold text-gray-900">{reportModal.reportData.trainer_name}</p></div>
+                    <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Date</p><p className="font-semibold text-gray-900">{new Date(reportModal.reportData.report_date).toLocaleDateString()}</p></div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-blue-900 mb-4 pb-2 border-b border-gray-200">PTE Module Rating</h3>
+                  
+                  <div className="overflow-x-auto mb-8">
+                    <table className="w-full text-left border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Module</th>
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Rating</th>
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Score</th>
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Strengths</th>
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Areas for Improvement</th>
+                          <th className="p-3 border border-gray-300 font-bold text-gray-700">Action Plan</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {['speaking', 'writing', 'reading', 'listening'].map(mod => (
+                          <tr key={mod}>
+                            <td className="p-3 border border-gray-300 font-bold text-gray-900 capitalize">{mod}</td>
+                            <td className="p-3 border border-gray-300 text-center font-semibold">{reportModal.reportData[`${mod}_rating`]}/5</td>
+                            <td className="p-3 border border-gray-300 text-center font-bold text-blue-700">{reportModal.reportData[`${mod}_score`] || '-'}</td>
+                            <td className="p-3 border border-gray-300 whitespace-pre-wrap text-sm">{reportModal.reportData[`${mod}_strengths`] || '-'}</td>
+                            <td className="p-3 border border-gray-300 whitespace-pre-wrap text-sm">{reportModal.reportData[`${mod}_improvements`] || '-'}</td>
+                            <td className="p-3 border border-gray-300 whitespace-pre-wrap text-sm">{reportModal.reportData[`${mod}_action_plan`] || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="bg-gray-50 border border-gray-300 p-6 rounded-lg mb-8 inline-block shadow-sm">
+                    <p className="text-sm font-bold text-gray-600 uppercase mb-1">Overall Score</p>
+                    <p className="text-4xl font-black text-red-700">{reportModal.reportData.overall_score || '-'}</p>
+                  </div>
+
+                  <div className="mb-8 p-5 border border-gray-300 border-l-4 border-l-blue-800 bg-white rounded shadow-sm">
+                    <h4 className="font-bold text-blue-900 mb-3 text-lg">Overall Suggestions / Trainer Feedback</h4>
+                    <p className="text-gray-800 whitespace-pre-wrap">{reportModal.reportData.overall_feedback || 'No additional feedback provided.'}</p>
+                  </div>
+
+                  <div className="flex justify-between items-end pt-8 mt-12 border-t-2 border-gray-100">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Report Submitted By</p>
+                      <p className="font-bold text-gray-900 text-lg">{reportModal.reportData.trainer_name}</p>
+                    </div>
+                    <div className="text-right text-sm text-gray-400 font-medium">
+                      YES Academy &copy; {new Date().getFullYear()} <br/> PTE Academic Preparation Program
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-2xl flex justify-between items-center">
+                  <div className="text-sm font-medium">
+                    <span className="text-gray-500 mr-2">Email Status:</span>
+                    {reportModal.reportData.email_status === 'Sent' ? (
+                      <span className="text-green-600 font-bold bg-green-50 px-2 py-1 rounded">Delivered</span>
+                    ) : reportModal.reportData.email_status === 'Failed' ? (
+                      <span className="text-red-600 font-bold bg-red-50 px-2 py-1 rounded">Failed</span>
+                    ) : (
+                      <span className="text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded">{reportModal.reportData.email_status}</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleResendReportEmail(reportModal.reportData.id)}
+                    disabled={isResending}
+                    className="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+                  >
+                    <Mail className="w-4 h-4" /> {isResending ? 'Sending...' : 'Resend Email'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center text-red-500 font-bold">Failed to load report.</div>
+            )}
             
           </div>
         </div>,

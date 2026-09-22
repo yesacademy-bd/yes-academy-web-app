@@ -23,6 +23,10 @@ export default async function MocksPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  const { data: reports } = await supabase
+    .from('pte_mock_reports')
+    .select('id, mock_booking_id, email_status')
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
@@ -30,7 +34,7 @@ export default async function MocksPage() {
         <p className="text-gray-500 mt-1">Manage mock test enrollments and payments.</p>
       </div>
 
-      <MockClient initialMocks={mocks || []} />
+      <MockClient initialMocks={mocks || []} initialReports={reports || []} />
     </div>
   )
 }
