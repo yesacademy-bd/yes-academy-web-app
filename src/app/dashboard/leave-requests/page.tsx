@@ -1,8 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Eye, FileText, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Plus, Eye, FileText, CheckCircle, XCircle, Clock, Edit } from 'lucide-react'
 import LeaveRequestManagementClient from '@/components/reports/LeaveRequestManagementClient'
+import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 
 export default async function LeaveRequestsPage() {
   const supabase = await createClient()
@@ -93,13 +94,13 @@ export default async function LeaveRequestsPage() {
                   <tr key={request.id} className="hover:bg-gray-50 transition-colors">
                     <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm text-gray-500">
                       <div>
-                        {new Date(request.starting_on).toLocaleDateString()} 
-                        {request.leave_type === 'Days' && ` - ${new Date(request.ending_on).toLocaleDateString()}`}
+                        {formatStandardDate(request.starting_on)} 
+                        {request.leave_type === 'Days' && ` - ${formatStandardDate(request.ending_on)}`}
                       </div>
                       <div className="text-xs text-blue-600 font-medium mt-0.5">
                         {request.leave_type} 
                         {(request.leave_type === 'Half Day' || request.leave_type === 'Hours') && 
-                          ` (${request.start_time?.slice(0,5) || ''} - ${request.end_time?.slice(0,5) || ''})`
+                          ` (${formatStandardTime(request.start_time)} - ${formatStandardTime(request.end_time)})`
                         }
                       </div>
                     </td>
@@ -110,9 +111,14 @@ export default async function LeaveRequestsPage() {
                       {getStatusBadge(request.status)}
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
-                      <Link href={`/dashboard/leave-requests/${request.id}`} className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1">
-                        <Eye className="w-4 h-4" /> View
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link href={`/dashboard/leave-requests/${request.id}`} className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1">
+                          <Eye className="w-4 h-4" /> View
+                        </Link>
+                        <Link href={`/dashboard/leave-requests/new?edit=${request.id}`} className="text-amber-600 hover:text-amber-900 inline-flex items-center gap-1">
+                          <Edit className="w-4 h-4" /> Edit
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -1,9 +1,10 @@
-﻿import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DecisionForm from './DecisionForm'
 import PrintButton from './PrintButton'
 import { ArrowLeft, Printer } from 'lucide-react'
+import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 
 export default async function LeaveRequestDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -37,7 +38,10 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
             <p className="text-gray-500 text-sm mt-1">ID: {req.id.split('-')[0].toUpperCase()}</p>
           </div>
         </div>
-        <PrintButton id={req.id} />
+        <div className="flex items-center gap-3">
+          <PrintButton id={req.id} />
+          <DownloadButton id={req.id} employeeName={req.employee_name} requestDate={formatStandardDate(req.starting_on)} />
+        </div>
       </div>
 
       {/* Employee details */}
@@ -82,23 +86,23 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="flex md:w-1/2">
               <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Starting Date</div>
-              <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{new Date(req.starting_on).toLocaleDateString()}</div>
+              <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{formatStandardDate(req.starting_on)}</div>
             </div>
             {req.leave_type === 'Days' && (
               <div className="flex md:w-1/2">
                 <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Ending Date</div>
-                <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{new Date(req.ending_on).toLocaleDateString()}</div>
+                <div className="w-1/2 px-4 py-3 text-sm text-gray-900">{formatStandardDate(req.ending_on)}</div>
               </div>
             )}
             {(req.leave_type === 'Half Day' || req.leave_type === 'Hours') && (
               <>
                 <div className="flex md:w-1/4">
                   <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{req.leave_type === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
-                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{req.start_time?.slice(0, 5) || 'N/A'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{formatStandardTime(req.start_time)}</div>
                 </div>
                 <div className="flex md:w-1/4">
                   <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{req.leave_type === 'Hours' ? 'End Hour' : 'End Time'}</div>
-                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{req.end_time?.slice(0, 5) || 'N/A'}</div>
+                  <div className="w-1/2 md:w-full px-4 py-3 text-sm text-gray-900">{formatStandardTime(req.end_time)}</div>
                 </div>
               </>
             )}
@@ -140,7 +144,7 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
           </div>
           <div className="flex">
             <div className="w-1/3 md:w-1/4 bg-gray-100 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200">Date</div>
-            <div className="w-2/3 md:w-3/4 px-4 py-4 text-sm text-gray-900">{new Date(req.employee_signature_date).toLocaleDateString()}</div>
+            <div className="w-2/3 md:w-3/4 px-4 py-4 text-sm text-gray-900">{formatStandardDate(req.employee_signature_date)}</div>
           </div>
         </div>
       </div>
@@ -176,7 +180,7 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
             </div>
             <div className="flex">
               <div className="w-1/4 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Date</div>
-              <div className="w-3/4 px-4 py-3 text-sm text-gray-900">{req.decision_date ? new Date(req.decision_date).toLocaleDateString() : ''}</div>
+              <div className="w-3/4 px-4 py-3 text-sm text-gray-900">{req.decision_date ? formatStandardDate(req.decision_date) : ''}</div>
             </div>
           </div>
           

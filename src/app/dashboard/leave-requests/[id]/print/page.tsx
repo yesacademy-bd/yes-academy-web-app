@@ -1,5 +1,6 @@
-﻿import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
+import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 
 export default async function PrintLeaveRequest({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -79,20 +80,20 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
             <div className="flex divide-x">
               <div className="w-1/4 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Leave request</div>
               <div className="w-3/4 p-1 text-sm flex gap-4 justify-center">
-                <span>{req.leave_type === 'Days' ? '☒' : '☐'} Days</span>
-                <span>{req.leave_type === 'Half Day' ? '☒' : '☐'} Half Day</span>
-                <span>{req.leave_type === 'Hours' ? '☒' : '☐'} Hours</span>
+                <span>{req.leave_type === 'Days' ? '?' : '?'} Days</span>
+                <span>{req.leave_type === 'Half Day' ? '?' : '?'} Half Day</span>
+                <span>{req.leave_type === 'Hours' ? '?' : '?'} Hours</span>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x border-b border-[#1e2a5c]">
               <div className="flex divide-x">
                 <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Starting Date</div>
-                <div className="w-1/2 p-1 text-sm">{new Date(req.starting_on).toLocaleDateString('en-GB')}</div>
+                <div className="w-1/2 p-1 text-sm">{formatStandardDate(req.starting_on)}</div>
               </div>
               {req.leave_type === 'Days' && (
                 <div className="flex divide-x">
                   <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Ending Date</div>
-                  <div className="w-1/2 p-1 text-sm">{new Date(req.ending_on).toLocaleDateString('en-GB')}</div>
+                  <div className="w-1/2 p-1 text-sm">{formatStandardDate(req.ending_on)}</div>
                 </div>
               )}
             </div>
@@ -100,11 +101,11 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
               <div className="grid grid-cols-2 divide-x">
                 <div className="flex divide-x">
                   <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Start Time</div>
-                  <div className="w-1/2 p-1 text-sm">{req.start_time?.slice(0, 5) || ''}</div>
+                  <div className="w-1/2 p-1 text-sm">{formatStandardTime(req.start_time)}</div>
                 </div>
                 <div className="flex divide-x">
                   <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">End Time</div>
-                  <div className="w-1/2 p-1 text-sm">{req.end_time?.slice(0, 5) || ''}</div>
+                  <div className="w-1/2 p-1 text-sm">{formatStandardTime(req.end_time)}</div>
                 </div>
               </div>
             )}
@@ -117,12 +118,12 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
             Reason for leave request
           </div>
           <div className="grid grid-cols-3 p-1.5 gap-1 text-sm border-t border-[#1e2a5c]">
-            <div>{req.reason === 'Casual' ? '☒' : '☐'} Casual</div>
-            <div>{req.reason === 'Family Reasons' ? '☒' : '☐'} Family Reasons</div>
-            <div>{req.reason === 'Emergency' ? '☒' : '☐'} Emergency</div>
-            <div>{req.reason === 'Funeral/Bereavement' ? '☒' : '☐'} Funeral/Bereavement</div>
-            <div>{req.reason === 'Medical Leave' ? '☒' : '☐'} Medical Leave</div>
-            <div>{req.reason === 'Other' ? '☒' : '☐'} Other: {req.reason === 'Other' ? req.other_reason : ''}</div>
+            <div>{req.reason === 'Casual' ? '?' : '?'} Casual</div>
+            <div>{req.reason === 'Family Reasons' ? '?' : '?'} Family Reasons</div>
+            <div>{req.reason === 'Emergency' ? '?' : '?'} Emergency</div>
+            <div>{req.reason === 'Funeral/Bereavement' ? '?' : '?'} Funeral/Bereavement</div>
+            <div>{req.reason === 'Medical Leave' ? '?' : '?'} Medical Leave</div>
+            <div>{req.reason === 'Other' ? '?' : '?'} Other: {req.reason === 'Other' ? req.other_reason : ''}</div>
           </div>
         </div>
 
@@ -139,7 +140,7 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
             </div>
             <div className="flex divide-x">
               <div className="w-1/3 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
-              <div className="w-2/3 p-1 text-sm">{new Date(req.employee_signature_date).toLocaleDateString('en-GB')}</div>
+              <div className="w-2/3 p-1 text-sm">{formatStandardDate(req.employee_signature_date)}</div>
             </div>
           </div>
         </div>
@@ -162,12 +163,12 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="grid grid-cols-2 divide-x">
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span>{req.status === 'Approved' ? '☒' : '☐'} Approved</span>
-                <span>{req.status === 'Rejected' ? '☒' : '☐'} Rejected</span>
+                <span>{req.status === 'Approved' ? '?' : '?'} Approved</span>
+                <span>{req.status === 'Rejected' ? '?' : '?'} Rejected</span>
               </div>
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span>{req.payment_status === 'Paid' ? '☒' : '☐'} Paid</span>
-                <span>{req.payment_status === 'Unpaid' ? '☒' : '☐'} Unpaid</span>
+                <span>{req.payment_status === 'Paid' ? '?' : '?'} Paid</span>
+                <span>{req.payment_status === 'Unpaid' ? '?' : '?'} Unpaid</span>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x">
@@ -183,11 +184,11 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
             <div className="grid grid-cols-2 divide-x">
               <div className="flex divide-x">
                 <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
-                <div className="w-1/2 p-1 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
+                <div className="w-1/2 p-1 text-sm">{req.decision_date ? formatStandardDate(req.decision_date) : ''}</div>
               </div>
               <div className="flex divide-x">
                 <div className="w-1/2 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Date</div>
-                <div className="w-1/2 p-1 text-sm">{req.decision_date ? new Date(req.decision_date).toLocaleDateString('en-GB') : ''}</div>
+                <div className="w-1/2 p-1 text-sm">{req.decision_date ? formatStandardDate(req.decision_date) : ''}</div>
               </div>
             </div>
           </div>
@@ -209,5 +210,7 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
     </div>
   )
 }
+
+
 
 

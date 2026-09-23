@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -60,7 +60,7 @@ export default function DecisionForm({ req }: { req: any }) {
           <div className="w-full md:w-1/2 flex">
             <div className="w-1/2 bg-gray-50 px-4 py-4 text-sm font-bold text-gray-700 border-r border-gray-200">Manager signature</div>
             <div className="w-1/2 px-4 py-4">
-              <input type="text" name="manager_signature" required placeholder="Type signature" className="w-full text-sm outline-none bg-transparent font-medium" />
+              <input type="text" name="manager_signature" placeholder="Type signature (optional)" className="w-full text-sm outline-none bg-transparent font-medium" />
             </div>
           </div>
           <div className="w-full md:w-1/2 flex">

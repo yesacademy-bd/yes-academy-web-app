@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -9,6 +9,7 @@ export async function submitLeaveRequest(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
+  const id = formData.get('id') as string | null
   const employee_name = formData.get('employee_name') as string
   const department = formData.get('department') as string
   const job_title = formData.get('job_title') as string
@@ -23,10 +24,7 @@ export async function submitLeaveRequest(formData: FormData) {
   const explanation = formData.get('explanation') as string
   const employee_signature = formData.get('employee_signature') as string
   
-  const todayDate = new Date().toISOString().split('T')[0]
-
-  const { data, error } = await supabase.from('leave_requests').insert({
-    user_id: user.id,
+  const payload = {
     employee_name,
     department,
     job_title,
@@ -40,9 +38,27 @@ export async function submitLeaveRequest(formData: FormData) {
     other_reason,
     explanation,
     employee_signature,
-    employee_signature_date: todayDate,
-    status: 'Pending'
-  }).select().single()
+  }
+
+  let data, error;
+  
+  if (id) {
+    // Edit existing request
+    const response = await supabase.from('leave_requests').update(payload).eq('id', id).select().single()
+    data = response.data
+    error = response.error
+  } else {
+    // Create new request
+    const todayDate = new Date().toISOString().split('T')[0]
+    const response = await supabase.from('leave_requests').insert({
+      ...payload,
+      user_id: user.id,
+      employee_signature_date: todayDate,
+      status: 'Pending'
+    }).select().single()
+    data = response.data
+    error = response.error
+  }
 
   if (error) {
     console.error('Error submitting leave request:', error)

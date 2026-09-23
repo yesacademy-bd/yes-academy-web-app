@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitLeaveRequest } from '../actions'
 
-export default function LeaveRequestClientForm({ profile }: { profile: any }) {
+export default function LeaveRequestClientForm({ profile, initialData }: { profile: any, initialData?: any }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [reason, setReason] = useState('')
-  const [leaveType, setLeaveType] = useState('Days')
+  const [reason, setReason] = useState(initialData?.reason || '')
+  const [leaveType, setLeaveType] = useState(initialData?.leave_type || 'Days')
   const [error, setError] = useState('')
 
   const isManagement = ['Admin', 'BDM', 'HR'].includes(profile?.role)
@@ -19,6 +19,10 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
     setError('')
     
     const formData = new FormData(e.currentTarget)
+    if (initialData?.id) {
+      formData.append('id', initialData.id)
+    }
+    
     // If not Days, we must clear ending_on and make it match starting_on logic, but to keep db simple, we let ending_on = starting_on for hours/half day
     if (leaveType !== 'Days') {
       formData.set('ending_on', formData.get('starting_on') as string)
@@ -92,14 +96,14 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
             <div className="flex md:w-1/2">
               <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Starting Date</div>
               <div className="w-1/2 px-4 py-3">
-                <input type="date" name="starting_on" required className="w-full text-sm outline-none bg-transparent" />
+                <input type="date" name="starting_on" defaultValue={initialData?.starting_on} required className="w-full text-sm outline-none bg-transparent" />
               </div>
             </div>
             {leaveType === 'Days' && (
               <div className="flex md:w-1/2">
                 <div className="w-1/2 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">Ending Date</div>
                 <div className="w-1/2 px-4 py-3">
-                  <input type="date" name="ending_on" required className="w-full text-sm outline-none bg-transparent" />
+                  <input type="date" name="ending_on" defaultValue={initialData?.ending_on} required className="w-full text-sm outline-none bg-transparent" />
                 </div>
               </div>
             )}
@@ -108,13 +112,13 @@ export default function LeaveRequestClientForm({ profile }: { profile: any }) {
                 <div className="flex md:w-1/4">
                   <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{leaveType === 'Hours' ? 'Start Hour' : 'Start Time'}</div>
                   <div className="w-1/2 md:w-full px-4 py-3">
-                    <input type="time" name="start_time" required className="w-full text-sm outline-none bg-transparent" />
+                    <input type="time" name="start_time" defaultValue={initialData?.start_time} required className="w-full text-sm outline-none bg-transparent" />
                   </div>
                 </div>
                 <div className="flex md:w-1/4">
                   <div className="w-1/2 md:w-full bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 border-r border-gray-200">{leaveType === 'Hours' ? 'End Hour' : 'End Time'}</div>
                   <div className="w-1/2 md:w-full px-4 py-3">
-                    <input type="time" name="end_time" required className="w-full text-sm outline-none bg-transparent" />
+                    <input type="time" name="end_time" defaultValue={initialData?.end_time} required className="w-full text-sm outline-none bg-transparent" />
                   </div>
                 </div>
               </>

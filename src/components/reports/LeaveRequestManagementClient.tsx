@@ -1,10 +1,11 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Filter, Eye, FileText, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react'
+import { Calendar, Filter, Eye, FileText, CheckCircle, XCircle, Clock, Trash2, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { deleteLeaveRequest } from '@/app/actions/leave-requests'
+import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 
 export default function LeaveRequestManagementClient({ employees }: { employees: any[] }) {
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -223,13 +224,13 @@ export default function LeaveRequestManagementClient({ employees }: { employees:
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <div>
-                        {new Date(request.starting_on).toLocaleDateString()} 
-                        {request.leave_type === 'Days' && ` - ${new Date(request.ending_on).toLocaleDateString()}`}
+                        {formatStandardDate(request.starting_on)} 
+                        {request.leave_type === 'Days' && ` - ${formatStandardDate(request.ending_on)}`}
                       </div>
                       <div className="text-xs text-blue-600 font-medium mt-0.5">
                         {request.leave_type} 
                         {(request.leave_type === 'Half Day' || request.leave_type === 'Hours') && 
-                          ` (${request.start_time?.slice(0,5) || ''} - ${request.end_time?.slice(0,5) || ''})`
+                          ` (${formatStandardTime(request.start_time)} - ${formatStandardTime(request.end_time)})`
                         }
                       </div>
                     </td>
@@ -243,6 +244,9 @@ export default function LeaveRequestManagementClient({ employees }: { employees:
                         <div className="flex items-center justify-end gap-3">
                           <Link href={`/dashboard/leave-requests/${request.id}`} className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1">
                             <Eye className="w-4 h-4" /> View
+                          </Link>
+                          <Link href={`/dashboard/leave-requests/new?edit=${request.id}`} className="text-amber-600 hover:text-amber-900 inline-flex items-center gap-1">
+                            <Edit className="w-4 h-4" /> Edit
                           </Link>
                           <button onClick={() => handleDelete(request.id)} className="text-red-600 hover:text-red-900 inline-flex items-center gap-1">
                             <Trash2 className="w-4 h-4" /> Delete
