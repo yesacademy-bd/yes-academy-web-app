@@ -38,11 +38,18 @@ export default async function PrintLeaveRequest({
     <div id="print-container" className="bg-white ">
       <AutoPrint download={download} filename={filename} />
       <style dangerouslySetInnerHTML={{__html: `
-        @media print { html, body { overflow: visible !important; height: auto !important; }
+        /* Override dashboard layout for full html2canvas capture */
+        html, body, main, main > div { 
+          height: auto !important; 
+          overflow: visible !important; 
+        }
+        /* Hide sidebar */
+        nav, aside { display: none !important; }
+        ::-webkit-scrollbar { display: none; }
+        
+        @media print { 
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           @page { size: A4; margin: 15mm; }
-          #sidebar, #topbar { display: none !important; }
-          main { padding: 0 !important; margin: 0 !important; }
         }
       `}} />
       <div className="max-w-[210mm] mx-auto bg-white p-4 text-black font-sans">
@@ -237,6 +244,7 @@ export default async function PrintLeaveRequest({
     </div>
   )
 }
+
 
 
 
