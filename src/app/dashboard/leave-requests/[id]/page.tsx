@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DecisionForm from './DecisionForm'
 import PrintButton from './PrintButton'
+import DownloadButton from './DownloadButton'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 
@@ -195,3 +196,4 @@ export default async function LeaveRequestDetail({ params }: { params: Promise<{
     </div>
   )
 }
+
