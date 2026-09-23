@@ -52,7 +52,7 @@ export default async function PrintLeaveRequest({
           @page { size: A4; margin: 15mm; }
         }
       `}} />
-      <div className="max-w-[210mm] mx-auto bg-white p-4 text-black font-sans">
+      <div id="pdf-content" className="max-w-[210mm] mx-auto bg-white p-4 text-black font-sans">
         
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
@@ -244,6 +244,7 @@ export default async function PrintLeaveRequest({
     </div>
   )
 }
+
 
 
 

@@ -9,15 +9,15 @@ export default function AutoPrint({ download, filename }: { download?: boolean, 
       if (download && filename) {
         import('html2pdf.js').then(html2pdfModule => {
            const html2pdf = html2pdfModule.default ? html2pdfModule.default : html2pdfModule;
-           const element = document.getElementById('print-container');
+           const element = document.getElementById('pdf-content');
            if (!element) return;
            
            const opt = {
-             margin: 0.5,
+             margin: 10,
              filename: filename,
              image: { type: 'jpeg', quality: 0.98 },
-             html2canvas: { scale: 2, useCORS: true, logging: false },
-             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+             html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 794 },
+             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
            };
            
            html2pdf().set(opt).from(element).save().then(() => {
@@ -35,3 +35,4 @@ export default function AutoPrint({ download, filename }: { download?: boolean, 
 
   return null;
 }
+
