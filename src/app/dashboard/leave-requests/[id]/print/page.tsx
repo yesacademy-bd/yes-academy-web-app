@@ -139,10 +139,10 @@ export default async function PrintLeaveRequest({
 
         {/* Reason */}
         <div className="border border-[#1e2a5c] mb-3">
-          <div className="bg-[#1e2a5c] text-white font-bold p-1 text-sm">
+          <div className="bg-[#1e2a5c] text-white font-bold p-1 px-2 text-sm">
             Reason for leave request
           </div>
-          <div className="grid grid-cols-3 p-1.5 gap-1 text-sm border-t border-[#1e2a5c]">
+          <div className="grid grid-cols-3 p-2 gap-y-3 gap-x-2 text-sm border-t border-[#1e2a5c]">
             <CheckboxOption checked={req.reason === 'Casual'} label="Casual" />
             <CheckboxOption checked={req.reason === 'Family Reasons'} label="Family Reasons" />
             <CheckboxOption checked={req.reason === 'Emergency'} label="Emergency" />
@@ -187,11 +187,13 @@ export default async function PrintLeaveRequest({
           </div>
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="grid grid-cols-2 divide-x">
-              <div className="p-1 text-sm flex gap-4 justify-center">
+              <div className="p-2 px-4 text-sm flex flex-col gap-2">
+                <div className="font-bold text-[#1e2a5c] mb-1">Approval Status</div>
                 <CheckboxOption checked={req.status === 'Approved'} label="Approved" />
                 <CheckboxOption checked={req.status === 'Rejected'} label="Rejected" />
               </div>
-              <div className="p-1 text-sm flex gap-4 justify-center">
+              <div className="p-2 px-4 text-sm flex flex-col gap-2">
+                <div className="font-bold text-[#1e2a5c] mb-1">Payment Status</div>
                 <CheckboxOption checked={req.payment_status === 'Paid'} label="Paid" />
                 <CheckboxOption checked={req.payment_status === 'Unpaid'} label="Unpaid" />
               </div>
@@ -235,6 +237,8 @@ export default async function PrintLeaveRequest({
     </div>
   )
 }
+
+
 
 
 
