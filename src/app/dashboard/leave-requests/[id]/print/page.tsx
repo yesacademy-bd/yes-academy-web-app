@@ -1,9 +1,20 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
+import AutoPrint from './AutoPrint'
 
-export default async function PrintLeaveRequest({ params }: { params: Promise<{ id: string }> }) {
+export default async function PrintLeaveRequest({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ id: string }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const download = resolvedSearchParams.download === 'true';
+  const filename = typeof resolvedSearchParams.filename === 'string' ? resolvedSearchParams.filename : undefined;
+
   const supabase = await createClient()
 
   const { data: req } = await supabase.from('leave_requests').select('*').eq('id', resolvedParams.id).single()
@@ -11,7 +22,8 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
   if (!req) return notFound()
 
   return (
-    <div className="bg-white ">
+    <div id="print-container" className="bg-white ">
+      <AutoPrint download={download} filename={filename} />
       <style dangerouslySetInnerHTML={{__html: `
         @media print { html, body { overflow: visible !important; height: auto !important; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -205,11 +217,12 @@ export default async function PrintLeaveRequest({ params }: { params: Promise<{ 
         </div>
 
         {/* Script to trigger print automatically */}
-        <script dangerouslySetInnerHTML={{__html: 'window.onload = function() { window.print(); }'}} />
+        
       </div>
     </div>
   )
 }
+
 
 
 
