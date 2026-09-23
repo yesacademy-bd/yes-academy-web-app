@@ -3,6 +3,12 @@ import { notFound } from 'next/navigation'
 import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 import AutoPrint from './AutoPrint'
 
+const Checkbox = ({ checked }: { checked: boolean }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '12px', height: '12px', border: '1px solid #1e2a5c', marginRight: '6px', backgroundColor: checked ? '#1e2a5c' : 'transparent', color: 'white', fontSize: '10px', fontWeight: 'bold' }}>
+    {checked ? '✓' : ''}
+  </span>
+)
+
 export default async function PrintLeaveRequest({ 
   params,
   searchParams
@@ -92,9 +98,9 @@ export default async function PrintLeaveRequest({
             <div className="flex divide-x">
               <div className="w-1/4 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Leave request</div>
               <div className="w-3/4 p-1 text-sm flex gap-4 justify-center">
-                <span>{req.leave_type === 'Days' ? '?' : '?'} Days</span>
-                <span>{req.leave_type === 'Half Day' ? '?' : '?'} Half Day</span>
-                <span>{req.leave_type === 'Hours' ? '?' : '?'} Hours</span>
+                <span><Checkbox checked={req.leave_type === 'Days'} /> Days</span>
+                <span><Checkbox checked={req.leave_type === 'Half Day'} /> Half Day</span>
+                <span><Checkbox checked={req.leave_type === 'Hours'} /> Hours</span>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x border-b border-[#1e2a5c]">
@@ -130,12 +136,12 @@ export default async function PrintLeaveRequest({
             Reason for leave request
           </div>
           <div className="grid grid-cols-3 p-1.5 gap-1 text-sm border-t border-[#1e2a5c]">
-            <div>{req.reason === 'Casual' ? '?' : '?'} Casual</div>
-            <div>{req.reason === 'Family Reasons' ? '?' : '?'} Family Reasons</div>
-            <div>{req.reason === 'Emergency' ? '?' : '?'} Emergency</div>
-            <div>{req.reason === 'Funeral/Bereavement' ? '?' : '?'} Funeral/Bereavement</div>
-            <div>{req.reason === 'Medical Leave' ? '?' : '?'} Medical Leave</div>
-            <div>{req.reason === 'Other' ? '?' : '?'} Other: {req.reason === 'Other' ? req.other_reason : ''}</div>
+            <div><Checkbox checked={req.reason === 'Casual'} /> Casual</div>
+            <div><Checkbox checked={req.reason === 'Family Reasons'} /> Family Reasons</div>
+            <div><Checkbox checked={req.reason === 'Emergency'} /> Emergency</div>
+            <div><Checkbox checked={req.reason === 'Funeral/Bereavement'} /> Funeral/Bereavement</div>
+            <div><Checkbox checked={req.reason === 'Medical Leave'} /> Medical Leave</div>
+            <div><Checkbox checked={req.reason === 'Other'} /> Other: {req.reason === 'Other' ? req.other_reason : ''}</div>
           </div>
         </div>
 
@@ -175,12 +181,12 @@ export default async function PrintLeaveRequest({
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="grid grid-cols-2 divide-x">
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span>{req.status === 'Approved' ? '?' : '?'} Approved</span>
-                <span>{req.status === 'Rejected' ? '?' : '?'} Rejected</span>
+                <span><Checkbox checked={req.status === 'Approved'} /> Approved</span>
+                <span><Checkbox checked={req.status === 'Rejected'} /> Rejected</span>
               </div>
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span>{req.payment_status === 'Paid' ? '?' : '?'} Paid</span>
-                <span>{req.payment_status === 'Unpaid' ? '?' : '?'} Unpaid</span>
+                <span><Checkbox checked={req.payment_status === 'Paid'} /> Paid</span>
+                <span><Checkbox checked={req.payment_status === 'Unpaid'} /> Unpaid</span>
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x">
@@ -222,6 +228,8 @@ export default async function PrintLeaveRequest({
     </div>
   )
 }
+
+
 
 
 
