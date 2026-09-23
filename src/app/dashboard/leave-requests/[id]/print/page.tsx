@@ -3,10 +3,17 @@ import { notFound } from 'next/navigation'
 import { formatStandardDate, formatStandardTime } from '@/utils/dateUtils'
 import AutoPrint from './AutoPrint'
 
-const Checkbox = ({ checked }: { checked: boolean }) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '12px', height: '12px', border: '1px solid #1e2a5c', marginRight: '6px', backgroundColor: checked ? '#1e2a5c' : 'transparent', color: 'white', fontSize: '10px', fontWeight: 'bold' }}>
-    {checked ? '✓' : ''}
-  </span>
+const CheckboxOption = ({ checked, label }: { checked: boolean, label: React.ReactNode }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px', border: '1.5px solid #1e2a5c', borderRadius: '2px', backgroundColor: checked ? '#1e2a5c' : 'transparent', flexShrink: 0 }}>
+      {checked && (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      )}
+    </div>
+    <span style={{ lineHeight: 1, paddingTop: '1px' }}>{label}</span>
+  </div>
 )
 
 export default async function PrintLeaveRequest({ 
@@ -98,9 +105,9 @@ export default async function PrintLeaveRequest({
             <div className="flex divide-x">
               <div className="w-1/4 bg-[#d4f0fa] p-1 text-sm font-bold text-[#1e2a5c]">Leave request</div>
               <div className="w-3/4 p-1 text-sm flex gap-4 justify-center">
-                <span><Checkbox checked={req.leave_type === 'Days'} /> Days</span>
-                <span><Checkbox checked={req.leave_type === 'Half Day'} /> Half Day</span>
-                <span><Checkbox checked={req.leave_type === 'Hours'} /> Hours</span>
+                <CheckboxOption checked={req.leave_type === 'Days'} label="Days" />
+                <CheckboxOption checked={req.leave_type === 'Half Day'} label="Half Day" />
+                <CheckboxOption checked={req.leave_type === 'Hours'} label="Hours" />
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x border-b border-[#1e2a5c]">
@@ -136,12 +143,12 @@ export default async function PrintLeaveRequest({
             Reason for leave request
           </div>
           <div className="grid grid-cols-3 p-1.5 gap-1 text-sm border-t border-[#1e2a5c]">
-            <div><Checkbox checked={req.reason === 'Casual'} /> Casual</div>
-            <div><Checkbox checked={req.reason === 'Family Reasons'} /> Family Reasons</div>
-            <div><Checkbox checked={req.reason === 'Emergency'} /> Emergency</div>
-            <div><Checkbox checked={req.reason === 'Funeral/Bereavement'} /> Funeral/Bereavement</div>
-            <div><Checkbox checked={req.reason === 'Medical Leave'} /> Medical Leave</div>
-            <div><Checkbox checked={req.reason === 'Other'} /> Other: {req.reason === 'Other' ? req.other_reason : ''}</div>
+            <CheckboxOption checked={req.reason === 'Casual'} label="Casual" />
+            <CheckboxOption checked={req.reason === 'Family Reasons'} label="Family Reasons" />
+            <CheckboxOption checked={req.reason === 'Emergency'} label="Emergency" />
+            <CheckboxOption checked={req.reason === 'Funeral/Bereavement'} label="Funeral/Bereavement" />
+            <CheckboxOption checked={req.reason === 'Medical Leave'} label="Medical Leave" />
+            <CheckboxOption checked={req.reason === 'Other'} label={<>Other: {req.reason === 'Other' ? req.other_reason : ''}</>} />
           </div>
         </div>
 
@@ -181,12 +188,12 @@ export default async function PrintLeaveRequest({
           <div className="flex flex-col border-t border-[#1e2a5c] divide-y">
             <div className="grid grid-cols-2 divide-x">
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span><Checkbox checked={req.status === 'Approved'} /> Approved</span>
-                <span><Checkbox checked={req.status === 'Rejected'} /> Rejected</span>
+                <CheckboxOption checked={req.status === 'Approved'} label="Approved" />
+                <CheckboxOption checked={req.status === 'Rejected'} label="Rejected" />
               </div>
               <div className="p-1 text-sm flex gap-4 justify-center">
-                <span><Checkbox checked={req.payment_status === 'Paid'} /> Paid</span>
-                <span><Checkbox checked={req.payment_status === 'Unpaid'} /> Unpaid</span>
+                <CheckboxOption checked={req.payment_status === 'Paid'} label="Paid" />
+                <CheckboxOption checked={req.payment_status === 'Unpaid'} label="Unpaid" />
               </div>
             </div>
             <div className="grid grid-cols-2 divide-x">
@@ -228,6 +235,8 @@ export default async function PrintLeaveRequest({
     </div>
   )
 }
+
+
 
 
 
