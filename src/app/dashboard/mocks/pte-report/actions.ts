@@ -17,8 +17,8 @@ export async function fetchPteMockBookings() {
   // Fetch PTE Mock bookings only
   const { data, error } = await adminClient
     .from('mock_services')
-    .select('id, student_name, student_type, batch_number, email, phone, service_type, mock_type, exam_date')
-    .or('service_type.eq."PTE Mock",mock_type.eq."PTE Mock"')
+    .select('id, student_name, student_type, batch_number, email, phone, service_type, exam_date')
+    .eq('service_type', 'PTE Mock')
     .order('exam_date', { ascending: false })
 
   if (error) return { success: false, data: [] }
@@ -257,4 +257,6 @@ async function sendPteReportEmail(report: any) {
     return { success: false, message: err.message || 'Unknown error' }
   }
 }
+
+
 
