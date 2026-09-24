@@ -259,31 +259,31 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
 
       {/* Student Info Snapshot */}
       {selectedBooking && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-blue-900 mb-4">Student Information</h2>
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Student Information</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Student Name</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Student Name</p>
               <p className="font-bold text-gray-900 text-lg">{selectedBooking.student_name}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Student Type</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Student Type</p>
               <p className="font-bold text-gray-900">{selectedBooking.student_type || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Batch Number</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Batch Number</p>
               <p className="font-bold text-gray-900">{selectedBooking.batch_number || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Student Email</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Student Email</p>
               <p className="font-bold text-gray-900 break-all">{selectedBooking.email || 'No email'}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Trainer Name</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Trainer Name</p>
               <p className="font-bold text-gray-900">{trainerName}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-1">Date</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Date</p>
               <p className="font-bold text-gray-900">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
@@ -349,3 +349,4 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
     </form>
   )
 }
+
