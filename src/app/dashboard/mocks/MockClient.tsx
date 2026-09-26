@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -435,10 +435,32 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                       )}
                     </td>
                     <td className="p-4 text-sm text-right">
-                      <p>Fee: ৳{m.course_fee}</p>
-                      <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
+                      <p>Fee: ?{m.course_fee}</p>
+                      <p className="text-red-600 font-medium">Due: ?{m.due_amount}</p>
                     </td>
-                                        <td className="p-4 align-middle">
+                                        
+                      <td className="p-4 text-sm">
+                        <div className="text-sm font-medium text-gray-900">{m.registered_by || 'Unknown'}</div>
+                      </td>
+                      <td className="p-4 align-top text-center">
+                        {(() => {
+                          const isPTE = m.service_type === 'PTE Mock' || m.mock_type === 'PTE Mock';
+                          if (!isPTE) return <span className="text-xs text-gray-400 font-medium px-2 py-1 bg-gray-50 rounded">N/A (IELTS)</span>;
+                          const report = reports.find((r: any) => r.mock_booking_id === m.id);
+                          if (report) {
+                            return (
+                              <button
+                                onClick={() => handleViewReport(report.id)}
+                                className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
+                              >
+                                View Report
+                              </button>
+                            );
+                          }
+                          return <span className="text-xs text-amber-700 font-medium px-2 py-1 bg-amber-50 rounded border border-amber-200">Not Submitted</span>;
+                        })()}
+                      </td>
+                      <td className="p-4 align-middle">
                       <div className="flex flex-col gap-2 items-center justify-center max-w-[140px] mx-auto">
                         <div className="flex gap-1.5 p-1 bg-gray-50/50 rounded-lg border border-gray-100">
                           <button
@@ -450,7 +472,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                           </button>
                           <a
-                            href={`https://wa.me/${formatPhone(m.phone)}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.service_type || m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}${m.exam_time ? ` at ${m.exam_time}` : ''}${m.exam_venue ? ` at ${m.exam_venue}` : ''}. Fee: ৳${m.course_fee}, Paid: ৳${m.paid_amount || 0}, Due: ৳${m.due_amount}.`)}`}
+                            href={`https://wa.me/${formatPhone(m.phone)}?text=${encodeURIComponent(`Hello ${m.student_name}, this is a confirmation for your ${m.service_type || m.mock_type}. Your exam is scheduled on ${new Date(m.exam_date).toLocaleDateString()}${m.exam_time ? ` at ${m.exam_time}` : ''}${m.exam_venue ? ` at ${m.exam_venue}` : ''}. Fee: ?${m.course_fee}, Paid: ?${m.paid_amount || 0}, Due: ?${m.due_amount}.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center p-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
@@ -832,6 +854,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
     </div>
   )
 }
+
 
 
 
