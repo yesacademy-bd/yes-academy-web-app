@@ -323,7 +323,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
             <div><span className="text-gray-500">Total Sessions:</span> <span className="font-bold text-gray-900">{slotSummary.totalSessions}</span></div>
             <div><span className="text-gray-500">Total Slots:</span> <span className="font-bold text-gray-900">{slotSummary.totalSlots}</span></div>
             <div><span className="text-gray-500">Total Booked:</span> <span className="font-bold text-gray-900">{slotSummary.totalBooked}</span></div>
-            <div><span className="text-gray-500">Total Remaining:</span> <span className="font-bold text-gray-900">{slotSummary.totalRemaining}</span></div>
+            <div><span className="text-gray-500">Total Remaining:</span> <span className="font-black text-green-500">{slotSummary.totalRemaining}</span></div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -356,7 +356,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                       <td className="p-4 text-sm text-gray-900">{row.mock_type}</td>
                       <td className="p-4 text-sm text-center">{row.total_slots}</td>
                       <td className="p-4 text-sm text-center font-medium">{row.booked}</td>
-                      <td className="p-4 text-sm text-center font-bold text-indigo-600">{remaining}</td>
+                      <td className="p-4 text-sm text-center font-black text-green-500">{remaining}</td>
                       <td className="p-4 text-center">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>{statusText}</span>
                       </td>
@@ -423,7 +423,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                       <p className="text-red-600 font-medium">Due: ৳{m.due_amount}</p>
                     </td>
                     <td className="p-4 align-top">
-                      <div className="text-sm font-medium text-gray-900">{m.registration_by || 'Unknown'}</div>
+                      <div className="text-sm font-medium text-gray-900">{m.registered_by || 'Unknown'}</div>
                     </td>
 
                     <td className="p-4 align-top text-center">
@@ -704,3 +704,4 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
     </div>
   )
 }
+
