@@ -1,0 +1,6 @@
+const fs = require('fs')
+let content = fs.readFileSync('src/app/dashboard/mocks/MockClient.tsx', 'utf8')
+content = content.replace(/Fee:\s*\?\$/g, 'Fee: $')
+content = content.replace(/Due:\s*\?\$/g, 'Due: $')
+content = content.replace(/Paid:\s*\?\$/g, 'Paid: $')
+fs.writeFileSync('src/app/dashboard/mocks/MockClient.tsx', content)
