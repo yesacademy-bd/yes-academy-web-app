@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { FileText, Calendar, Trash2, Mail, Printer, RefreshCw } from 'lucide-react'
-import { createMockService, deleteMockService, sendConfirmationEmail, updateMockDate } from './actions'
+import { FileText, Calendar, Trash2, Mail, Printer, RefreshCw, Edit } from 'lucide-react'
+import { createMockService, deleteMockService, sendConfirmationEmail, updateMockDate, updateMockService } from './actions'
 import { fetchPteMockReport, resendPteReportEmail } from './pte-report/actions'
 
 const formatPhone = (phone: string) => {
@@ -68,6 +68,8 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
   const [mockStatus, setMockStatus] = useState('Paid')
   const [isSuccess, setIsSuccess] = useState(false)
   const [mockType, setMockType] = useState('IELTS Mock')
+  const [editModal, setEditModal] = useState({ isOpen: false, mock: null as any })
+  const [isEditing, setIsEditing] = useState(false)
   const [switchModal, setSwitchModal] = useState({isOpen: false, id: '', currentDate: '', studentName: '', mockType: ''})
   
   // PTE Report Viewer state
@@ -126,6 +128,20 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
         ...prev,
         reportData: { ...prev.reportData, email_status: 'Sent' }
       }))
+    }
+  }
+
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsEditing(true)
+    const formData = new FormData(e.currentTarget)
+    const res = await updateMockService(editModal.mock.id, formData)
+    if (res.success) {
+      alert('Mock service updated successfully!')
+      window.location.reload()
+    } else {
+      alert(res.message || 'Failed to update mock service')
+      setIsEditing(false)
     }
   }
 
@@ -464,7 +480,14 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                         >
                           <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.183-.573c.978.582 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.765-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"/></svg>
                         </a>
-                        <button
+                                                  <button
+                            onClick={() => setEditModal({ isOpen: true, mock: m })}
+                            className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                            title="Edit Mock Service"
+                          >
+                            <Edit className="w-5 h-5 shrink-0" />
+                          </button>
+                          <button
                           onClick={() => setSwitchModal({isOpen: true, id: m.id, currentDate: m.exam_date, studentName: m.student_name, mockType: m.service_type || m.mock_type})}
                           className="inline-flex items-center justify-center p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
                           title="Switch Date"
@@ -489,6 +512,123 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
 
       </div>
       
+      {/* Edit Mock Modal */}
+      {editModal.isOpen && editModal.mock && mounted && createPortal(
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="bg-white rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] max-w-4xl w-full border border-gray-300 relative overflow-hidden" style={{ opacity: 1, isolation: 'isolate' }}>
+            
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Edit className="w-5 h-5 text-blue-600" /> Edit Mock Service
+              </h2>
+              <button onClick={() => setEditModal({ isOpen: false, mock: null })} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <form id="editMockForm" onSubmit={handleEdit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Student Type</label>
+                      <select name="student_type" required defaultValue={editModal.mock.student_type} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="Inhouse">Inhouse</option>
+                        <option value="External">External</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mock Status</label>
+                      <select name="mock_status" required defaultValue={editModal.mock.mock_status} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="Paid">Paid</option>
+                        <option value="Free">Free</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
+                    <input type="text" name="student_name" required defaultValue={editModal.mock.student_name} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Batch Number</label>
+                    <input type="text" name="batch_number" defaultValue={editModal.mock.batch_number || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" name="phone" required defaultValue={editModal.mock.phone} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required defaultValue={editModal.mock.email} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Course Fee (Amount)</label>
+                    <input type="number" name="amount" defaultValue={editModal.mock.course_fee} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Paid Amount</label>
+                    <input type="number" name="paid_amount" defaultValue={editModal.mock.paid_amount} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mock Type</label>
+                    <select name="mock_type" required defaultValue={editModal.mock.service_type || editModal.mock.mock_type} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      <option value="IELTS Mock">IELTS Mock</option>
+                      <option value="PTE Mock">PTE Mock</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
+                    <input type="date" name="exam_date" required defaultValue={editModal.mock.exam_date} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Exam Time</label>
+                    <input type="text" name="exam_time" defaultValue={editModal.mock.exam_time || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Exam Venue</label>
+                    <input type="text" name="exam_venue" defaultValue={editModal.mock.exam_venue || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Time (IELTS)</label>
+                    <input type="text" name="speaking_time" defaultValue={editModal.mock.speaking_time || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Method (IELTS)</label>
+                    <input type="text" name="speaking_method" defaultValue={editModal.mock.speaking_method || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Teacher (IELTS)</label>
+                    <input type="text" name="assigned_speaking_teacher" defaultValue={editModal.mock.assigned_speaking_teacher || ''} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+              <button onClick={() => setEditModal({ isOpen: false, mock: null })} className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-sm">
+                Cancel
+              </button>
+              <button type="submit" form="editMockForm" disabled={isEditing} className="px-5 py-2.5 bg-blue-600 border border-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm">
+                {isEditing ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Switch Date Modal */}
       {switchModal.isOpen && mounted && createPortal(
         <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
@@ -538,7 +678,14 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
 
             {/* Actions */}
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
-              <button 
+                                        <button
+                            onClick={() => setEditModal({ isOpen: true, mock: m })}
+                            className="inline-flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                            title="Edit Mock Service"
+                          >
+                            <Edit className="w-5 h-5 shrink-0" />
+                          </button>
+                          <button 
                 onClick={() => setSwitchModal({isOpen: false, id: '', currentDate: '', studentName: '', mockType: ''})} 
                 className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-sm"
               >
@@ -704,4 +851,8 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
     </div>
   )
 }
+
+
+
+
 
