@@ -22,7 +22,8 @@ export default async function FacultyBatchesPage() {
       schedule_days,
       courses ( name, family ),
       rooms ( name ),
-      profiles!batches_teacher_id_fkey ( display_name )
+      profiles!batches_teacher_id_fkey ( display_name ),
+      class_sessions ( class_number )
     `)
     .order('start_date', { ascending: false })
 
@@ -34,3 +35,4 @@ export default async function FacultyBatchesPage() {
 
   return <FacultyBatchList batches={batches || []} isHR={isHR} />
 }
+
