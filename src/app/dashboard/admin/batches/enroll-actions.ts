@@ -191,3 +191,45 @@ export async function switchEnrollment(oldEnrollmentId: string, newBatchId: stri
     return { success: false, message: e.message }
   }
 }
+
+export async function updateEnrollmentAndStudent(batchId: string, studentId: string, enrollmentId: string, formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: 'Unauthorized' }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!['Admin', 'HR', 'BDM'].includes(profile?.role || '')) return { success: false, message: 'Admin or HR only' }
+
+  const system_id = formData.get('system_id') as string || null
+  const name = formData.get('name') as string
+  const phone = formData.get('phone') as string
+  const guardian_phone = formData.get('guardian_phone') as string
+  const reference = formData.get('reference') as string
+  const course_fee = parseFloat(formData.get('course_fee') as string) || 0
+  const paid_amount = parseFloat(formData.get('paid_amount') as string) || 0
+
+  if (!name) return { success: false, message: 'Student Name is required' }
+
+  // Update student table
+  const { error: studentError } = await supabase
+    .from('students')
+    .update({ system_id, name, phone, guardian_phone })
+    .eq('id', studentId)
+
+  if (studentError) {
+    if (studentError.code === '23505') return { success: false, message: 'Student ID already exists' }
+    return { success: false, message: studentError.message }
+  }
+
+  // Update enrollment table
+  const { error: enrollError } = await supabase
+    .from('enrollments')
+    .update({ course_fee, paid_amount, reference })
+    .eq('id', enrollmentId)
+
+  if (enrollError) return { success: false, message: enrollError.message }
+
+  revalidatePath(`/dashboard/admin/batches/${batchId}`)
+  return { success: true, message: 'Student details updated successfully' }
+}
+
