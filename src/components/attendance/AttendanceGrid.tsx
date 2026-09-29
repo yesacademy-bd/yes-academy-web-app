@@ -35,50 +35,55 @@ export default function AttendanceGrid({
   const [activeClassNum, setActiveClassNum] = useState<number | null>(initialClassNum)
 
   const handleMarkAttendance = async (studentId: string, classNum: number, status: 'Present' | 'Absent' | 'Leave') => {
-    // 1. Ensure class session exists
-    let session = sessions.find(s => s.class_number === classNum)
-    if (!session) {
-      // Optimistically create session
-      const tempId = `temp-${Date.now()}`
-      session = { id: tempId, batch_id: batch.id, class_number: classNum, session_date: new Date().toISOString().split('T')[0] }
-      setSessions([...sessions, session])
+    let session = sessions.find(s => s.class_number === classNum);
+
+    if (!session || session.id.startsWith('temp-')) {
+      const todayDate = new Date().toISOString().split('T')[0];
       
-      const res = await createClassSession(batch.id, classNum, session.session_date)
+      if (!session) {
+        setSessions(prev => [...prev, { id: `temp-${Date.now()}`, batch_id: batch.id, class_number: classNum, session_date: todayDate }]);
+      }
+      
+      const res = await createClassSession(batch.id, classNum, todayDate);
       if (res.success && res.data) {
-        session = res.data
-        setSessions(prev => prev.map(s => s.class_number === classNum ? session! : s))
+        session = res.data;
+        setSessions(prev => {
+          const filtered = prev.filter(s => s.class_number !== classNum);
+          return [...filtered, session];
+        });
       } else {
-        alert("Failed to create class session")
-        return
+        alert(res.message || "Failed to create class session");
+        setSessions(prev => prev.filter(s => s.class_number !== classNum));
+        return;
       }
     }
 
-    // 2. Optimistic update for record
-    const recordIndex = records.findIndex(r => r.student_id === studentId && r.class_session_id === session!.id)
+    const realSessionId = session.id;
+    const recordIndex = records.findIndex(r => r.student_id === studentId && r.class_session_id === realSessionId);
     const newRecord = { 
       id: recordIndex >= 0 ? records[recordIndex].id : `temp-rec-${Date.now()}`,
       student_id: studentId,
-      class_session_id: session!.id,
+      class_session_id: realSessionId,
       status
-    }
+    };
     
-    if (recordIndex >= 0) {
-      const newRecords = [...records]
-      newRecords[recordIndex] = newRecord
-      setRecords(newRecords)
-    } else {
-      setRecords([...records, newRecord])
-    }
-
-    // 3. Server action
-    startTransition(async () => {
-      const result = await markAttendance(batch.id, session!.id, studentId, status)
-      if (!result.success) {
-        alert(result.message)
-        // Rollback optimistic update
-        setRecords(records) 
+    setRecords(prev => {
+      const idx = prev.findIndex(r => r.student_id === studentId && r.class_session_id === realSessionId);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = newRecord;
+        return next;
       }
-    })
+      return [...prev, newRecord];
+    });
+
+    startTransition(async () => {
+      const result = await markAttendance(batch.id, realSessionId, studentId, status);
+      if (!result.success) {
+        alert(result.message);
+        setRecords(records);
+      }
+    });
   }
 
   // Calculate attendance % per student

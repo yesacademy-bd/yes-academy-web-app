@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { BookOpen, Users, Clock, Search } from 'lucide-react'
+import { formatStandardTime } from '@/utils/dateUtils'
 
 export default function FacultyBatchList({ batches, isHR }: { batches: any[], isHR: boolean }) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -90,7 +91,7 @@ export default function FacultyBatchList({ batches, isHR }: { batches: any[], is
               <div className="mt-auto space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Clock className="w-4 h-4 text-gray-400" />
-                  {batch.schedule_days.join(', ')} <br/> {batch.start_time.substring(0,5)} - {batch.end_time.substring(0,5)}
+                  {batch.schedule_days.join(', ')} <br/> {formatStandardTime(batch.start_time)} - {formatStandardTime(batch.end_time)}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="w-4 h-4 text-gray-400" />
@@ -113,3 +114,4 @@ export default function FacultyBatchList({ batches, isHR }: { batches: any[], is
     </div>
   )
 }
+
