@@ -432,6 +432,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                   <th className="p-4">Date</th>
                   <th className="p-4">Student</th>
                   <th className="p-4">Exam Details</th>
+                    <th className="p-4">Exam Date</th>
                   <th className="p-4 text-right">Fee / Due</th>
                   <th className="p-4 text-left">Registration By</th>
                   <th className="p-4 text-center">Mock Report</th>
@@ -441,7 +442,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               <tbody className="divide-y divide-gray-200">
                 {filteredHistoryMocks.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-gray-500">No mock services recorded.</td>
+                    <td colSpan={8} className="p-8 text-center text-gray-500">No mock services recorded.</td>
                   </tr>
                 )}
                 {filteredHistoryMocks.map(m => (
@@ -468,8 +469,11 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                         </div>
                       )}
                     </td>
-                    <td className="p-4 text-sm text-right">
-                      <p>Fee: {m.course_fee}</p>
+                    <td className="p-4 text-sm font-medium text-gray-800 whitespace-nowrap">
+                        {m.exam_date ? new Date(m.exam_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                      </td>
+                      <td className="p-4 text-sm text-right">
+                        <p>Fee: {m.course_fee}</p>
                       <p className="text-red-600 font-medium">Due: {m.due_amount}</p>
                     </td>
                                         
