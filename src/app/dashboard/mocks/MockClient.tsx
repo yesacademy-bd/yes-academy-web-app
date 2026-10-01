@@ -81,8 +81,13 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
   const [error, setError] = useState<string | null>(null)
   const [emailingId, setEmailingId] = useState<string | null>(null)
   const [historyDateFilter, setHistoryDateFilter] = useState('')
+  const [historyTypeFilter, setHistoryTypeFilter] = useState('All')
 
-  const filteredHistoryMocks = historyDateFilter ? mocks.filter(m => m.exam_date === historyDateFilter) : mocks
+  const filteredHistoryMocks = mocks.filter(m => {
+    const matchDate = historyDateFilter ? m.exam_date === historyDateFilter : true;
+    const matchType = historyTypeFilter !== 'All' ? m.service_type === historyTypeFilter : true;
+    return matchDate && matchType;
+  })
 
   
   const handleSwitchDate = async () => {
