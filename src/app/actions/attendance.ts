@@ -127,17 +127,24 @@ export async function createClassSession(batchId: string, classNumber: number, s
     const todayDateStr = `${nowDhaka.getFullYear()}-${String(nowDhaka.getMonth() + 1).padStart(2, '0')}-${String(nowDhaka.getDate()).padStart(2, '0')}`
 
     const { data: allSessions } = await supabase.from('class_sessions')
-      .select('class_number, session_date')
+      .select('class_number, session_date, override_unlock_until')
       .eq('batch_id', batchId)
-      .gt('class_number', 0)
     
     const sessionsArr = allSessions || []
-    const sessionToday = sessionsArr.find(s => s.session_date === todayDateStr)
-    const highestCompleted = sessionsArr.length > 0 ? Math.max(...sessionsArr.map(s => s.class_number)) : 0
-    const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
+    const batchSession = sessionsArr.find(s => s.class_number === -1)
+    const isBatchUnlocked = batchSession?.override_unlock_until && new Date(batchSession.override_unlock_until).getTime() > Date.now()
+    const thisSession = sessionsArr.find(s => s.class_number === classNumber)
+    const isSessionUnlocked = thisSession?.override_unlock_until && new Date(thisSession.override_unlock_until).getTime() > Date.now()
 
-    if (classNumber > allowedClassNum) {
-      throw new Error(`Cannot create future class session. Expected Class ${allowedClassNum}`)
+    if (!isBatchUnlocked && !isSessionUnlocked) {
+      const realSessions = sessionsArr.filter(s => s.class_number > 0)
+      const sessionToday = realSessions.find(s => s.session_date === todayDateStr)
+      const highestCompleted = realSessions.length > 0 ? Math.max(...realSessions.map(s => s.class_number)) : 0
+      const allowedClassNum = sessionToday ? sessionToday.class_number : highestCompleted + 1
+
+      if (classNumber > allowedClassNum) {
+        throw new Error(`Cannot create future class session. Expected Class ${allowedClassNum}`)
+      }
     }
 
     const { data, error } = await supabase
