@@ -182,20 +182,20 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 w-full">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Form */}
-        <div className="md:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="md:col-span-3 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-purple-600" /> New Mock Service
           </h2>
           
           {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
-          <form onSubmit={handleAdd} className="space-y-6">
+          <form onSubmit={handleAdd} className="space-y-6 min-w-0 w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Student Type</label>
                 <select name="student_type" required value={studentType} onChange={e => setStudentType(e.target.value)} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -262,7 +262,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
                 <input type="date" name="exam_date" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
@@ -281,7 +281,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
 
             {mockStatus === 'Paid' && (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Total Fee</label>
                     <input type="number" name="amount" defaultValue="0" required className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" />
@@ -331,7 +331,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
         {/* List */}
         
         {/* Monthly Mock Slot Summary */}
-        <div className="md:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="md:col-span-3 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-indigo-500" /> Monthly Mock Slot Summary
@@ -349,7 +349,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
             <div><span className="text-gray-500">Total Booked:</span> <span className="font-bold text-gray-900">{slotSummary.totalBooked}</span></div>
             <div><span className="text-gray-500">Total Remaining:</span> <span className="font-black text-green-500">{slotSummary.totalRemaining}</span></div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
@@ -364,7 +364,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {slotSummary.rows.length === 0 && (
-                  <tr><td colSpan={7} className="p-6 text-center text-gray-500">No mock sessions scheduled for this month.</td></tr>
+                  <tr><td colSpan={7} className="p-4 sm:p-6 text-center text-gray-500">No mock sessions scheduled for this month.</td></tr>
                 )}
                 {slotSummary.rows.map((row: any, idx: number) => {
                   const remaining = row.total_slots - row.booked;
@@ -392,7 +392,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
           </div>
         </div>
 
-        <div className="md:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="md:col-span-3 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-gray-500" /> Mock History
@@ -425,7 +425,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                 </div>
             </div>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
@@ -442,7 +442,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               <tbody className="divide-y divide-gray-200">
                 {filteredHistoryMocks.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-gray-500">No mock services recorded.</td>
+                    <td colSpan={8} className="p-4 sm:p-8 text-center text-gray-500">No mock services recorded.</td>
                   </tr>
                 )}
                 {filteredHistoryMocks.map(m => (
@@ -567,10 +567,10 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               </button>
             </div>
 
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              <form id="editMockForm" onSubmit={handleEdit} className="space-y-6">
+            <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+              <form id="editMockForm" onSubmit={handleEdit} className="space-y-6 min-w-0 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Student Type</label>
                       <select name="student_type" required defaultValue={editModal.mock.student_type} className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -684,10 +684,10 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               </h3>
             </div>
 
-            <div className="p-6 bg-white">
+            <div className="p-4 sm:p-6 bg-white">
               {/* Information Section */}
               <div className="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-200 shadow-sm">
-                <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Student</p>
                     <p className="text-sm font-bold text-gray-900">{switchModal.studentName}</p>
@@ -754,7 +754,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-300 relative" style={{ opacity: 1, isolation: 'isolate' }}>
             
             {reportModal.isLoading ? (
-              <div className="p-12 flex flex-col items-center justify-center">
+              <div className="p-6 sm:p-12 flex flex-col items-center justify-center">
                 <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mb-4" />
                 <p className="text-gray-600 font-medium">Loading report data...</p>
               </div>
@@ -788,7 +788,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                   </div>
                 </div>
 
-                <div id="printable-report-content" className="p-6 overflow-y-auto flex-1 bg-white">
+                <div id="printable-report-content" className="p-4 sm:p-6 overflow-y-auto flex-1 bg-white">
                   <style>{`
                     @media print {
                       body * { visibility: hidden; }
@@ -803,7 +803,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                     <p className="text-sm text-gray-600 mt-2 font-medium">YES ACADEMY &mdash; STUDENT PROGRESS & MODULE EVALUATION</p>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-blue-50/50 p-5 rounded-lg border border-blue-100 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-blue-50/50 p-5 rounded-lg border border-blue-100 mb-8">
                     <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Student Name</p><p className="font-semibold text-gray-900">{reportModal.reportData.student_name}</p></div>
                     <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Student Type</p><p className="font-semibold text-gray-900">{reportModal.reportData.student_type || 'N/A'}</p></div>
                     <div><p className="text-xs uppercase text-gray-500 font-bold mb-1">Batch Number</p><p className="font-semibold text-gray-900">{reportModal.reportData.batch_number || 'N/A'}</p></div>
@@ -814,7 +814,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
 
                   <h3 className="text-xl font-bold text-blue-900 mb-4 pb-2 border-b border-gray-200">PTE Module Rating</h3>
                   
-                  <div className="overflow-x-auto mb-8">
+                  <div className="overflow-x-auto w-full mb-8">
                     <table className="w-full text-left border-collapse border border-gray-300">
                       <thead>
                         <tr className="bg-gray-100">
@@ -841,7 +841,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                     </table>
                   </div>
 
-                  <div className="bg-gray-50 border border-gray-300 p-6 rounded-lg mb-8 inline-block shadow-sm">
+                  <div className="bg-gray-50 border border-gray-300 p-4 sm:p-6 rounded-lg mb-8 inline-block shadow-sm">
                     <p className="text-sm font-bold text-gray-600 uppercase mb-1">Overall Score</p>
                     <p className="text-4xl font-black text-red-700">{reportModal.reportData.overall_score || '-'}</p>
                   </div>
@@ -883,7 +883,7 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                 </div>
               </>
             ) : (
-              <div className="p-8 text-center text-red-500 font-bold">Failed to load report.</div>
+              <div className="p-4 sm:p-8 text-center text-red-500 font-bold">Failed to load report.</div>
             )}
             
           </div>

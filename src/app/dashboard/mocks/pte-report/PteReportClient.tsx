@@ -131,7 +131,7 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
 
   if (success) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-green-200 p-8 text-center max-w-2xl mx-auto mt-10">
+      <div className="bg-white rounded-xl shadow-sm border border-green-200 p-4 sm:p-8 text-center max-w-2xl mx-auto mt-10">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Mock Report Submitted Successfully</h2>
         <p className="text-gray-600 mb-6">
@@ -229,7 +229,7 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
       )}
 
       {/* Booking Selector */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Select Mock Booking</h2>
         
         <div className="flex flex-col sm:flex-row gap-4 mb-4 max-w-xl">
@@ -287,7 +287,7 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
 
       {/* Student Info Snapshot */}
       {selectedBooking && (
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Student Information</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
@@ -357,7 +357,7 @@ export default function PteReportClient({ initialBookings, trainerName }: { init
             </div>
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <p className="text-sm text-gray-600">Report Submitted By:</p>
               <p className="font-bold text-gray-900">{trainerName}</p>
