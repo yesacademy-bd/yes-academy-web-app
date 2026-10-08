@@ -1,4 +1,6 @@
-import { createClient } from '@/utils/supabase/server'
+const fs = require('fs')
+
+const pageTsx = `import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import LoginForm from './LoginForm'
 import { Caveat } from 'next/font/google'
@@ -22,7 +24,7 @@ export default async function LoginPage({
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#B7D8F5] overflow-hidden relative selection:bg-[#FFD700] selection:text-[#0F172A] font-sans">
       
       {/* --- INLINE STYLES FOR ANIMATIONS --- */}
-      <style>{`
+      <style>{\`
         @keyframes customFadeIn {
           0% { opacity: 0; }
           100% { opacity: 1; }
@@ -44,7 +46,7 @@ export default async function LoginPage({
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
-      `}</style>
+      \`}</style>
 
       {/* Decorative Background Elements */}
       <div className="absolute top-12 right-[30%] w-12 h-12 text-[#FFD700] opacity-80 animate-pulse hidden lg:block">
@@ -104,14 +106,14 @@ export default async function LoginPage({
 
         {/* HEADLINE */}
         <div className="mt-4 lg:mt-0 relative z-10 animate-custom-slide-up" style={{ opacity: 0, animationDelay: '100ms' }}>
-          <h1 className={`${caveat.className} text-7xl sm:text-8xl lg:text-[140px] text-[#E10600] leading-[0.85] tracking-tight drop-shadow-sm transform -rotate-3 relative z-10`}>
+          <h1 className={\`\${caveat.className} text-7xl sm:text-8xl lg:text-[140px] text-[#E10600] leading-[0.85] tracking-tight drop-shadow-sm transform -rotate-3 relative z-10\`}>
             Learn<br/>
             Grow<br/>
             Achieve
           </h1>
           <div className="absolute z-0 w-48 sm:w-64 lg:w-96 h-8 lg:h-12 bg-[#FFD700] bottom-4 lg:bottom-6 left-0 transform rotate-1 rounded-sm opacity-90 mix-blend-multiply"></div>
           
-          <p className={`${caveat.className} mt-8 lg:mt-12 text-3xl lg:text-5xl text-[#0F172A] font-medium tracking-wide transform -rotate-1 relative inline-block`}>
+          <p className={\`\${caveat.className} mt-8 lg:mt-12 text-3xl lg:text-5xl text-[#0F172A] font-medium tracking-wide transform -rotate-1 relative inline-block\`}>
             Better English.<br/>
             Brighter Future.
             
@@ -140,13 +142,13 @@ export default async function LoginPage({
              <div className="w-full h-44 bg-gray-200 overflow-hidden relative">
                <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=400" alt="Education Journey" className="object-cover w-full h-full opacity-90 grayscale-[20%] contrast-125" />
              </div>
-             <div className={`${caveat.className} text-center mt-3 text-2xl text-[#0F172A]`}>Good Things Ahead :)</div>
+             <div className={\`\${caveat.className} text-center mt-3 text-2xl text-[#0F172A]\`}>Good Things Ahead :)</div>
              {/* Yellow Tape */}
              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 -rotate-3 w-20 h-6 bg-[#FFD700] opacity-90 shadow-sm mix-blend-multiply"></div>
           </div>
           
           {/* Accent red sticker */}
-          <div className={`${caveat.className} absolute top-48 -left-4 w-32 h-32 bg-[#E10600] text-white p-4 rounded-tl-[40px] rounded-br-[30px] rounded-tr-md rounded-bl-xl transform -rotate-[15deg] shadow-[0_15px_30px_rgba(225,6,0,0.3)] flex flex-col justify-center items-center text-2xl leading-tight border-2 border-dashed border-white/40 z-20 transition-transform hover:-rotate-6 hover:scale-105 duration-300 pointer-events-auto`}>
+          <div className={\`\${caveat.className} absolute top-48 -left-4 w-32 h-32 bg-[#E10600] text-white p-4 rounded-tl-[40px] rounded-br-[30px] rounded-tr-md rounded-bl-xl transform -rotate-[15deg] shadow-[0_15px_30px_rgba(225,6,0,0.3)] flex flex-col justify-center items-center text-2xl leading-tight border-2 border-dashed border-white/40 z-20 transition-transform hover:-rotate-6 hover:scale-105 duration-300 pointer-events-auto\`}>
             <span className="text-center">Better<br/>Skills</span>
             <span className="text-center mt-1">Bigger<br/>Dreams</span>
             {/* Small yellow hearts */}
@@ -163,7 +165,7 @@ export default async function LoginPage({
             </div>
           </div>
 
-          <div className={`${caveat.className} absolute -bottom-6 right-20 text-3xl text-[#0F172A] transform rotate-6`}>
+          <div className={\`\${caveat.className} absolute -bottom-6 right-20 text-3xl text-[#0F172A] transform rotate-6\`}>
             Start Your<br/>Journey<br/>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6 inline ml-2 transform rotate-45">
               <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -221,3 +223,6 @@ export default async function LoginPage({
     </div>
   )
 }
+`
+fs.writeFileSync('src/app/login/page.tsx', pageTsx)
+console.log("Files updated with richer scrapbook style")
