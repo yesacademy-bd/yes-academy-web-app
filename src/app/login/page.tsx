@@ -36,10 +36,10 @@ export default async function LoginPage({
           50% { transform: translateY(-10px) rotate(2deg); }
         }
         .animate-custom-fade-in {
-          animation: customFadeIn 1s ease-out forwards;
+          animation: customFadeIn 1s ease-out both;
         }
         .animate-custom-slide-up {
-          animation: customSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: customSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .animate-float {
           animation: float 6s ease-in-out infinite;
@@ -103,8 +103,8 @@ export default async function LoginPage({
         </div>
 
         {/* HEADLINE */}
-        <div className="mt-4 lg:mt-0 relative z-10 animate-custom-slide-up" style={{ opacity: 0, animationDelay: '100ms' }}>
-          <h1 className={`${caveat.className} text-7xl sm:text-8xl lg:text-[140px] text-[#E10600] leading-[0.85] tracking-tight drop-shadow-sm transform -rotate-3 relative z-10`}>
+        <div className="mt-4 lg:mt-0 relative z-20 animate-custom-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+          <h1 className={`${caveat.className} text-7xl sm:text-8xl lg:text-[140px] font-bold text-[#E10600] leading-[0.85] text-red-600 tracking-tight drop-shadow-sm transform -rotate-3 relative z-20`} style={{ color: '#E10600' }}>
             Learn<br/>
             Grow<br/>
             Achieve
@@ -125,7 +125,7 @@ export default async function LoginPage({
         </div>
 
         {/* SCRAPBOOK COLLAGE (Abstract representations) */}
-        <div className="hidden lg:block absolute top-1/2 right-4 transform -translate-y-1/2 w-[400px] h-[500px] z-0 animate-custom-fade-in pointer-events-none" style={{ opacity: 0, animationDelay: '300ms' }}>
+        <div className="hidden lg:block absolute top-1/2 right-4 transform -translate-y-1/2 w-[400px] h-[500px] z-0 animate-custom-fade-in pointer-events-none" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
           
           {/* Main Map Background Element */}
           <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#FAFAFA] opacity-80 border-2 border-gray-200 transform -rotate-12 shadow-md z-0" style={{ backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
@@ -177,7 +177,7 @@ export default async function LoginPage({
       <div className="relative w-full lg:w-2/5 flex items-center justify-center p-6 sm:p-12 lg:pr-24 lg:pl-10 z-20 min-h-[60vh] lg:min-h-screen">
         
         {/* The Card */}
-        <div className="relative w-full max-w-[440px] animate-custom-slide-up" style={{ opacity: 0, animationDelay: '200ms' }}>
+        <div className="relative w-full max-w-[440px] animate-custom-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
           
           {/* Background offset for paper stack effect */}
           <div className="absolute inset-0 bg-white/60 transform rotate-3 rounded-xl shadow-xl -z-10"></div>
