@@ -22,32 +22,10 @@ export default async function LoginPage({
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#B7D8F5] overflow-hidden relative selection:bg-[#FFD700] selection:text-[#0F172A] font-sans">
       
       {/* --- INLINE STYLES FOR ANIMATIONS --- */}
-      <style>{`
-        @keyframes customFadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        @keyframes customSlideUp {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(2deg); }
-        }
-        .animate-custom-fade-in {
-          animation: customFadeIn 1s ease-out both;
-        }
-        .animate-custom-slide-up {
-          animation: customSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
+      
 
       {/* Decorative Background Elements */}
-      <div className="absolute top-12 right-[30%] w-12 h-12 text-[#FFD700] opacity-80 animate-pulse hidden lg:block">
+      <div className="absolute top-12 right-[30%] w-12 h-12 text-[#FFD700] opacity-80  hidden lg:block">
         {/* Sparkle/Star */}
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
@@ -55,7 +33,7 @@ export default async function LoginPage({
       </div>
       
       {/* Sun Doodle */}
-      <div className="absolute top-1/4 left-[35%] w-24 h-24 text-[#FFD700] opacity-90 hidden lg:block animate-[spin_20s_linear_infinite] z-20">
+      <div className="absolute top-1/4 left-[35%] w-24 h-24 text-[#FFD700] opacity-90 hidden lg:block  z-20">
         <svg viewBox="0 0 100 100" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round">
           <circle cx="50" cy="50" r="20" />
           <path d="M50 10L50 20M50 80L50 90M10 50L20 50M80 50L90 50M22 22L29 29M71 71L78 78M22 78L29 71M71 29L78 22" />
@@ -63,7 +41,7 @@ export default async function LoginPage({
       </div>
 
       {/* Paper Plane Doodle */}
-      <div className="absolute top-32 left-[45%] w-16 h-16 text-[#0F172A] opacity-60 hidden lg:block animate-float z-20">
+      <div className="absolute top-32 left-[45%] w-16 h-16 text-[#0F172A] opacity-60 hidden lg:block  z-20">
         <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
         </svg>
@@ -90,7 +68,7 @@ export default async function LoginPage({
       <div className="relative w-full lg:w-3/5 flex flex-col justify-center p-8 sm:p-12 lg:p-20 z-10 min-h-[40vh] lg:min-h-screen">
         
         {/* LOGO */}
-        <div className="lg:absolute lg:top-10 lg:left-12 flex flex-col animate-custom-fade-in mb-8 lg:mb-0">
+        <div className="lg:absolute lg:top-10 lg:left-12 flex flex-col  mb-8 lg:mb-0">
           <div className="flex items-center gap-1.5 font-black text-4xl tracking-tighter transform -rotate-3">
             <span className="text-[#E10600]">YES</span>
             <span className="text-[#0F172A]">Academy</span>
@@ -103,13 +81,13 @@ export default async function LoginPage({
         </div>
 
         {/* HEADLINE */}
-        <div className="mt-4 lg:mt-0 relative z-20 animate-custom-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-          <h1 className={`${caveat.className} text-7xl sm:text-8xl lg:text-[140px] font-bold text-[#E10600] leading-[0.85] text-red-600 tracking-tight drop-shadow-sm transform -rotate-3 relative z-20`} style={{ color: '#E10600' }}>
+        <div className="mt-4 lg:mt-0 relative z-20 " >
+          <h1 className={`${caveat.className} text-7xl sm:text-8xl lg:text-[140px] font-bold text-[#E10600] leading-[0.85] text-red-600 tracking-tight transform -rotate-3 relative z-20`} style={{ color: '#E10600' }}>
             Learn<br/>
             Grow<br/>
             Achieve
           </h1>
-          <div className="absolute z-0 w-48 sm:w-64 lg:w-96 h-8 lg:h-12 bg-[#FFD700] bottom-4 lg:bottom-6 left-0 transform rotate-1 rounded-sm opacity-90 mix-blend-multiply"></div>
+          <div className="absolute z-0 w-48 sm:w-64 lg:w-96 h-8 lg:h-12 bg-[#FFD700] bottom-4 lg:bottom-6 left-0 transform rotate-1 rounded-sm opacity-80"></div>
           
           <p className={`${caveat.className} mt-8 lg:mt-12 text-3xl lg:text-5xl text-[#0F172A] font-medium tracking-wide transform -rotate-1 relative inline-block`}>
             Better English.<br/>
@@ -125,7 +103,7 @@ export default async function LoginPage({
         </div>
 
         {/* SCRAPBOOK COLLAGE (Abstract representations) */}
-        <div className="hidden lg:block absolute top-1/2 right-4 transform -translate-y-1/2 w-[400px] h-[500px] z-0 animate-custom-fade-in pointer-events-none" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+        <div className="hidden lg:block absolute top-1/2 right-4 transform -translate-y-1/2 w-[400px] h-[500px] z-0  pointer-events-none" >
           
           {/* Main Map Background Element */}
           <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#FAFAFA] opacity-80 border-2 border-gray-200 transform -rotate-12 shadow-md z-0" style={{ backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
@@ -142,7 +120,7 @@ export default async function LoginPage({
              </div>
              <div className={`${caveat.className} text-center mt-3 text-2xl text-[#0F172A]`}>Good Things Ahead :)</div>
              {/* Yellow Tape */}
-             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 -rotate-3 w-20 h-6 bg-[#FFD700] opacity-90 shadow-sm mix-blend-multiply"></div>
+             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 -rotate-3 w-20 h-6 bg-[#FFD700] opacity-90 shadow-sm"></div>
           </div>
           
           {/* Accent red sticker */}
@@ -177,7 +155,7 @@ export default async function LoginPage({
       <div className="relative w-full lg:w-2/5 flex items-center justify-center p-6 sm:p-12 lg:pr-24 lg:pl-10 z-20 min-h-[60vh] lg:min-h-screen">
         
         {/* The Card */}
-        <div className="relative w-full max-w-[440px] animate-custom-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+        <div className="relative w-full max-w-[440px] " >
           
           {/* Background offset for paper stack effect */}
           <div className="absolute inset-0 bg-white/60 transform rotate-3 rounded-xl shadow-xl -z-10"></div>
@@ -186,7 +164,7 @@ export default async function LoginPage({
           <div className="bg-[#FAFAFA] w-full p-8 sm:p-12 rounded-xl shadow-[0_25px_50px_rgba(15,23,42,0.15)] border border-gray-100 relative">
             
             {/* Top Tape */}
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 -rotate-2 w-32 h-8 bg-[#FFD700] shadow-sm mix-blend-multiply flex items-center justify-center">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 -rotate-2 w-32 h-8 bg-[#FFD700] shadow-sm flex items-center justify-center">
                 {/* Tape texture lines */}
                 <div className="w-full h-full border-t border-b border-[#FFD700]/50 opacity-50"></div>
             </div>
