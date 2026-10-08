@@ -20,6 +20,8 @@ export default async function FacultyBatchesPage() {
       start_time,
       end_time,
       schedule_days,
+        total_classes,
+        additional_classes,
       courses ( name, family ),
       rooms ( name ),
       profiles!batches_teacher_id_fkey ( display_name ),
