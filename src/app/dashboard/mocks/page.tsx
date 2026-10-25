@@ -27,6 +27,10 @@ export default async function MocksPage() {
     .from('pte_mock_reports')
     .select('id, mock_booking_id, email_status')
 
+  const { data: ieltsReports } = await supabase
+    .from('ielts_speaking_reports')
+    .select('id, mock_booking_id, email_status')
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
@@ -34,7 +38,11 @@ export default async function MocksPage() {
         <p className="text-gray-500 mt-1">Manage mock test enrollments and payments.</p>
       </div>
 
-      <MockClient initialMocks={mocks || []} initialReports={reports || []} />
+      <MockClient 
+        initialMocks={mocks || []} 
+        initialReports={reports || []} 
+        initialIeltsReports={ieltsReports || []} 
+      />
     </div>
   )
 }

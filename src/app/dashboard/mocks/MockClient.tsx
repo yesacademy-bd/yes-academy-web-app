@@ -2,9 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { FileText, Calendar, Trash2, Mail, Printer, RefreshCw, Edit } from 'lucide-react'
+import { FileText, Calendar, Trash2, Mail, Printer, RefreshCw, Edit, Download } from 'lucide-react'
 import { createMockService, deleteMockService, sendConfirmationEmail, updateMockDate, updateMockService } from './actions'
 import { fetchPteMockReport, resendPteReportEmail } from './pte-report/actions'
+import { fetchIeltsSpeakingReport, resendIeltsReportEmail } from './ielts-speaking-report/actions'
 
 const formatPhone = (phone: string) => {
   const cleaned = phone.replace(/\D/g, '')
@@ -12,11 +13,20 @@ const formatPhone = (phone: string) => {
   return cleaned
 }
 
-export default function MockClient({ initialMocks, initialReports = [] }: { initialMocks: any[], initialReports?: any[] }) {
+export default function MockClient({ 
+  initialMocks, 
+  initialReports = [],
+  initialIeltsReports = []
+}: { 
+  initialMocks: any[]
+  initialReports?: any[]
+  initialIeltsReports?: any[]
+}) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   const [mocks] = useState(initialMocks)
   const [reports] = useState(initialReports)
+  const [ieltsReports, setIeltsReports] = useState(initialIeltsReports)
   const [selectedMonthStr, setSelectedMonthStr] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -75,6 +85,10 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
   // PTE Report Viewer state
   const [reportModal, setReportModal] = useState({ isOpen: false, reportData: null as any, isLoading: false })
   const [isResending, setIsResending] = useState(false)
+
+  // IELTS Speaking Report Viewer state
+  const [ieltsModal, setIeltsModal] = useState({ isOpen: false, reportData: null as any, isLoading: false })
+  const [isResendingIelts, setIsResendingIelts] = useState(false)
 
   const [newDate, setNewDate] = useState('')
   const [isSwitching, setIsSwitching] = useState(false)
@@ -137,6 +151,54 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
         reportData: { ...prev.reportData, email_status: 'Sent' }
       }))
     }
+  }
+
+  const handleViewIeltsReport = async (reportId: string) => {
+    setIeltsModal({ isOpen: true, reportData: null, isLoading: true })
+    const res = await fetchIeltsSpeakingReport(reportId)
+    if (res.success && res.data) {
+      setIeltsModal({ isOpen: true, reportData: res.data, isLoading: false })
+    } else {
+      alert('Failed to load IELTS Speaking Report.')
+      setIeltsModal({ isOpen: false, reportData: null, isLoading: false })
+    }
+  }
+
+  const handleResendIeltsEmail = async (reportId: string) => {
+    setIsResendingIelts(true)
+    const res = await resendIeltsReportEmail(reportId)
+    setIsResendingIelts(false)
+    alert(res.message)
+    if (res.success) {
+      setIeltsModal(prev => ({
+        ...prev,
+        reportData: { ...prev.reportData, email_status: 'Sent' }
+      }))
+    }
+  }
+
+  const handleDownloadIeltsPdf = (reportData: any) => {
+    const safeName = (reportData.student_name || 'Candidate').replace(/[^a-zA-Z0-9]/g, '_')
+    const safeDate = (reportData.test_date || '').replace(/[^a-zA-Z0-9]/g, '-')
+    const filename = `YES_Academy_IELTS_Speaking_Report_${safeName}_${safeDate}.pdf`
+
+    const element = document.getElementById('printable-ielts-modal-content')
+    if (!element) return alert('Report element not found.')
+
+    import('html2pdf.js').then(module => {
+      const html2pdf = module.default || module
+      const opt = {
+        margin: 10,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }
+      html2pdf().set(opt).from(element).save()
+    }).catch(err => {
+      console.error('PDF export error:', err)
+      alert('Could not download PDF.')
+    })
   }
 
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -483,19 +545,47 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
                       <td className="p-4 align-top text-center">
                         {(() => {
                           const isPTE = m.service_type === 'PTE Mock' || m.mock_type === 'PTE Mock';
-                          if (!isPTE) return <span className="text-xs text-gray-400 font-medium px-2 py-1 bg-gray-50 rounded">N/A (IELTS)</span>;
-                          const report = reports.find((r: any) => r.mock_booking_id === m.id);
-                          if (report) {
+                          const isIELTS = m.service_type === 'IELTS Mock' || m.mock_type === 'IELTS Mock';
+
+                          if (isPTE) {
+                            const report = reports.find((r: any) => r.mock_booking_id === m.id);
+                            if (report) {
+                              return (
+                                <button
+                                  onClick={() => handleViewReport(report.id)}
+                                  className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
+                                >
+                                  View PTE Report
+                                </button>
+                              );
+                            }
+                            return <span className="text-xs text-amber-700 font-medium px-2 py-1 bg-amber-50 rounded border border-amber-200">Not Submitted</span>;
+                          }
+
+                          if (isIELTS) {
+                            const ieltsRep = ieltsReports.find((r: any) => r.mock_booking_id === m.id);
+                            if (ieltsRep) {
+                              return (
+                                <button
+                                  onClick={() => handleViewIeltsReport(ieltsRep.id)}
+                                  className="text-xs font-semibold px-3 py-1.5 bg-red-50 text-[#E10600] hover:bg-red-100 rounded-md transition-colors border border-red-200"
+                                >
+                                  View Speaking Report
+                                </button>
+                              );
+                            }
                             return (
-                              <button
-                                onClick={() => handleViewReport(report.id)}
-                                className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
+                              <a
+                                href="/dashboard/mocks/ielts-speaking-report"
+                                className="text-xs text-amber-700 font-medium px-2 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 transition-colors inline-block"
+                                title="Assess IELTS Speaking"
                               >
-                                View Report
-                              </button>
+                                Not Submitted
+                              </a>
                             );
                           }
-                          return <span className="text-xs text-amber-700 font-medium px-2 py-1 bg-amber-50 rounded border border-amber-200">Not Submitted</span>;
+
+                          return <span className="text-xs text-gray-400 font-medium px-2 py-1 bg-gray-50 rounded">N/A</span>;
                         })()}
                       </td>
                       <td className="p-4 align-middle">
@@ -886,6 +976,206 @@ export default function MockClient({ initialMocks, initialReports = [] }: { init
               <div className="p-4 sm:p-8 text-center text-red-500 font-bold">Failed to load report.</div>
             )}
             
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* IELTS Speaking Report Viewer Modal */}
+      {ieltsModal.isOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col border border-gray-300 relative overflow-hidden" style={{ opacity: 1, isolation: 'isolate' }}>
+            
+            {ieltsModal.isLoading ? (
+              <div className="p-12 flex flex-col items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mb-4" />
+                <p className="text-gray-600 font-medium">Loading IELTS Speaking report...</p>
+              </div>
+            ) : ieltsModal.reportData ? (
+              <>
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-[#E10600]" /> IELTS Speaking Score Report
+                  </h3>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={() => handleDownloadIeltsPdf(ieltsModal.reportData)}
+                      className="px-3.5 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5 text-xs shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Download PDF
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="px-3.5 py-1.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 text-xs shadow-sm"
+                    >
+                      <Printer className="w-3.5 h-3.5" /> Print
+                    </button>
+                    <button 
+                      onClick={() => setIeltsModal({ isOpen: false, reportData: null, isLoading: false })}
+                      className="px-3 py-1.5 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-colors text-xs"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                <div id="printable-ielts-modal-content" className="p-6 sm:p-10 overflow-y-auto flex-1 bg-white">
+                  <style>{`
+                    @media print {
+                      body * { visibility: hidden; }
+                      #printable-ielts-modal-content, #printable-ielts-modal-content * { visibility: visible; }
+                      #printable-ielts-modal-content { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+                    }
+                  `}</style>
+
+                  <div className="border-b-2 border-[#E10600] pb-4 mb-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h1 className="text-3xl font-black text-[#E10600] tracking-wider uppercase">YES ACADEMY</h1>
+                        <h2 className="text-xl font-bold text-slate-900 mt-1">IELTS SPEAKING SCORE REPORT</h2>
+                        <p className="text-xs text-gray-500 font-semibold tracking-wide">STUDENT PERFORMANCE & CRITERIA EVALUATION</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-block px-3 py-1 bg-red-50 text-[#E10600] text-xs font-bold rounded-full border border-red-200">
+                          Assessment Report
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-gray-50/80 p-5 rounded-xl border border-gray-200 mb-6 text-sm">
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Student Name</p>
+                      <p className="font-bold text-gray-900 text-base">{ieltsModal.reportData.student_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Student Email</p>
+                      <p className="font-medium text-gray-800 break-all">{ieltsModal.reportData.student_email || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Candidate / Batch</p>
+                      <p className="font-semibold text-gray-800">
+                        {[ieltsModal.reportData.candidate_number, ieltsModal.reportData.batch_number].filter(Boolean).join(' / ') || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Test Date</p>
+                      <p className="font-semibold text-gray-800">
+                        {ieltsModal.reportData.test_date ? new Date(ieltsModal.reportData.test_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Examiner / Faculty</p>
+                      <p className="font-semibold text-gray-800">{ieltsModal.reportData.trainer_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase mb-0.5">Student Type</p>
+                      <p className="font-semibold text-gray-800">{ieltsModal.reportData.student_type || 'Inhouse'}</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    Assessment Criteria Evaluation
+                  </h3>
+
+                  <div className="overflow-x-auto w-full mb-6">
+                    <table className="w-full text-left border-collapse border border-gray-300 text-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="p-3 border border-gray-300 font-bold text-gray-800 w-1/3">Area of Scoring</th>
+                          <th className="p-3 border border-gray-300 font-bold text-center text-gray-700">Limited</th>
+                          <th className="p-3 border border-gray-300 font-bold text-center text-gray-700">Moderate</th>
+                          <th className="p-3 border border-gray-300 font-bold text-center text-gray-700">Good</th>
+                          <th className="p-3 border border-gray-300 font-bold text-center text-gray-700">Excellent</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { label: 'Fluency & Coherence', val: ieltsModal.reportData.fluency_coherence },
+                          { label: 'Lexical Resources', val: ieltsModal.reportData.lexical_resources },
+                          { label: 'Grammatical Range & Accuracy', val: ieltsModal.reportData.grammatical_range },
+                          { label: 'Pronunciation', val: ieltsModal.reportData.pronunciation },
+                        ].map(c => (
+                          <tr key={c.label}>
+                            <td className="p-3 border border-gray-300 font-semibold text-gray-900">{c.label}</td>
+                            {['limited', 'moderate', 'good', 'excellent'].map(lvl => {
+                              const match = (c.val || '').toLowerCase() === lvl;
+                              return (
+                                <td
+                                  key={lvl}
+                                  className={`p-3 border border-gray-300 text-center text-xs ${
+                                    match ? 'bg-emerald-50 text-emerald-800 font-bold border-emerald-300' : 'text-gray-400'
+                                  }`}
+                                >
+                                  {match ? `✓ ${lvl.charAt(0).toUpperCase() + lvl.slice(1)}` : '-'}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="bg-red-50/70 border-2 border-[#E10600] rounded-xl p-4 sm:p-5 mb-6 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-600 block">Overall Band Score</span>
+                      <span className="text-sm font-bold text-slate-900">IELTS Speaking Performance Level</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-4xl font-black text-[#E10600]">{ieltsModal.reportData.overall_band_score}</span>
+                      <span className="text-xs text-gray-500 font-bold block">/ 9.0</span>
+                    </div>
+                  </div>
+
+                  {ieltsModal.reportData.suggestions && (
+                    <div className="mb-4 bg-white border border-gray-200 border-l-4 border-l-[#E10600] rounded-r-xl p-4">
+                      <h4 className="font-bold text-slate-900 text-sm mb-1">Examiner Suggestions & Improvements:</h4>
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{ieltsModal.reportData.suggestions}</p>
+                    </div>
+                  )}
+
+                  {ieltsModal.reportData.additional_comments && (
+                    <div className="mb-6 bg-white border border-gray-200 border-l-4 border-l-slate-800 rounded-r-xl p-4">
+                      <h4 className="font-bold text-slate-900 text-sm mb-1">Additional Comments:</h4>
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{ieltsModal.reportData.additional_comments}</p>
+                    </div>
+                  )}
+
+                  <div className="border-t border-gray-200 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+                    <div>
+                      <strong>YES ACADEMY</strong> &bull; Better English. Brighter Future.
+                    </div>
+                    <div>
+                      Report Date: {new Date(ieltsModal.reportData.report_date || ieltsModal.reportData.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium">Email Delivery:</span>
+                    {ieltsModal.reportData.email_status === 'Sent' ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Delivered</span>
+                    ) : ieltsModal.reportData.email_status === 'Failed' ? (
+                      <span className="text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-200">Delivery Failed</span>
+                    ) : (
+                      <span className="text-gray-600 font-medium bg-gray-100 px-2 py-0.5 rounded">{ieltsModal.reportData.email_status || 'Pending'}</span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleResendIeltsEmail(ieltsModal.reportData.id)}
+                    disabled={!ieltsModal.reportData.student_email || isResendingIelts}
+                    className="px-3.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5 text-xs disabled:opacity-40"
+                  >
+                    <Mail className="w-3.5 h-3.5" /> {isResendingIelts ? 'Sending...' : 'Resend Email'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center text-red-500 font-bold">Failed to load report.</div>
+            )}
           </div>
         </div>,
         document.body
